@@ -2,36 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\MessageHandler\CompanyModule;
+namespace KLS\Core\MessageHandler\CompanyModule;
 
-use Http\User\Exception;
+use Http\Client\Exception;
+use KLS\Core\Message\CompanyModule\CompanyModuleUpdated;
+use KLS\Core\Repository\CompanyModuleRepository;
+use KLS\Core\Service\CompanyModule\CompanyModuleNotifier;
 use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Core\Message\CompanyModule\CompanyModuleUpdated;
-use Unilend\Core\Repository\CompanyModuleRepository;
-use Unilend\Core\Service\CompanyModule\CompanyModuleNotifier;
 
 class CompanyModuleUpdatedHandler implements MessageHandlerInterface
 {
-    /** @var CompanyModuleRepository $om */
     private CompanyModuleRepository $repository;
 
-    /** @var CompanyModuleNotifier  */
     private CompanyModuleNotifier $notifier;
 
-    /**
-     * @param CompanyModuleRepository $repository
-     * @param CompanyModuleNotifier   $notifier
-     */
     public function __construct(CompanyModuleRepository $repository, CompanyModuleNotifier $notifier)
     {
         $this->repository = $repository;
-        $this->notifier = $notifier;
+        $this->notifier   = $notifier;
     }
 
     /**
-     * @param CompanyModuleUpdated $companyModuleUpdated
-     *
      * @throws Exception
      * @throws SlackApiException
      */

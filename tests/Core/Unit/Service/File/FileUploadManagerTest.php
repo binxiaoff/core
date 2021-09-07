@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Service\File;
+namespace KLS\Test\Core\Unit\Service\File;
 
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Exception\IOException;
@@ -11,6 +11,12 @@ use Doctrine\ORM\ORMException;
 use Exception;
 use Faker\Provider\Base;
 use Faker\Provider\Internet;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\User;
+use KLS\Core\Message\File\FileUploaded;
+use KLS\Core\Repository\FileRepository;
+use KLS\Core\Service\File\FileUploadManager;
+use KLS\Core\Service\FileSystem\FileSystemHelper;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use PHPUnit\Framework\TestCase;
@@ -20,15 +26,9 @@ use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Message\File\FileUploaded;
-use Unilend\Core\Repository\FileRepository;
-use Unilend\Core\Service\File\FileUploadManager;
-use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 /**
- * @coversDefaultClass \Unilend\Core\Service\File\FileUploadManager
+ * @coversDefaultClass \KLS\Core\Service\File\FileUploadManager
  *
  * @internal
  */
@@ -46,9 +46,6 @@ class FileUploadManagerTest extends TestCase
     /** @var MessageBusInterface|ObjectProphecy */
     private $messageBus;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         $this->userAttachmentFilesystem = $this->prophesize(FilesystemOperator::class);
@@ -77,9 +74,9 @@ class FileUploadManagerTest extends TestCase
         $uploaderId = Base::randomDigitNotNull() + 1;
         $idUsersReflectionProperty->setValue($uploader, $uploaderId);
 
-        $filePath         = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
-        $originalFileName = Base::asciify(str_repeat('*', 20));
-        fopen($filePath, 'wb+');
+        $filePath         = \sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
+        $originalFileName = Base::asciify(\str_repeat('*', 20));
+        \fopen($filePath, 'wb+');
         $uploadedFile = new UploadedFile($filePath, $originalFileName, null, null, true);
 
         $fileWriter = $this->fileSystemHelper->writeTempFileToFileSystem(
@@ -92,7 +89,7 @@ class FileUploadManagerTest extends TestCase
         $fileNameNormalizer = $this->fileSystemHelper->normalizeFileName(Argument::type('string'));
         $fileNameNormalizer->willReturn($originalFileName);
 
-        $encryptionKey = Base::asciify(str_repeat('*', 440));
+        $encryptionKey = Base::asciify(\str_repeat('*', 440));
         $fileWriter->willReturn($encryptionKey);
 
         $dispatcher = $this->messageBus->dispatch(Argument::exact(new FileUploaded($file, $context)));
@@ -113,18 +110,18 @@ class FileUploadManagerTest extends TestCase
         $dispatcher->shouldHaveBeenCalled();
         $fileExistenceChecker->shouldHaveBeenCalled();
 
-        $pathInfo                    = pathinfo($file->getCurrentFileVersion()->getPath());
+        $pathInfo                    = \pathinfo($file->getCurrentFileVersion()->getPath());
         $uploadedFilename            = $pathInfo['filename'];
         $uploadedDirname             = $pathInfo['dirname'];
-        $originalFilename            = pathinfo($originalFileName, PATHINFO_FILENAME);
-        $uploadedFilePathDirectories = explode(DIRECTORY_SEPARATOR, trim($uploadedDirname, '/'));
+        $originalFilename            = \pathinfo($originalFileName, PATHINFO_FILENAME);
+        $uploadedFilePathDirectories = \explode(DIRECTORY_SEPARATOR, \trim($uploadedDirname, '/'));
 
         static::assertNotSame($originalFilename, $uploadedFilename);
 
         static::assertGreaterThanOrEqual(3, $uploadedFilePathDirectories, 'minimum number of directories');
 
-        static::assertSame(1, mb_strlen(array_shift($uploadedFilePathDirectories)), 'first mandatory subdirectory');
-        static::assertSame(1, mb_strlen(array_shift($uploadedFilePathDirectories)), 'second mandatory subdirectory');
+        static::assertSame(1, \mb_strlen(\array_shift($uploadedFilePathDirectories)), 'first mandatory subdirectory');
+        static::assertSame(1, \mb_strlen(\array_shift($uploadedFilePathDirectories)), 'second mandatory subdirectory');
 
         static::assertSame($uploader, $file->getCurrentFileVersion()->getAddedBy());
         static::assertStringContainsString((string) $uploader->getId(), $file->getCurrentFileVersion()->getPath());

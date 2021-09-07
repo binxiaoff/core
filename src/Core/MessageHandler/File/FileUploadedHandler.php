@@ -2,52 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\MessageHandler\File;
+namespace KLS\Core\MessageHandler\File;
 
-use InvalidArgumentException;
+use KLS\Core\Message\File\FileUploaded;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Twig\Error\{LoaderError, RuntimeError, SyntaxError};
-use Unilend\Core\Message\File\FileUploaded;
-use Unilend\Syndication\Repository\ProjectRepository;
-use Unilend\Syndication\Service\Project\ProjectNotifier;
 
 class FileUploadedHandler implements MessageHandlerInterface
 {
-    /** @var ProjectNotifier */
-    private $projectNotifier;
-    /** @var ProjectRepository */
-    private $projectRepository;
+    /** @var iterable|FileUploadedNotifierInterface[] */
+    private iterable $notifiers;
 
-    /**
-     * @param ProjectRepository $projectRepository
-     * @param ProjectNotifier   $projectNotifier
-     */
-    public function __construct(ProjectRepository $projectRepository, ProjectNotifier $projectNotifier)
+    public function __construct(iterable $notifiers)
     {
-        $this->projectRepository = $projectRepository;
-        $this->projectNotifier   = $projectNotifier;
+        $this->notifiers = $notifiers;
     }
 
-    /**
-     * @param FileUploaded $fileUploaded
-     *
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     */
-    public function __invoke(FileUploaded $fileUploaded)
+    public function __invoke(FileUploaded $fileUploaded): void
     {
         $context = $fileUploaded->getContext();
 
-        if (empty($context['projectId'])) {
-            return;
+        foreach ($this->notifiers as $notifier) {
+            $notifier->notify($context);
         }
-
-        $project = $this->projectRepository->find($context['projectId']);
-        if (null === $project) {
-            throw new InvalidArgumentException(sprintf('The project with id %d does not exist', $context['projectId']));
-        }
-
-        $this->projectNotifier->notifyUploaded($project);
     }
 }

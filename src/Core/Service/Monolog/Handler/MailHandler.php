@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\Monolog\Handler;
+namespace KLS\Core\Service\Monolog\Handler;
 
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
@@ -14,22 +14,19 @@ use Twig\Error\SyntaxError;
 
 class MailHandler extends AbstractProcessingHandler
 {
-    /** @var Swift_Mailer */
     private Swift_Mailer $mailer;
     /** @var mixed */
     private $securityRecipients;
-    /** @var Environment */
+
     private Environment $twig;
-    /** @var string */
+
     private string $senderAddress;
 
     /**
-     * @param Swift_Mailer $mailer
-     * @param Environment  $twig
-     * @param mixed        $securityRecipients
-     * @param int          $level
-     * @param bool         $bubble
-     * @param string       $senderAddress
+     * @param mixed  $securityRecipients
+     * @param int    $level
+     * @param bool   $bubble
+     * @param string $senderAddress
      */
     public function __construct(
         Swift_Mailer $mailer,
@@ -40,16 +37,14 @@ class MailHandler extends AbstractProcessingHandler
         $senderAddress = 'support@kls-platform.com'
     ) {
         parent::__construct($level, $bubble);
-        $this->mailer                  = $mailer;
-        $this->securityRecipients      = $securityRecipients;
-        $this->twig = $twig;
-        $this->senderAddress = $senderAddress;
+        $this->mailer             = $mailer;
+        $this->securityRecipients = $securityRecipients;
+        $this->twig               = $twig;
+        $this->senderAddress      = $senderAddress;
     }
 
     /**
      * Writes the record down to the log of the implementing handler.
-     *
-     * @param array $record
      *
      * @throws LoaderError|RuntimeError|SyntaxError
      */
@@ -59,7 +54,8 @@ class MailHandler extends AbstractProcessingHandler
         $message->setSubject('Log')
             ->setFrom($this->senderAddress)
             ->setBody($this->twig->render('email/log.html.twig', $record))
-            ->setTo($this->securityRecipients);
+            ->setTo($this->securityRecipients)
+        ;
 
         $this->mailer->send($message);
     }

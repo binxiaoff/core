@@ -2,19 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\{
-    NoResultException,
-    NonUniqueResultException,
-    ORMException,
-    OptimisticLockException
-};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Repository\Traits\OrderByHandlerTrait;
+use KLS\Core\Entity\Company;
+use KLS\Core\Repository\Traits\OrderByHandlerTrait;
 
 /**
  * @method Company|null find($id, $lockMode = null, $lockVersion = null)
@@ -26,17 +21,12 @@ class CompanyRepository extends ServiceEntityRepository
 {
     use OrderByHandlerTrait;
 
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Company::class);
     }
 
     /**
-     * @param Company $company
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

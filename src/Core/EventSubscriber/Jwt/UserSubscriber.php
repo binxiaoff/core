@@ -2,22 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\Jwt;
+namespace KLS\Core\EventSubscriber\Jwt;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Exception\ItemNotFoundException;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\UserRepository;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\UserRepository;
 
 class UserSubscriber implements EventSubscriberInterface
 {
     private IriConverterInterface $iriConverter;
-
     private UserRepository $userRepository;
 
     public function __construct(IriConverterInterface $iriConverter, UserRepository $repository)
@@ -26,9 +25,6 @@ class UserSubscriber implements EventSubscriberInterface
         $this->userRepository = $repository;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [

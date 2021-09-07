@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ApiResource(
@@ -25,7 +25,7 @@ use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
  *     collectionOperations={
  *         "current_service_terms": {
  *             "method": "GET",
- *             "controller": "Unilend\Core\Controller\LegalDocument\CurrentServiceTerms",
+ *             "controller": "KLS\Core\Controller\LegalDocument\CurrentServiceTerms",
  *             "path": "/core/legal_documents/current_service_terms",
  *         }
  *     }

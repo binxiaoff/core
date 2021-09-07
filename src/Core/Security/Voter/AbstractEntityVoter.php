@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Security\Voter;
+namespace KLS\Core\Security\Voter;
 
+use KLS\Core\Entity\User;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 abstract class AbstractEntityVoter extends Voter
 {

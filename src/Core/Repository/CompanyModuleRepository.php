@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\CompanyModule;
+use KLS\Core\Entity\CompanyModule;
 
 /**
  * @method CompanyModule|null find($id, $lockMode = null, $lockVersion = null)
@@ -18,17 +18,12 @@ use Unilend\Core\Entity\CompanyModule;
  */
 class CompanyModuleRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $managerRegistry
-     */
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, CompanyModule::class);
     }
 
     /**
-     * @param CompanyModule $module
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

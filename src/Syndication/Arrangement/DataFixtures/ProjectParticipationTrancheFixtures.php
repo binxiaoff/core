@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+namespace KLS\Syndication\Arrangement\DataFixtures;
+
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
+use Doctrine\Persistence\ObjectManager;
+use Exception;
+use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\DataFixtures\StaffFixtures;
+use KLS\Core\Entity\Staff;
+use KLS\Syndication\Arrangement\Entity\Project;
+use KLS\Syndication\Arrangement\Entity\ProjectParticipationStatus;
+use KLS\Syndication\Arrangement\Entity\ProjectParticipationTranche;
+use KLS\Syndication\Arrangement\Entity\ProjectStatus;
+use KLS\Syndication\Arrangement\Entity\Tranche;
+
+class ProjectParticipationTrancheFixtures extends AbstractFixtures implements DependentFixtureInterface
+{
+    use OfferFixtureTrait;
+
+    /**
+     * @throws Exception
+     */
+    public function load(ObjectManager $manager): void
+    {
+        /** @var Project[] $projects */
+        $projects = $this->getReferences(ProjectFixtures::PROJECTS_WITH_PARTICIPATION_TRANCHES);
+
+        /** @var Staff $staff */
+        $staff = $this->getReference(StaffFixtures::ADMIN);
+
+        foreach ($projects as $project) {
+            if ($project->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)) {
+                foreach ($project->getProjectParticipations() as $participation) {
+                    foreach ($project->getTranches() as $tranche) {
+                        if (
+                            $tranche->isSyndicated()
+                            || (
+                                Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER === $tranche->getUnsyndicatedFunderType()
+                                && $participation->getParticipant() === $project->getSubmitterCompany()
+                            )
+                        ) {
+                            $participationTranche = (new ProjectParticipationTranche($participation, $tranche, $staff));
+
+                            $repliedStatuses = [ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED, ProjectParticipationStatus::STATUS_COMMITTEE_PENDED];
+                            if (\in_array($participation->getCurrentStatus()->getStatus(), $repliedStatuses, true)) {
+                                $participationTranche->setInvitationReply($this->createOffer(1000000));
+                                if ($project === $this->getReference(ProjectFixtures::PROJECT_ALLOCATION)) {
+                                    $participationTranche->setAllocation($this->createOffer(1000000));
+                                }
+                            }
+
+                            $manager->persist($participationTranche);
+                        }
+                    }
+                }
+            }
+        }
+        $manager->flush();
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getDependencies(): array
+    {
+        return [
+            TrancheFixtures::class,
+            ProjectParticipationFixtures::class,
+        ];
+    }
+}

@@ -1,0 +1,69 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  KLS\Core\Listener\Doctrine\Entity\FileVersion\FileVersionCreatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\Core\Entity\FileVersion, method: encryptKey}
+
+  KLS\Core\Listener\Doctrine\Entity\FileVersion\FileVersionLoadedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: postLoad, entity: KLS\Core\Entity\FileVersion, method: decryptKey }
+
+  KLS\Core\Listener\Doctrine\Entity\FileVersion\FileVersionUpdatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Core\Entity\FileVersion, method: blockUpdating }
+
+  KLS\Core\Listener\Doctrine\Entity\Folder\FolderDeletedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: preRemove, entity: KLS\Core\Entity\Folder, method: cascadeDeletion }
+
+  KLS\Core\Listener\Doctrine\Entity\TemporaryTokenCreatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\Core\Entity\TemporaryToken, method: expireOldTemporaryToken }
+
+  KLS\Core\Listener\Doctrine\Entity\UserPlainPasswordSubmittedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Core\Entity\User, method: encodePlainPassword }
+      - { name: doctrine.orm.entity_listener, event: prePersist, entity: KLS\Core\Entity\User, method: encodePlainPassword }
+
+  # Message Dispatcher
+
+  KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\CompanyModule\CompanyModuleUpdatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: postUpdate, entity: KLS\Core\Entity\CompanyModule }
+
+  KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\Message\MessageCreatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Core\Entity\Message}
+
+  KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\Staff\StaffCreatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Core\Entity\Staff}
+
+  KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\User\UserUpdatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Core\Entity\User }
+
+  # Lifecycle
+
+  KLS\Core\Listener\Doctrine\Lifecycle\ArchivedByListener:
+    tags:
+      - { name: doctrine.event_listener, event: preRemove }
+
+  KLS\Core\Listener\Doctrine\Lifecycle\CompanyModuleUpdatedListener:
+    tags:
+      - { name: doctrine.event_listener, event: onFlush }
+
+  KLS\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener:
+    tags:
+      - { name: doctrine.event_listener, event: prePersist }
+
+  KLS\Core\Listener\Doctrine\Lifecycle\UuidListener:
+    tags:
+      - { name: doctrine.event_listener, event: prePersist }
+
+  KLS\Core\Listener\Doctrine\Lifecycle\UpdatedByListener:
+    tags:
+      - { name: doctrine.event_listener, event: preUpdate }

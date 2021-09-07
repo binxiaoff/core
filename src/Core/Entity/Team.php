@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * @ApiResource(
@@ -32,7 +32,7 @@ use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {"groups": {"team:create"}},
- *             "input": "Unilend\Core\DTO\Team\CreateTeam"
+ *             "input": "KLS\Core\DTO\Team\CreateTeam"
  *         }
  *     }
  * )
@@ -51,12 +51,12 @@ class Team
     private string $name;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Company", mappedBy="rootTeam", fetch="EAGER")
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\Company", mappedBy="rootTeam", fetch="EAGER")
      */
     private ?Company $company;
 
     /**
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Staff", mappedBy="team")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\Staff", mappedBy="team")
      *
      * @Groups({"team:read"})
      *
@@ -71,14 +71,14 @@ class Team
     /**
      * @var TeamEdge[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\TeamEdge", mappedBy="ancestor")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\TeamEdge", mappedBy="ancestor")
      */
     private Collection $outgoingEdges;
 
     /**
      * @var TeamEdge[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\TeamEdge", mappedBy="descendent", cascade={"persist"}, indexBy="depth")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\TeamEdge", mappedBy="descendent", cascade={"persist"}, indexBy="depth")
      *
      * @Assert\Unique
      * @Assert\Valid
@@ -86,9 +86,7 @@ class Team
     private Collection $incomingEdges;
 
     /**
-     * Constructor.
-     *
-     * Private to ensure correct object creation via static method
+     * Private to ensure correct object creation via static method.
      */
     private function __construct()
     {
@@ -184,7 +182,7 @@ class Team
             return $this;
         }
 
-        $depth = max($this->incomingEdges->map(fn (TeamEdge $edge) => $edge->getDepth())->toArray());
+        $depth = \max($this->incomingEdges->map(fn (TeamEdge $edge) => $edge->getDepth())->toArray());
 
         return $this->incomingEdges[$depth]->getAncestor();
     }
@@ -194,7 +192,7 @@ class Team
      */
     public function isRoot()
     {
-        return 0 === count($this->incomingEdges);
+        return 0 === \count($this->incomingEdges);
     }
 
     public function setName(string $name): Team

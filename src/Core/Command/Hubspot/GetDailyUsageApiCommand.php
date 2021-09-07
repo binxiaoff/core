@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Command\Hubspot;
+namespace KLS\Core\Command\Hubspot;
 
+use KLS\Core\Service\Hubspot\HubspotManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Unilend\Core\Service\Hubspot\HubspotManager;
 
 class GetDailyUsageApiCommand extends Command
 {
-    protected static $defaultName = 'kls:hubspot:get-api-usage';
+    protected static $defaultName = 'kls:core:hubspot:api-usage:show';
 
     private HubspotManager $hubspotManager;
 

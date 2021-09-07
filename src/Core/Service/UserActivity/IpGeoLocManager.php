@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\UserActivity;
+namespace KLS\Core\Service\UserActivity;
 
 use Cravler\MaxMindGeoIpBundle\Service\GeoIpService;
 use Exception;
@@ -20,13 +20,6 @@ class IpGeoLocManager
     /** @var LoggerInterface */
     private $logger;
 
-    /**
-     * IpGeoLocManager constructor.
-     *
-     * @param GeoIpService    $geoIpService
-     * @param string          $defaultLocale
-     * @param LoggerInterface $logger
-     */
     public function __construct(GeoIpService $geoIpService, string $defaultLocale, LoggerInterface $logger)
     {
         $this->geoIpService = $geoIpService;
@@ -34,11 +27,6 @@ class IpGeoLocManager
         $this->logger       = $logger;
     }
 
-    /**
-     * @param string $ip
-     *
-     * @return City|null
-     */
     public function getGeoIpRecord(string $ip): ?City
     {
         try {

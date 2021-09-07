@@ -1,0 +1,207 @@
+imports:
+  - { resource: doctrine_listeners.yaml }
+
+parameters:
+  directory.shared: /data/medias/nfs/
+  directory.protected: '%directory.shared%protected/'
+  file_encryption.kek_file: '%env(FILE_ENCRYPTION_KEK_FILE)%'
+  file_encryption.kek_passphrase: '%env(FILE_ENCRYPTION_KEK_PASSPHRASE)%'
+  front.host: '%env(HOST_APP_URL)%'
+  hubspot.api.key: '%env(HUBSPOT_API_KEY)%'
+  hubspot.base_crm_uri: '%env(HUBSPOT_BASE_CRM_URI)%'
+  hubspot.base_integration_uri: '%env(HUBSPOT_BASE_INTEGRATION_URI)%'
+  locale: fr_FR
+  mailer.error_reporting_email: tech@kls-platform.com
+  mailer.sender_address: support@kls-platform.com
+  maintenance: '%env(MAINTENANCE_MODE)%'
+  psn.base_uri: '%env(PSN_BASE_URI)%'
+  psn.public_key: '%env(base64:PSN_PUBLIC_KEY)%'
+  psn.private_key: '%env(base64:PSN_PRIVATE_KEY)%'
+  router.request_context.scheme: https
+  security.recipients: ['tech@kls-platform.com']
+  slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
+  slack.webhook.security: https://hooks.slack.com/services/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
+
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    bind:
+      $consoleLogger: '@monolog.logger.console'
+      $debug: '%kernel.debug%'
+      $defaultLocale: '%locale%'
+      $environment: '%kernel.environment%'
+      $generatedDocumentFilesystem: '@generated_document_filesystem'
+      $projectDirectory: '%kernel.project_dir%'
+      $securityRecipients: '%security.recipients%'
+      $senderAddress: '%mailer.sender_address%'
+      $templateMessageFQCN: 'KLS\Core\SwiftMailer\TemplateMessage'
+      $userAttachmentFilesystem: '@user_attachment_filesystem'
+
+  KLS\Core\:
+    resource: '%kernel.project_dir%/src/Core/*'
+    exclude: '%kernel.project_dir%/src/Core/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
+
+  KLS\Core\ApiPlatform\Metadata\Metadata\Resource\Factory\ShortNameResourceMetadataFactory:
+    decorates: 'api_platform.metadata.resource.metadata_factory'
+
+  KLS\Core\Controller\:
+    resource: '%kernel.project_dir%/src/Core/Controller'
+    tags:
+      - { name: 'controller.service_arguments' }
+
+  KLS\Core\DataTransformer\FileInputDataTransformer:
+    $uploaders: !tagged kls.file.input.data.upload
+
+  # EventSubscriber
+
+  KLS\Core\EventSubscriber\Jwt\PayloadManagerSubscriber:
+    calls:
+      - addPayloadManager: ['@KLS\Core\Service\Jwt\StaffPayloadManager']
+
+  KLS\Core\EventSubscriber\Jwt\PermissionSubscriber:
+    arguments:
+      $permissionProviders: !tagged kls.jwt.permission_provider
+
+  # Listener (not doctrine)
+
+  KLS\Core\Listener\MaintenanceListener:
+    arguments: ["%maintenance%"]
+    tags:
+      - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+
+  # MessageHandler
+
+  KLS\Core\MessageHandler\File\FileUploadedHandler:
+    arguments:
+      $notifiers: !tagged kls.file.uploaded.notifier
+
+  # Security
+
+  KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator:
+    $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
+    $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
+    $path: '/core/authentication_token'
+
+  # Serializer
+
+  KLS\Core\Serializer\ContextBuilder\CircularReferenceHandler:
+    decorates: 'api_platform.serializer.context_builder'
+    autoconfigure: false
+
+  KLS\Core\Serializer\ContextBuilder\CurrentUser:
+    decorates: 'api_platform.serializer.context_builder'
+    autoconfigure: false
+
+  KLS\Core\Serializer\ContextBuilder\DeepObjectToPopulate:
+    decorates: 'api_platform.serializer.context_builder'
+    autoconfigure: false
+
+  KLS\Core\Serializer\ContextBuilder\MaxDepth:
+    decorates: 'api_platform.serializer.context_builder'
+    autoconfigure: false
+
+  KLS\Core\Serializer\ContextBuilder\SkipNullValue:
+    decorates: 'api_platform.serializer.context_builder'
+    autoconfigure: false
+
+  KLS\Core\Serializer\ContextBuilder\Staff\CurrentStaff:
+    decorates: 'api_platform.serializer.context_builder'
+    autoconfigure: false
+
+  # Service
+
+  KLS\Core\Service\DataCrypto:
+    $masterKeyPath: '%file_encryption.kek_file%'
+    $masterKeyPassPhrase: '%file_encryption.kek_passphrase%'
+
+  KLS\Core\Service\ElectronicSignature\XmlSigner:
+    $publicKey: '%psn.public_key%'
+    $privateKey: '%psn.private_key%'
+
+  KLS\Core\Service\ElectronicSignatureManager:
+    $integratorKey: '%env(DOCUSIGN_INTEGRATOR_KEY)%'
+    $userId: '%env(DOCUSIGN_USER_ID)%'
+    $privateKey: '%env(file:DOCUSIGN_PRIVATE_KEY)%'
+    $httpClient: '@docusign.http_client'
+    $accountHost: '%env(DOCUSIGN_ACCOUNT_HOST)%'
+    $apiHost: '%env(DOCUSIGN_API_HOST)%'
+    $debug: '%kernel.debug%'
+
+  KLS\Core\Service\File\FileDeleteManager:
+    $managers: !tagged kls.file.delete
+
+  KLS\Core\Service\GoogleRecaptchaManager:
+    $client: '@eight_points_guzzle.client.google_recaptcha'
+    $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
+
+  KLS\Core\Service\Staff\StaffLoginChecker:
+    arguments:
+      $checkers: !tagged kls.staff.login.checker
+
+  KLS\Core\Service\WebServiceClient\InseeManager:
+    $client: '@eight_points_guzzle.client.insee'
+
+  KLS\Core\Swagger\SwaggerDecorator:
+    decorates: 'api_platform.openapi.normalizer.api_gateway'
+
+  KLS\Core\SwiftMailer\TemplateErrorReportingPlugin:
+    tags:
+      - { name: swiftmailer.default.plugin }
+    arguments:
+      $enableErrorDelivery: '%env(MAILJET_ERROR_DELIVERY)%'
+      $errorReportingEmail: '%mailer.error_reporting_email%'
+
+  # docusign
+
+  docusign.http_client:
+    class: 'Symfony\Contracts\HttpClient\HttpClientInterface'
+    factory: [ 'Symfony\Component\HttpClient\HttpClient', create ]
+
+  # formatter
+
+  currency_formatter:
+    public: true
+    class: NumberFormatter
+    arguments:
+      - '%locale%'
+      - !php/const \NumberFormatter::CURRENCY
+
+  currency_formatter_no_decimal:
+    public: true
+    class: NumberFormatter
+    arguments:
+      - '%locale%'
+      - !php/const \NumberFormatter::CURRENCY
+    calls:
+      - method: setAttribute
+        arguments:
+          - !php/const \NumberFormatter::MAX_FRACTION_DIGITS
+          - 0
+
+  date_formatter:
+    public: true
+    class: IntlDateFormatter
+    arguments:
+      - '%locale%'
+      - !php/const \IntlDateFormatter::MEDIUM
+      - !php/const \IntlDateFormatter::SHORT
+
+  number_formatter:
+    public: true
+    class: NumberFormatter
+    arguments:
+      - '%locale%'
+      - !php/const \NumberFormatter::DEFAULT_STYLE
+
+  percentage_formatter:
+    public: true
+    class: NumberFormatter
+    arguments:
+      - '%locale%'
+      - !php/const \NumberFormatter::PERCENT
+    calls:
+      - method: setAttribute
+        arguments:
+          - !php/const \NumberFormatter::FRACTION_DIGITS
+          - 2

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Service\FileSystem;
+namespace KLS\Test\Core\Unit\Service\FileSystem;
 
 use Faker\Provider\Base;
+use KLS\Core\Service\FileSystem\FileCrypto;
+use KLS\Core\Service\FileSystem\FileSystemHelper;
 use League\Flysystem\FilesystemOperator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use RuntimeException;
-use Unilend\Core\Service\FileSystem\FileCrypto;
-use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 /**
- * @coversDefaultClass \Unilend\Core\Service\FileSystem\FileSystemHelper
+ * @coversDefaultClass \KLS\Core\Service\FileSystem\FileSystemHelper
  *
  * @internal
  */
@@ -31,12 +31,9 @@ class FileSystemHelperTest extends TestCase
 
     private string $encryptedFilePath;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
-        $this->srcPath                     = sys_get_temp_dir() . DIRECTORY_SEPARATOR . Base::lexify('?????');
+        $this->srcPath                     = \sys_get_temp_dir() . DIRECTORY_SEPARATOR . Base::lexify('?????');
         $this->encryptedFilePath           = $this->srcPath . '-encrypted';
         $this->destPath                    = Base::lexify('/????/???');
         $this->userAttachmentFilesystem    = $this->prophesize(FilesystemOperator::class);
@@ -55,7 +52,7 @@ class FileSystemHelperTest extends TestCase
 
         $fileSystem   = $this->prophesize(FilesystemOperator::class);
         $streamWriter = $fileSystem->writeStream(Argument::exact($this->destPath), Argument::that(static function ($usedResource) use ($srcPath) {
-            return stream_get_meta_data($usedResource)['uri'] === $srcPath;
+            return \stream_get_meta_data($usedResource)['uri'] === $srcPath;
         }));
 
         $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath, false);
@@ -69,14 +66,14 @@ class FileSystemHelperTest extends TestCase
     public function testWriteTempFileToFileSystemWithEncryption(): void
     {
         $encryptedFilePath = $this->encryptedFilePath;
-        $resource          = fopen($encryptedFilePath, 'wb+');
+        $resource          = \fopen($encryptedFilePath, 'wb+');
 
         $fileEncrypt = $this->fileCrypto->encryptFile(Argument::exact($this->srcPath), Argument::exact($this->encryptedFilePath));
-        $fileEncrypt->willReturn(Base::asciify(str_repeat('*', 440)));
+        $fileEncrypt->willReturn(Base::asciify(\str_repeat('*', 440)));
 
         $fileSystem   = $this->prophesize(FilesystemOperator::class);
         $streamWriter = $fileSystem->writeStream(Argument::exact($this->destPath), Argument::that(static function ($usedResource) use ($encryptedFilePath) {
-            return stream_get_meta_data($usedResource)['uri'] === $encryptedFilePath;
+            return \stream_get_meta_data($usedResource)['uri'] === $encryptedFilePath;
         }));
 
         $this->createTestObject()->writeTempFileToFileSystem($this->srcPath, $fileSystem->reveal(), $this->destPath, true);
@@ -84,7 +81,7 @@ class FileSystemHelperTest extends TestCase
         $streamWriter->shouldHaveBeenCalled();
         $fileEncrypt->shouldHaveBeenCalled();
 
-        fclose($resource);
+        \fclose($resource);
     }
 
     /**
@@ -115,7 +112,7 @@ class FileSystemHelperTest extends TestCase
 
     private function buildTestFile(): void
     {
-        fopen($this->srcPath, 'w+b');
+        \fopen($this->srcPath, 'w+b');
     }
 
     private function createTestObject(): FileSystemHelper

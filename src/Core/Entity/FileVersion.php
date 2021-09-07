@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ORM\Entity
@@ -28,7 +28,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         },
  *         "download": {
  *             "method": "GET",
- *             "controller": "Unilend\Core\Controller\File\Download",
+ *             "controller": "KLS\Core\Controller\File\Download",
  *             "path": "/core/file_versions/{publicId}/download/{type}"
  *         }
  *     }
@@ -44,15 +44,11 @@ class FileVersion
     public const FILE_SYSTEM_GENERATED_DOCUMENT = 'generated_document';
 
     /**
-     * @var string
-     *
      * @ORM\Column(length=191)
      */
     private string $path;
 
     /**
-     * @var string
-     *
      * @ORM\Column(length=191, nullable=true)
      *
      * @Groups({"fileVersion:read"})
@@ -85,7 +81,7 @@ class FileVersion
     private $fileVersionDownloads;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\File", inversedBy="fileVersions")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\File", inversedBy="fileVersions")
      * @ORM\JoinColumn(name="id_file", nullable=false)
      */
     private File $file;
@@ -102,9 +98,6 @@ class FileVersion
      */
     private ?string $encryptionKey;
 
-    /**
-     * @var string|null
-     */
     private ?string $plainEncryptionKey;
 
     /**
@@ -117,30 +110,17 @@ class FileVersion
     private ?string $mimeType;
 
     /**
-     * @var User
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\User")
      * @ORM\JoinColumn(name="added_by", referencedColumnName="id", nullable=false)
      */
     private User $addedBy;
 
     /**
-     * @var Company|null
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Company")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
      * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=true)
      */
     private ?Company $company;
 
-    /**
-     * @param string       $path
-     * @param User         $addedBy
-     * @param File         $file
-     * @param string       $fileSystem
-     * @param string|null  $plainEncryptionKey
-     * @param string|null  $mimeType
-     * @param Company|null $company
-     */
     public function __construct(string $path, User $addedBy, File $file, string $fileSystem, ?string $plainEncryptionKey = null, ?string $mimeType = null, ?Company $company = null)
     {
         $this->signatures           = new ArrayCollection();
@@ -156,19 +136,11 @@ class FileVersion
         $this->company              = $company;
     }
 
-    /**
-     * @return string
-     */
     public function getPath(): string
     {
         return $this->path;
     }
 
-    /**
-     * @param string $path
-     *
-     * @return FileVersion
-     */
     public function setPath(string $path): FileVersion
     {
         $this->path = $path;
@@ -176,11 +148,6 @@ class FileVersion
         return $this;
     }
 
-    /**
-     * @param string $originalName
-     *
-     * @return FileVersion
-     */
     public function setOriginalName(string $originalName): FileVersion
     {
         $this->originalName = $originalName;
@@ -188,9 +155,6 @@ class FileVersion
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getOriginalName(): ?string
     {
         return $this->originalName;
@@ -214,8 +178,6 @@ class FileVersion
 
     /**
      * @param int $size
-     *
-     * @return FileVersion
      */
     public function setSize(?int $size): FileVersion
     {
@@ -232,19 +194,11 @@ class FileVersion
         return $this->fileVersionDownloads;
     }
 
-    /**
-     * @return string|null
-     */
     public function getEncryptionKey(): ?string
     {
         return $this->encryptionKey;
     }
 
-    /**
-     * @param string|null $encryptionKey
-     *
-     * @return FileVersion
-     */
     public function setEncryptionKey(?string $encryptionKey): FileVersion
     {
         $this->encryptionKey = $encryptionKey;
@@ -252,19 +206,11 @@ class FileVersion
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getPlainEncryptionKey(): ?string
     {
         return $this->plainEncryptionKey;
     }
 
-    /**
-     * @param string|null $plainEncryptionKey
-     *
-     * @return FileVersion
-     */
     public function setPlainEncryptionKey(?string $plainEncryptionKey): FileVersion
     {
         $this->plainEncryptionKey = $plainEncryptionKey;
@@ -280,17 +226,12 @@ class FileVersion
         return $this->mimeType;
     }
 
-    /**
-     * @return File
-     */
     public function getFile(): File
     {
         return $this->file;
     }
 
     /**
-     * @param File|null $file
-     *
      * @return $this
      */
     public function setFile(?File $file): FileVersion
@@ -300,19 +241,11 @@ class FileVersion
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getFileSystem(): ?string
     {
         return $this->fileSystem;
     }
 
-    /**
-     * @param string $fileSystem
-     *
-     * @return FileVersion
-     */
     public function setFileSystem(string $fileSystem): FileVersion
     {
         $this->fileSystem = $fileSystem;
@@ -322,8 +255,6 @@ class FileVersion
 
     /**
      * @Groups({"fileVersion:read"})
-     *
-     * @return int
      */
     public function getVersionNumber(): int
     {
@@ -332,17 +263,11 @@ class FileVersion
         return $fileVersions->indexOf($this) + 1;
     }
 
-    /**
-     * @return User
-     */
     public function getAddedBy(): User
     {
         return $this->addedBy;
     }
 
-    /**
-     * @return Company|null
-     */
     public function getCompany(): ?Company
     {
         return $this->company;

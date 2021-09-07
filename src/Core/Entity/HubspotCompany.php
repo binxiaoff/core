@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\TimestampableTrait;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Entity
@@ -43,6 +44,7 @@ class HubspotCompany
     {
         $this->company   = $company;
         $this->companyId = $companyId;
+        $this->added     = new DateTimeImmutable();
     }
 
     public function getId(): int

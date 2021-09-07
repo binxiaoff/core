@@ -1,0 +1,7 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  KLS\Test\Core\DataFixtures\:
+    resource: '%kernel.project_dir%/tests/Core/DataFixtures'

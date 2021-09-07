@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Security\Voter;
+namespace KLS\Core\Security\Voter;
 
-use Unilend\Core\Entity\FileVersionSignature;
-use Unilend\Core\Entity\User;
+use KLS\Core\Entity\FileVersionSignature;
+use KLS\Core\Entity\User;
 
 class FileVersionSignatureVoter extends AbstractEntityVoter
 {

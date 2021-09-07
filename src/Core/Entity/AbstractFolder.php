@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Exception\Drive\FolderAlreadyExistsException;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
 
 /**
  * @ORM\MappedSuperclass
@@ -69,13 +69,13 @@ abstract class AbstractFolder
 
     public function getFile(string $path): ?File
     {
-        $parentFolder = $this->getFolder(dirname($path));
+        $parentFolder = $this->getFolder(\dirname($path));
 
         if ($parentFolder === $this) {
-            return $this->files->filter(fn (File $file) => $file->getName() === basename($path))->first() ?: null;
+            return $this->files->filter(fn (File $file) => $file->getName() === \basename($path))->first() ?: null;
         }
 
-        return $parentFolder ? $parentFolder->getFile(basename($path)) : null;
+        return $parentFolder ? $parentFolder->getFile(\basename($path)) : null;
     }
 
     abstract public function getFolder(string $path): ?AbstractFolder;
@@ -90,14 +90,14 @@ abstract class AbstractFolder
      *
      * @throws FolderAlreadyExistsException
      */
-    abstract public function createFolder(string $path): AbstractFolder;
+    abstract public function createFolder(string $path): self;
 
     /**
      * The deletion will only be done if $folder target or is a folder.
      *
      * @param string|Folder $folder
      */
-    abstract public function deleteFolder($folder): AbstractFolder;
+    abstract public function deleteFolder($folder): self;
 
     /**
      * If a File is given, we only try to remove it from current folder.
@@ -108,12 +108,12 @@ abstract class AbstractFolder
      *
      * @param string|File $path
      */
-    abstract public function deleteFile($path): AbstractFolder;
+    abstract public function deleteFile($path): self;
 
     /**
      * @param string|File|Folder $toDelete
      */
-    abstract public function delete($toDelete): AbstractFolder;
+    abstract public function delete($toDelete): self;
 
     abstract public function exist(string $path): bool;
 
@@ -123,13 +123,13 @@ abstract class AbstractFolder
     {
         $files = $this->getFiles();
 
-        $folders = array_values($this->getFolders(1)->toArray());
+        $folders = \array_values($this->getFolders(1)->toArray());
 
         $result = [...$files, ...$folders];
 
         if ($depth > 1) {
             foreach ($folders as $folder) {
-                $result = array_merge($result, $folder->list($depth - 1));
+                $result = \array_merge($result, $folder->list($depth - 1));
             }
         }
 

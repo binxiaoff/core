@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use DateInterval;
 use DateTime;
@@ -11,7 +11,7 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
-use Unilend\Core\Entity\UserFailedLogin;
+use KLS\Core\Entity\UserFailedLogin;
 
 /**
  * @method UserFailedLogin|null find($id, $lockMode = null, $lockVersion = null)
@@ -21,21 +21,13 @@ use Unilend\Core\Entity\UserFailedLogin;
  */
 class UserFailedLoginRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, UserFailedLogin::class);
     }
 
     /**
-     * @param string       $ipAddress
-     * @param DateInterval $period
-     *
      * @throws Exception
-     *
-     * @return int
      */
     public function countLastFailuresByIp(string $ipAddress, DateInterval $period): int
     {
@@ -51,8 +43,6 @@ class UserFailedLoginRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param UserFailedLogin $failedLogin
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

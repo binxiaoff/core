@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Event\TemporaryToken;
+namespace KLS\Core\Event\TemporaryToken;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\EventDispatcher\Event;
@@ -14,9 +14,6 @@ class TemporaryTokenAuthenticationSuccessEvent extends Event
      */
     protected $user;
 
-    /**
-     * @param UserInterface $user
-     */
     public function __construct(UserInterface $user)
     {
         $this->user = $user;

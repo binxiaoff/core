@@ -2,19 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\Message;
+namespace KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\Message;
 
-use Unilend\Core\Entity\Message;
-use Unilend\Core\Message\Message\MessageCreated;
-use Unilend\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Core\Entity\Message;
+use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Core\Message\Message\MessageCreated;
 
 class MessageCreatedListener
 {
     use MessageDispatcherTrait;
 
-    /**
-     * @param Message $message
-     */
     public function postPersist(Message $message): void
     {
         $this->messageBus->dispatch(new MessageCreated($message));

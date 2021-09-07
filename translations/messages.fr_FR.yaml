@@ -14,3 +14,7 @@ staff-roles:
   duty_staff_accountant: contact de facturation
   duty_staff_signatory: signataire
   duty_staff_auditor: Auditeur
+project-participation-status:
+  -10: Archivé par l’arrangeur
+  -20: Archivé par le participant
+  -30: Rejeté par le comité

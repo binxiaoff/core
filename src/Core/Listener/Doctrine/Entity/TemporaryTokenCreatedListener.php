@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Entity;
+namespace KLS\Core\Listener\Doctrine\Entity;
 
 use Exception;
-use Unilend\Core\Entity\TemporaryToken;
-use Unilend\Core\Repository\TemporaryTokenRepository;
+use KLS\Core\Entity\TemporaryToken;
+use KLS\Core\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenCreatedListener
 {
@@ -15,9 +15,6 @@ class TemporaryTokenCreatedListener
      */
     private $repository;
 
-    /**
-     * @param TemporaryTokenRepository $repository
-     */
     public function __construct(
         TemporaryTokenRepository $repository
     ) {
@@ -25,8 +22,6 @@ class TemporaryTokenCreatedListener
     }
 
     /**
-     * @param TemporaryToken $token
-     *
      * @throws Exception
      */
     public function expireOldTemporaryToken(TemporaryToken $token): void

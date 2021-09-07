@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DataFixtures;
+namespace KLS\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use KLS\Core\Entity\User;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 class UserFixtures extends AbstractFixtures
 {
@@ -54,10 +54,10 @@ class UserFixtures extends AbstractFixtures
      */
     public function load(ObjectManager $manager): void
     {
-        $users = array_filter(static::getConstants(), '\is_string');
-        $users = array_flip($users);
+        $users = \array_filter(static::getConstants(), '\is_string');
+        $users = \array_flip($users);
 
-        foreach (array_keys($users) as $value) {
+        foreach (\array_keys($users) as $value) {
             $user = new User($value . '@' . $this->getEmailDomain($value));
             $this->forcePublicId($user, $value);
             $manager->persist($user);
@@ -91,6 +91,6 @@ class UserFixtures extends AbstractFixtures
 
     private function getEmailDomain(string $username): string
     {
-        return false !== mb_strpos($username, 'extbank') ? 'extbank.com' : 'kls-platform.com';
+        return false !== \mb_strpos($username, 'extbank') ? 'extbank.com' : 'kls-platform.com';
     }
 }

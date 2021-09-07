@@ -4,8 +4,8 @@
 API Resource
 ============
 
-Getting start
-=============
+Getting started
+===============
 
 1. Create an entity with its properties
 #. Add Doctrine annotations (ORM, asserts, groups, ...)

@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\ServiceTerms;
+namespace KLS\Core\Service\ServiceTerms;
 
-use Unilend\Core\Entity\LegalDocument;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\AcceptationLegalDocsRepository;
-use Unilend\Core\Repository\LegalDocumentRepository;
+use KLS\Core\Entity\LegalDocument;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\AcceptationLegalDocsRepository;
+use KLS\Core\Repository\LegalDocumentRepository;
 
 class ServiceTermsManager
 {
     private AcceptationLegalDocsRepository $acceptationLegalDocsRepository;
-
     private LegalDocumentRepository $legalDocumentRepository;
 
     public function __construct(AcceptationLegalDocsRepository $acceptationLegalDocsRepository, LegalDocumentRepository $legalDocumentRepository)

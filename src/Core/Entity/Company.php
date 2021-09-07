@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -13,13 +13,13 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\Interfaces\StatusInterface;
+use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
-use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
@@ -61,7 +61,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         "staff": {
  *             "method": "GET",
  *             "path": "/core/companies/{publicId}/staff",
- *             "controller": "\Unilend\Core\Controller\Company\Staff",
+ *             "controller": "\KLS\Core\Controller\Company\Staff",
  *             "normalization_context": {
  *                 "groups": {
  *                     "staff:read",
@@ -74,7 +74,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         "companyGroupTags": {
  *             "method": "GET",
  *             "path": "/core/companies/{publicId}/company_group_tags",
- *             "controller": "\Unilend\Core\Controller\Company\CompanyGroupTag",
+ *             "controller": "\KLS\Core\Controller\Company\CompanyGroupTag",
  *             "normalization_context": {
  *                 "groups": {
  *                     "companyGroupTag:read"
@@ -84,7 +84,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         "teams": {
  *             "method": "GET",
  *             "path": "/core/companies/{publicId}/teams",
- *             "controller": "\Unilend\Core\Controller\Company\Team",
+ *             "controller": "\KLS\Core\Controller\Company\Team",
  *             "normalization_context": {
  *                 "groups": {
  *                     "team:read"
@@ -93,10 +93,10 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         }
  *     }
  * )
- * @ApiFilter("Unilend\Core\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
+ * @ApiFilter("KLS\Core\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
  * @ApiFilter(SearchFilter::class, properties={"groupName"})
- * @ApiFilter("Unilend\Core\Filter\Company\ParticipantCandidateFilter")
- * @ApiFilter("Unilend\Core\Filter\Company\CARegionalBankFilter")
+ * @ApiFilter("KLS\Core\Filter\Company\ParticipantCandidateFilter")
+ * @ApiFilter("KLS\Core\Filter\Company\CARegionalBankFilter")
  *
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
@@ -136,7 +136,7 @@ class Company implements TraceableStatusAwareInterface
      *
      * @Groups({"company:read"})
      */
-    private string $companyName;
+    private string $legalName;
 
     /**
      * @ORM\Column(type="string", length=9, unique=true)
@@ -156,7 +156,7 @@ class Company implements TraceableStatusAwareInterface
     private string $bankCode;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyGroup")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\CompanyGroup")
      * @ORM\JoinColumn(name="id_company_group")
      */
     private ?CompanyGroup $companyGroup;
@@ -176,7 +176,7 @@ class Company implements TraceableStatusAwareInterface
     private string $applicableVat;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\Team", cascade={"persist"}, inversedBy="company")
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\Team", cascade={"persist"}, inversedBy="company")
      * @ORM\JoinColumn(name="id_root_team", nullable=false, unique=true)
      */
     private Team $rootTeam;
@@ -198,7 +198,7 @@ class Company implements TraceableStatusAwareInterface
     private string $shortCode;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\CompanyStatus", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\CompanyStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, nullable=true)
      *
      * @Groups({"company:read"})
@@ -208,7 +208,7 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @var Collection|CompanyStatus[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\CompanyStatus", mappedBy="company", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\CompanyStatus", mappedBy="company", cascade={"persist"})
      * @ORM\OrderBy({"added": "ASC"})
      */
     private Collection $statuses;
@@ -216,7 +216,7 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @var Collection|CompanyModule[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\CompanyModule", mappedBy="company", indexBy="code", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\CompanyModule", mappedBy="company", indexBy="code", cascade={"persist"})
      *
      * @Groups({Company::SERIALIZER_GROUP_COMPANY_ADMIN_READ, Company::SERIALIZER_GROUP_COMPANY_ACCOUNTANT_READ})
      */
@@ -225,17 +225,17 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @var iterable|CompanyAdmin[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\CompanyAdmin", mappedBy="company")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\CompanyAdmin", mappedBy="company")
      */
     private iterable $admins;
 
     /**
      * @throws Exception
      */
-    public function __construct(string $displayName, string $companyName, string $siren)
+    public function __construct(string $displayName, string $legalName, string $siren)
     {
         $this->displayName  = $displayName;
-        $this->companyName  = $companyName;
+        $this->legalName    = $legalName;
         $this->rootTeam     = Team::createRootTeam($this);
         $this->statuses     = new ArrayCollection();
         $this->added        = new DateTimeImmutable();
@@ -269,9 +269,9 @@ class Company implements TraceableStatusAwareInterface
         return $this;
     }
 
-    public function getCompanyName(): string
+    public function getLegalName(): string
     {
-        return $this->companyName;
+        return $this->legalName;
     }
 
     public function getSiren(): string

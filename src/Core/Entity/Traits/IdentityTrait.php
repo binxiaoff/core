@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Traits;
+namespace KLS\Core\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 
@@ -15,9 +15,6 @@ trait IdentityTrait
      */
     private ?int $id;
 
-    /**
-     * @return int|null
-     */
     public function getId(): ?int
     {
         return $this->id;

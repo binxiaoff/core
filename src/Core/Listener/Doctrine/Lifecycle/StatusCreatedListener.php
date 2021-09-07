@@ -2,16 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Doctrine\Lifecycle;
+namespace KLS\Core\Listener\Doctrine\Lifecycle;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
+use KLS\Core\Entity\Interfaces\StatusInterface;
 
 class StatusCreatedListener
 {
-    /**
-     * @param LifecycleEventArgs $args
-     */
     public function prePersist(LifecycleEventArgs $args): void
     {
         $entity = $args->getEntity();

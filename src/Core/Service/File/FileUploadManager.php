@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\File;
+namespace KLS\Core\Service\File;
 
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Exception\IOException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use InvalidArgumentException;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\User;
+use KLS\Core\Message\File\FileUploaded;
+use KLS\Core\Repository\FileRepository;
+use KLS\Core\Service\FileSystem\FileSystemHelper;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Message\File\FileUploaded;
-use Unilend\Core\Repository\FileRepository;
-use Unilend\Core\Service\FileSystem\FileSystemHelper;
 
 class FileUploadManager
 {
@@ -37,8 +37,6 @@ class FileUploadManager
     }
 
     /**
-     * @param File|null $file
-     *
      * @throws EnvironmentIsBrokenException
      * @throws FilesystemException
      * @throws IOException
@@ -68,7 +66,7 @@ class FileUploadManager
      */
     private function uploadFile(UploadedFile $file, FilesystemOperator $filesystem, ?string $subdirectory = null, string $uploadRootDirectory = '/', bool $encryption = true): array
     {
-        $hash         = hash('sha256', $subdirectory ?? uniqid('', true));
+        $hash         = \hash('sha256', $subdirectory ?? \uniqid('', true));
         $subdirectory = $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . ($subdirectory ? DIRECTORY_SEPARATOR . $subdirectory : '');
 
         $uploadRootDirectory = $this->normalizePath($uploadRootDirectory);
@@ -87,8 +85,8 @@ class FileUploadManager
      */
     private function generateFileName(UploadedFile $uploadedFile, FilesystemOperator $filesystem, string $uploadDirectory): string
     {
-        $originalFilename      = $this->fileSystemHelper->normalizeFileName(pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME));
-        $fileNameWithExtension = $originalFilename . '-' . uniqid('', true) . '.' . $uploadedFile->guessExtension() ?? $uploadedFile->getClientOriginalExtension();
+        $originalFilename      = $this->fileSystemHelper->normalizeFileName(\pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME));
+        $fileNameWithExtension = $originalFilename . '-' . \uniqid('', true) . '.' . $uploadedFile->guessExtension() ?? $uploadedFile->getClientOriginalExtension();
 
         if ($filesystem->fileExists($uploadDirectory . DIRECTORY_SEPARATOR . $fileNameWithExtension)) {
             $fileNameWithExtension = $this->generateFileName($uploadedFile, $filesystem, $uploadDirectory);
@@ -99,7 +97,7 @@ class FileUploadManager
 
     private function normalizePath(string $path): string
     {
-        return DIRECTORY_SEPARATOR === mb_substr($path, -1) ? mb_substr($path, 0, -1) : $path;
+        return DIRECTORY_SEPARATOR === \mb_substr($path, -1) ? \mb_substr($path, 0, -1) : $path;
     }
 
     /**

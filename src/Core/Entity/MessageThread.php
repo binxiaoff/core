@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -12,11 +12,11 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Syndication\Arrangement\Entity\Project;
+use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectParticipation;
 
 /**
  * @ORM\Entity
@@ -54,10 +54,8 @@ class MessageThread
     use TimestampableAddedOnlyTrait;
 
     /**
-     * @var ProjectParticipation|null
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Syndication\Entity\ProjectParticipation")
-     * @ORM\JoinColumn(name="id_project_participation", referencedColumnName="id")
+     * @ORM\OneToOne(targetEntity="KLS\Syndication\Arrangement\Entity\ProjectParticipation")
+     * @ORM\JoinColumn(name="id_project_participation", referencedColumnName="id", onDelete="CASCADE")
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
@@ -68,16 +66,13 @@ class MessageThread
     /**
      * @var ArrayCollection|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Message", mappedBy="messageThread")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\Message", mappedBy="messageThread")
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"messageThread:read"})
      */
     private Collection $messages;
 
-    /**
-     * MessageThread constructor.
-     */
     public function __construct()
     {
         $this->added    = new DateTimeImmutable();
@@ -93,8 +88,6 @@ class MessageThread
     }
 
     /**
-     * @param ProjectParticipation|null $projectParticipation
-     *
      * @return $this
      */
     public function setProjectParticipation(?ProjectParticipation $projectParticipation): self
@@ -104,9 +97,6 @@ class MessageThread
         return $this;
     }
 
-    /**
-     * @return ProjectParticipation|null
-     */
     public function getProjectParticipation(): ?ProjectParticipation
     {
         return $this->projectParticipation;
@@ -116,8 +106,6 @@ class MessageThread
      * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"messageThread:read"})
-     *
-     * @return Project
      */
     public function getProject(): Project
     {
@@ -126,8 +114,6 @@ class MessageThread
 
     /**
      * @Groups({"messageThread:read"})
-     *
-     * @return string
      */
     public function getProjectTitle(): string
     {
@@ -136,8 +122,6 @@ class MessageThread
 
     /**
      * @Groups({"messageThread:read"})
-     *
-     * @return string
      */
     public function getParticipantName(): string
     {
@@ -148,8 +132,6 @@ class MessageThread
      * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"messageThread:read"})
-     *
-     * @return Company
      */
     public function getParticipant(): Company
     {
@@ -160,8 +142,6 @@ class MessageThread
      * @ApiProperty(readableLink=false, writableLink=false)
      *
      * @Groups({"messageThread:read"})
-     *
-     * @return Company
      */
     public function getProjectSubmitterCompany(): Company
     {
@@ -170,8 +150,6 @@ class MessageThread
 
     /**
      * @Groups({"messageThread:read"})
-     *
-     * @return string
      */
     public function getProjectSubmitterCompanyName(): string
     {

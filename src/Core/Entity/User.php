@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
@@ -13,6 +13,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use KLS\Core\DTO\GoogleRecaptchaResult;
+use KLS\Core\Entity\Interfaces\StatusInterface;
+use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\RoleableTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Validator\Constraints\{Password as AssertPassword};
 use Misd\PhoneNumberBundle\Validator\Constraints\PhoneNumber as AssertPhoneNumber;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\EquatableInterface;
@@ -20,13 +27,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\DTO\GoogleRecaptchaResult;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
-use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\RoleableTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
-use Unilend\Core\Validator\Constraints\{Password as AssertPassword};
 
 /**
  * @ApiResource(
@@ -45,10 +45,10 @@ use Unilend\Core\Validator\Constraints\{Password as AssertPassword};
  *     denormalizationContext={"groups": {"user:write"}}
  * )
  *
- * @Gedmo\Loggable(logEntryClass="Unilend\Core\Entity\Versioned\VersionedUser")
+ * @Gedmo\Loggable(logEntryClass="KLS\Core\Entity\Versioned\VersionedUser")
  *
  * @ORM\Table(name="core_user", indexes={@ORM\Index(columns={"last_name"})})
- * @ORM\Entity(repositoryClass="Unilend\Core\Repository\UserRepository")
+ * @ORM\Entity(repositoryClass="KLS\Core\Repository\UserRepository")
  * @ORM\HasLifecycleCallbacks
  *
  * @UniqueEntity({"email"}, message="Core.Users.email.unique")
@@ -132,7 +132,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     /**
      * @var Staff[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\Staff", mappedBy="user")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\Staff", mappedBy="user")
      *
      * @Groups({"user:item:read"})
      */
@@ -149,7 +149,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     /**
      * @var Collection|AcceptationsLegalDocs[]
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\AcceptationsLegalDocs", mappedBy="acceptedBy")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\AcceptationsLegalDocs", mappedBy="acceptedBy")
      */
     private Collection $legalDocumentAcceptations;
 
@@ -172,8 +172,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     private ?GoogleRecaptchaResult $recaptchaResult = null;
 
     /**
-     * Users constructor.
-     *
      * @throws Exception
      */
     public function __construct(string $email)
@@ -197,7 +195,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     }
 
     /**
-     **@throws Exception
+     * @throws Exception
      */
     public function setLastName(?string $lastName): User
     {
@@ -214,7 +212,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     }
 
     /**
-     **@throws Exception
+     * @throws Exception
      */
     public function setFirstName(?string $firstName): User
     {
@@ -255,7 +253,7 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     }
 
     /**
-     **@throws Exception
+     * @throws Exception
      */
     public function setPassword(?string $password): User
     {
@@ -326,9 +324,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return $this->isInStatus([UserStatus::STATUS_INVITED]) || false === $this->isProfileCompleted();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isEqualTo(UserInterface $user): bool
     {
         if (false === $user instanceof self) {
@@ -350,25 +345,16 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getSalt(): string
     {
         return ''; // Since we use the BCrypt password encoder, the salt will be ignored. The auto-generated one is always the best.
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function getUsername(): string
     {
         return $this->getEmail();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function eraseCredentials(): void
     {
         $this->plainPassword = null;

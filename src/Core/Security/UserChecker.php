@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Security;
+namespace KLS\Core\Security;
 
+use KLS\Core\Entity\User;
 use Symfony\Component\Security\Core\Exception\DisabledException;
-use Symfony\Component\Security\Core\User\{UserCheckerInterface, UserInterface};
-use Unilend\Core\Entity\User;
+use Symfony\Component\Security\Core\User\UserCheckerInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserChecker implements UserCheckerInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function checkPreAuth(UserInterface $user): void
     {
         if (!$user instanceof User) {
@@ -27,9 +25,6 @@ class UserChecker implements UserCheckerInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function checkPostAuth(UserInterface $user): void
     {
         // nothing to check

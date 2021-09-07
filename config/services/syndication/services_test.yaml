@@ -1,0 +1,18 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  #
+  # Arrangement
+  #
+
+  KLS\Test\Syndication\Arrangement\DataFixtures\:
+    resource: '%kernel.project_dir%/tests/Syndication/Arrangement/DataFixtures'
+
+  #
+  # Agency
+  #
+
+  KLS\Test\Syndication\Agency\DataFixtures\:
+    resource: '%kernel.project_dir%/tests/Syndication/Agency/DataFixtures'

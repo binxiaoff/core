@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\SwiftMailer;
+namespace KLS\Core\SwiftMailer;
 
 use InvalidArgumentException;
 use JsonException;
-use Unilend\Core\Traits\ConstantsAwareTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 
 class MailjetMessage extends \Swift_Message
 {

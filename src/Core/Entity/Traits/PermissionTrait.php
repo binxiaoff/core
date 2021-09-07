@@ -2,29 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Traits;
+namespace KLS\Core\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Model\Bitmask;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Unilend\Core\Model\Bitmask;
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 trait PermissionTrait
 {
     use ConstantsAwareTrait;
 
     /**
-     * @var Bitmask
-     *
      * @ORM\Column(type="bitmask")
      *
      * @Groups({"permission:read", "permission:write"})
      */
     private Bitmask $permissions;
 
-    /**
-     * @return Bitmask
-     */
     public function getPermissions(): Bitmask
     {
         return $this->permissions;
@@ -32,8 +27,6 @@ trait PermissionTrait
 
     /**
      * @param mixed $permissions
-     *
-     * @return self
      */
     public function setPermissions($permissions): self
     {

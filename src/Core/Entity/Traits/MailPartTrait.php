@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Traits;
+namespace KLS\Core\Entity\Traits;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -55,9 +55,6 @@ trait MailPartTrait
     private $archived;
 
     /**
-     * @param string $name
-     * @param string $locale
-     *
      * @throws Exception
      */
     public function __construct(
@@ -69,11 +66,6 @@ trait MailPartTrait
         $this->added  = new DateTimeImmutable();
     }
 
-    /**
-     * @param string $name
-     *
-     * @return self
-     */
     public function setName(string $name): self
     {
         $this->name = $name;
@@ -81,19 +73,11 @@ trait MailPartTrait
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @param string $content
-     *
-     * @return self
-     */
     public function setContent(string $content): self
     {
         $this->content = $content;
@@ -101,19 +85,11 @@ trait MailPartTrait
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getContent(): string
     {
         return $this->content;
     }
 
-    /**
-     * @param bool $archived
-     *
-     * @return self
-     */
     public function setArchived(bool $archived): self
     {
         $this->archived = $archived;
@@ -121,27 +97,16 @@ trait MailPartTrait
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     public function getArchived(): bool
     {
         return $this->archived;
     }
 
-    /**
-     * @return string
-     */
     public function getLocale(): string
     {
         return $this->locale;
     }
 
-    /**
-     * @param string $locale
-     *
-     * @return self
-     */
     public function setLocale(string $locale): self
     {
         $this->locale = $locale;
@@ -149,9 +114,6 @@ trait MailPartTrait
         return $this;
     }
 
-    /**
-     * @return Source
-     */
     public function getSource(): Source
     {
         return new Source($this->content, $this->getName());

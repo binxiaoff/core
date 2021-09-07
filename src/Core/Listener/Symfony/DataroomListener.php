@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Listener\Symfony;
+namespace KLS\Core\Listener\Symfony;
 
+use KLS\Core\Controller\Dataroom\Delete;
+use KLS\Core\Controller\Dataroom\Get;
+use KLS\Core\Controller\Dataroom\Post;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerArgumentsEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
-use Unilend\Core\Controller\Dataroom\Delete;
-use Unilend\Core\Controller\Dataroom\Get;
-use Unilend\Core\Controller\Dataroom\Post;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\Interfaces\DriveCarrierInterface;
 
 /**
  * Inject the correct drive based called url.
@@ -26,9 +26,6 @@ class DataroomListener implements EventSubscriberInterface
         $this->propertyAccessor = $propertyAccessor;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -47,9 +44,9 @@ class DataroomListener implements EventSubscriberInterface
         $arguments = $event->getArguments();
         $index     = null;
 
-        for ($argument = reset($arguments); null === $index && $argument = current($arguments); next($arguments)) {
+        for ($argument = \reset($arguments); null === $index && $argument = \current($arguments); \next($arguments)) {
             if ($argument instanceof DriveCarrierInterface) {
-                $index = key($arguments);
+                $index = \key($arguments);
             }
         }
 
@@ -61,7 +58,7 @@ class DataroomListener implements EventSubscriberInterface
         $drive             = $this->propertyAccessor->getValue($argument, $drivePropertyPath);
 
         if (false === ($drive instanceof Drive)) {
-            throw new \RuntimeException(sprintf('Cannot find the drive from %s::%s', get_class($argument), $drivePropertyPath));
+            throw new \RuntimeException(\sprintf('Cannot find the drive from %s::%s', \get_class($argument), $drivePropertyPath));
         }
 
         $arguments[$index] = $drive;

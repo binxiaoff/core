@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use DateInterval;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Table(name="core_temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_user", columns={"id_user"})})
@@ -74,7 +74,7 @@ class TemporaryToken
     /**
      * @var User
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\User")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      * })
@@ -86,7 +86,7 @@ class TemporaryToken
      */
     private function __construct(User $users, string $expirationDelay)
     {
-        $this->token   = bin2hex(random_bytes(16));
+        $this->token   = \bin2hex(\random_bytes(16));
         $this->user    = $users;
         $this->added   = new DateTimeImmutable();
         $this->expires = (new DateTimeImmutable())->add(DateInterval::createFromDateString($expirationDelay));
@@ -95,7 +95,7 @@ class TemporaryToken
     /**
      * @throws Exception
      *
-     * @internal Use Unilend\Core\Service\TemporaryTokenGenerator::generateMediumToken
+     * @internal Use KLS\Core\Service\TemporaryTokenGenerator::generateMediumToken
      */
     public static function generateMediumToken(User $user): TemporaryToken
     {
@@ -105,7 +105,7 @@ class TemporaryToken
     /**
      * @throws Exception
      *
-     * @internal Use Unilend\Core\Service\TemporaryTokenGenerator::generateUltraLongToken
+     * @internal Use KLS\Core\Service\TemporaryTokenGenerator::generateUltraLongToken
      */
     public static function generateUltraLongToken(User $user): TemporaryToken
     {

@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Controller;
+namespace KLS\Core\Controller;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 class HealthCheck
 {
-    /**
-     * @return JsonResponse
-     */
     public function __invoke(): JsonResponse
     {
         return new JsonResponse(['status' => 'available'], JsonResponse::HTTP_OK);

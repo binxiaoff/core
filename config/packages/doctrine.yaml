@@ -28,7 +28,7 @@ doctrine:
                 url: '%env(DATABASE_URL_MIGRATION)%'
                 <<: *connection_configuration
         types:
-            bitmask: Unilend\Core\Doctrine\Types\BitmaskType
+            bitmask: KLS\Core\Doctrine\Types\BitmaskType
     orm:
         auto_generate_proxy_classes: "%kernel.debug%"
         default_entity_manager: default
@@ -39,36 +39,36 @@ doctrine:
                 <<: &entity_manager_configuration
                     naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
                     mappings:
-                        Unilend\Syndication:
-                            is_bundle: false
-                            type: annotation
-                            dir: '%kernel.project_dir%/src/Syndication/Entity'
-                            prefix: 'Unilend\Syndication\Entity'
-                            alias: Unilend
-                        Unilend\Core:
+                        KLS\Core:
                             is_bundle: false
                             type: annotation
                             dir: '%kernel.project_dir%/src/Core/Entity'
-                            prefix: 'Unilend\Core\Entity'
-                            alias: Unilend\Core
-                        Unilend\Agency:
+                            prefix: 'KLS\Core\Entity'
+                            alias: KLS\Core
+                        KLS\Syndication\Arrangement:
                             is_bundle: false
                             type: annotation
-                            dir: '%kernel.project_dir%/src/Agency/Entity'
-                            prefix: 'Unilend\Agency\Entity'
-                            alias: Unilend\Agency
-                        Unilend\CreditGuaranty:
+                            dir: '%kernel.project_dir%/src/Syndication/Arrangement/Entity'
+                            prefix: 'KLS\Syndication\Arrangement\Entity'
+                            alias: KLS\Syndication\Arrangement
+                        KLS\Syndication\Agency:
                             is_bundle: false
                             type: annotation
-                            dir: '%kernel.project_dir%/src/CreditGuaranty/Entity'
-                            prefix: 'Unilend\CreditGuaranty\Entity'
-                            alias: Unilend\CreditGuaranty
+                            dir: '%kernel.project_dir%/src/Syndication/Agency/Entity'
+                            prefix: 'KLS\Syndication\Agency\Entity'
+                            alias: KLS\Syndication\Agency
+                        KLS\CreditGuaranty\FEI:
+                            is_bundle: false
+                            type: annotation
+                            dir: '%kernel.project_dir%/src/CreditGuaranty/FEI/Entity'
+                            prefix: 'KLS\CreditGuaranty\FEI\Entity'
+                            alias: KLS\CreditGuaranty\FEI
                     filters:
                         softdeletable:
                             class: 'Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter'
                             enabled: true
                         term:
-                            class: Unilend\Agency\Filter\Doctrine\TermFilter
+                            class: KLS\Syndication\Agency\Filter\Doctrine\TermFilter
                             enabled: true
             # entity manager dedicated to Doctrine Migration bundle (Doctrine Migration bundle ignores the option --conn, if it finds some entity manager)
             migration:

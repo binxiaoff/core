@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Validator\Constraints;
+namespace KLS\Core\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\Regex;
@@ -20,9 +20,6 @@ class Rcs extends Sequentially
      */
     public string $message = 'Invalid Rcs.';
 
-    /**
-     * {@inheritDoc}
-     */
     public function __construct(array $options)
     {
         parent::__construct([
@@ -46,9 +43,9 @@ class Rcs extends Sequentially
     {
         $value = $context->getValue();
 
-        $tokens = explode(' ', $value);
+        $tokens = \explode(' ', $value);
 
-        $siren = $tokens ? end($tokens) : null;
+        $siren = $tokens ? \end($tokens) : null;
 
         $validator = $context->getValidator()->inContext($context);
 

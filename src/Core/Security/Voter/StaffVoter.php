@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Security\Voter;
+namespace KLS\Core\Security\Voter;
 
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Repository\CompanyAdminRepository;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\{Staff};
-use Unilend\Core\Repository\CompanyAdminRepository;
 
 class StaffVoter extends AbstractEntityVoter
 {

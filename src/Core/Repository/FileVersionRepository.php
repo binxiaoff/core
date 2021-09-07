@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\{ORMException, OptimisticLockException};
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\FileVersion;
+use KLS\Core\Entity\FileVersion;
 
 /**
  * @method FileVersion|null find($id, $lockMode = null, $lockVersion = null)
@@ -17,17 +18,12 @@ use Unilend\Core\Entity\FileVersion;
  */
 class FileVersionRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FileVersion::class);
     }
 
     /**
-     * @param FileVersion $fileVersion
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */

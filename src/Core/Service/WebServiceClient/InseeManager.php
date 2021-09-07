@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\WebServiceClient;
+namespace KLS\Core\Service\WebServiceClient;
 
 use GuzzleHttp\Client;
+use KLS\Core\Entity\Company;
 use Symfony\Component\HttpFoundation\Response;
-use Unilend\Core\Entity\Company;
 
 class InseeManager
 {
@@ -15,30 +15,24 @@ class InseeManager
     /** @var Client */
     private $client;
 
-    /**
-     * @param Client $client
-     */
     public function __construct(Client $client)
     {
         $this->client = $client;
     }
 
     /**
-     * @param string $name
-     * @param int    $limit
-     *
      * @return array|Company[]
      */
     public function searchByName(string $name, int $limit = 5): array
     {
-        $name     = str_replace(' ', '-', trim($name));
+        $name     = \str_replace(' ', '-', \trim($name));
         $response = $this->client->get(self::ENDPOINT_URL . "?nombre={$limit}&q=periode(denominationUniteLegale:'{$name}')");
 
         if (Response::HTTP_OK !== $response->getStatusCode()) {
             return [];
         }
 
-        $content = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        $content = \json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
         if (null === $content || empty($content['unitesLegales'])) {
             return [];
@@ -55,11 +49,6 @@ class InseeManager
         return $companies;
     }
 
-    /**
-     * @param string $siren
-     *
-     * @return array|null
-     */
     public function searchBySirenNumber(string $siren): ?array
     {
         $response = $this->client->get(self::ENDPOINT_URL . '/' . $siren);
@@ -68,7 +57,7 @@ class InseeManager
             return null;
         }
 
-        $content = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        $content = \json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
         if (null === $content || empty($content['uniteLegale'])) {
             return null;
@@ -78,8 +67,6 @@ class InseeManager
     }
 
     /**
-     * @param array $legalEntity
-     *
      * @return mixed
      */
     public function extractSirenAndName(array $legalEntity): ?array
@@ -96,7 +83,7 @@ class InseeManager
             false === empty($legalEntity['prenom1UniteLegale'])
             && false === empty($legalEntity['periodesUniteLegale'][0]['nomUniteLegale'])
         ) {
-            $name = trim($legalEntity['prenom1UniteLegale'] . ' ' . $legalEntity['periodesUniteLegale'][0]['nomUniteLegale']);
+            $name = \trim($legalEntity['prenom1UniteLegale'] . ' ' . $legalEntity['periodesUniteLegale'][0]['nomUniteLegale']);
 
             return ['name' => $name, 'siren' => $siren];
         }

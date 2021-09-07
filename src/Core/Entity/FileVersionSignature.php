@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableTrait};
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
@@ -22,7 +24,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  *         "sign": {
  *             "security": "is_granted('sign', object)",
  *             "method": "POST",
- *             "controller": "Unilend\Core\Controller\FileVersionSignature\Sign",
+ *             "controller": "KLS\Core\Controller\FileVersionSignature\Sign",
  *             "path": "/core/file_version_signatures/{publicId}/sign",
  *             "denormalization_context": {"groups": {"fileVersionSignature:sign"}}
  *         }
@@ -52,7 +54,7 @@ class FileVersionSignature
     /**
      * @var FileVersion
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\FileVersion", inversedBy="signatures")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\FileVersion", inversedBy="signatures")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_file_version", nullable=false)
      * })
@@ -64,7 +66,7 @@ class FileVersionSignature
     /**
      * @var Staff
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Staff")
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_signatory", referencedColumnName="id", nullable=false)
      * })
@@ -99,10 +101,6 @@ class FileVersionSignature
     private $signatureUrl;
 
     /**
-     * @param FileVersion $fileVersion
-     * @param Staff       $signatory
-     * @param Staff       $addedBy
-     *
      * @throws Exception
      */
     public function __construct(FileVersion $fileVersion, Staff $signatory, Staff $addedBy)
@@ -114,11 +112,6 @@ class FileVersionSignature
         $this->added       = new DateTimeImmutable();
     }
 
-    /**
-     * @param FileVersion $fileVersion
-     *
-     * @return FileVersionSignature
-     */
     public function setFileVersion(FileVersion $fileVersion): FileVersionSignature
     {
         $this->fileVersion = $fileVersion;
@@ -134,11 +127,6 @@ class FileVersionSignature
         return $this->fileVersion;
     }
 
-    /**
-     * @param Staff $signatory
-     *
-     * @return FileVersionSignature
-     */
     public function setSignatory(Staff $signatory): FileVersionSignature
     {
         $this->signatory = $signatory;
@@ -146,19 +134,11 @@ class FileVersionSignature
         return $this;
     }
 
-    /**
-     * @return Staff
-     */
     public function getSignatory(): Staff
     {
         return $this->signatory;
     }
 
-    /**
-     * @param int $status
-     *
-     * @return FileVersionSignature
-     */
     public function setStatus(int $status): FileVersionSignature
     {
         $this->status = $status;
@@ -166,27 +146,16 @@ class FileVersionSignature
         return $this;
     }
 
-    /**
-     * @return int|null
-     */
     public function getStatus(): ?int
     {
         return $this->status;
     }
 
-    /**
-     * @return string|null
-     */
     public function getTransactionNumber(): ?string
     {
         return $this->transactionNumber;
     }
 
-    /**
-     * @param string|null $transactionNumber
-     *
-     * @return FileVersionSignature
-     */
     public function setTransactionNumber(?string $transactionNumber): FileVersionSignature
     {
         $this->transactionNumber = $transactionNumber;
@@ -194,19 +163,11 @@ class FileVersionSignature
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getSignatureUrl(): ?string
     {
         return $this->signatureUrl;
     }
 
-    /**
-     * @param string|null $signatureUrl
-     *
-     * @return FileVersionSignature
-     */
     public function setSignatureUrl(?string $signatureUrl): FileVersionSignature
     {
         $this->signatureUrl = $signatureUrl;
@@ -214,9 +175,6 @@ class FileVersionSignature
         return $this;
     }
 
-    /**
-     * @return iterable
-     */
     public function getStatuses(): iterable
     {
         return self::getConstants('STATUS_');

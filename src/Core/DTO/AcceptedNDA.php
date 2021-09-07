@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DTO;
+namespace KLS\Core\DTO;
 
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -12,21 +12,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
  */
 class AcceptedNDA
 {
-    /**
-     * @var string
-     */
     private string $fileVersionId = '';
 
     /**
-     * @var string
-     *
      * @Groups({"projectParticipationMember:owner:write"})
      */
     private string $term = '';
 
     /**
-     * @return string
-     *
      * @Groups({"projectParticipationMember:owner:write"})
      */
     public function getFileVersionId(): string
@@ -34,19 +27,11 @@ class AcceptedNDA
         return $this->fileVersionId;
     }
 
-    /**
-     * @return string
-     */
     public function getTerm(): string
     {
         return $this->term;
     }
 
-    /**
-     * @param string $fileVersionId
-     *
-     * @return AcceptedNDA
-     */
     public function setFileVersionId(string $fileVersionId): AcceptedNDA
     {
         $this->fileVersionId = $fileVersionId;
@@ -54,11 +39,6 @@ class AcceptedNDA
         return $this;
     }
 
-    /**
-     * @param string $term
-     *
-     * @return AcceptedNDA
-     */
     public function setTerm(string $term): AcceptedNDA
     {
         $this->term = $term;

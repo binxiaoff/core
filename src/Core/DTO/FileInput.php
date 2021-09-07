@@ -2,16 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DTO;
+namespace KLS\Core\DTO;
 
+use KLS\Core\Entity\Interfaces\FileTypesAwareInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Agency\Entity\Term;
-use Unilend\Core\Entity\Message;
-use Unilend\Syndication\Entity\Project;
-use Unilend\Syndication\Entity\ProjectFile;
-use Unilend\Syndication\Entity\ProjectParticipation;
 
 class FileInput
 {
@@ -36,7 +32,7 @@ class FileInput
     ];
 
     /**
-     * @Assert\File(maxSize="250Mi", mimeTypes=Unilend\Core\DTO\FileInput::ACCEPTED_MEDIA_TYPE)
+     * @Assert\File(maxSize="250Mi", mimeTypes=KLS\Core\DTO\FileInput::ACCEPTED_MEDIA_TYPE)
      */
     public UploadedFile $uploadedFile;
 
@@ -45,9 +41,6 @@ class FileInput
      */
     public object $targetEntity;
 
-    /**
-     * @Assert\Choice(callback="getFileTypes")
-     */
     public string $type;
 
     public function __construct(UploadedFile $uploadedFile, string $type, object $targetEntity)
@@ -58,48 +51,20 @@ class FileInput
     }
 
     /**
-     * @return array|string[]
-     */
-    public static function getFileTypes(): array
-    {
-        return array_merge(...array_values(static::getFileTypesEntityMapping()));
-    }
-
-    /**
      * @Assert\Callback
      *
      * @param mixed $payload
      */
-    public function validateTargetEntity(ExecutionContextInterface $context, $payload)
+    public function validateTargetEntityAndTypeMapping(ExecutionContextInterface $context, $payload): void
     {
-        $fileTypesClassMapping = static::getFileTypesEntityMapping();
-
-        $targetEntityClass = \get_class($this->targetEntity);
-
         if (
-            \is_string($targetEntityClass) && false === \in_array($this->type, $fileTypesClassMapping[$targetEntityClass] ?? [], true)
+            $this->targetEntity instanceof FileTypesAwareInterface
+            && false === \in_array($this->type, $this->targetEntity::getFileTypes(), true)
         ) {
-            $context->buildViolation('Upload.targetEntity.incorrect')
-                ->atPath('targetEntity')
-                ->setParameters([
-                    'targetEntityClass' => $targetEntityClass,
-                    'type'              => $this->type,
-                ])
+            $context->buildViolation('Core.Upload.fileInput.type.not_matching')
+                ->setParameter('%type%', $this->type)
                 ->addViolation()
             ;
         }
-    }
-
-    /**
-     * @return array|array[]
-     */
-    private static function getFileTypesEntityMapping(): array
-    {
-        return [
-            Project::class              => array_merge(Project::getProjectFileTypes(), ProjectFile::getProjectFileTypes()),
-            ProjectParticipation::class => ProjectParticipation::getFileTypes(),
-            Message::class              => Message::getFileTypes(),
-            Term::class                 => Term::getFileTypes(),
-        ];
     }
 }

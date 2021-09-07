@@ -14,11 +14,11 @@
         <ini name="error_reporting" value="-1" />
         <server name="APP_ENV" value="test" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
-        <server name="KERNEL_CLASS" value="Unilend\Kernel"/>
+        <server name="KERNEL_CLASS" value="KLS\Kernel"/>
     </php>
 
     <extensions>
-        <extension class="Unilend\Test\Hook\BypassFinalHook"/>
+        <extension class="KLS\Test\Hook\BypassFinalHook"/>
         <extension class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension" />
     </extensions>
 
@@ -29,14 +29,16 @@
 
         <testsuite name="unit">
             <directory>tests/Core/Unit</directory>
-            <directory>tests/Syndication/Unit</directory>
-            <directory>tests/CreditGuaranty/Unit</directory>
+            <directory>tests/Syndication/Agency/Unit</directory>
+            <directory>tests/Syndication/Arrangement/Unit</directory>
+            <directory>tests/CreditGuaranty/FEI/Unit</directory>
         </testsuite>
 
         <testsuite name="functional">
             <directory>tests/Core/Functional</directory>
-            <directory>tests/Syndication/Functional</directory>
-            <directory>tests/CreditGuaranty/Functional</directory>
+            <directory>tests/Syndication/Agency/Functional</directory>
+            <directory>tests/Syndication/Arrangement/Functional</directory>
+            <directory>tests/CreditGuaranty/FEI/Functional</directory>
         </testsuite>
 
         <testsuite name="core">
@@ -55,12 +57,12 @@
             <directory>tests/Syndication</directory>
         </testsuite>
 
-        <testsuite name="syndication\unit">
-            <directory>tests/Syndication/Unit</directory>
+        <testsuite name="syndication\arrangement\unit">
+            <directory>tests/Syndication/Arrangement/Unit</directory>
         </testsuite>
 
-        <testsuite name="syndication\functional">
-            <directory>tests/Syndication/Functional</directory>
+        <testsuite name="syndication\arrangement\functional">
+            <directory>tests/Syndication/Arrangement/Functional</directory>
         </testsuite>
     </testsuites>
 

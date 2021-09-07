@@ -2,13 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Controller\Dataroom;
+namespace KLS\Core\Controller\Dataroom;
 
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Exception\IOException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
+use KLS\Core\DTO\FileInput;
+use KLS\Core\Entity\AbstractFolder;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\User;
+use KLS\Core\Exception\Drive\FolderAlreadyExistsException;
+use KLS\Core\Service\File\FileUploadManager;
 use League\Flysystem\FilesystemException;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -17,13 +24,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\DTO\FileInput;
-use Unilend\Core\Entity\AbstractFolder;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
-use Unilend\Core\Service\File\FileUploadManager;
 
 class Post
 {
@@ -100,17 +100,17 @@ class Post
      */
     private function handleFiles(AbstractFolder $parent, Request $request, User $user): void
     {
-        $files = array_values($request->files->all());
+        $files = \array_values($request->files->all());
 
         // Verify filenames before any upload
         // Hence the need to have 2 loops
-        $fileEntities = array_map(static function ($file) use ($parent) {
+        $fileEntities = \array_map(static function ($file) use ($parent) {
             if (false === $file instanceof UploadedFile) {
                 throw new BadRequestException();
             }
 
-            if (false === in_array($file->getClientMimeType(), FileInput::ACCEPTED_MEDIA_TYPE)) {
-                throw new BadRequestException(sprintf('%s is not an acceptable media type', $file->getClientMimeType()));
+            if (false === \in_array($file->getClientMimeType(), FileInput::ACCEPTED_MEDIA_TYPE)) {
+                throw new BadRequestException(\sprintf('%s is not an acceptable media type', $file->getClientMimeType()));
             }
 
             $file = new File($file->getClientOriginalName());

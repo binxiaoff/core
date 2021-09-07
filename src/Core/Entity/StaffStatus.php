@@ -2,17 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
+use KLS\Core\Entity\Interfaces\StatusInterface;
+use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Interfaces\{StatusInterface, TraceableStatusAwareInterface};
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, PublicizeIdentityTrait, TimestampableAddedOnlyTrait};
-use Unilend\Core\Traits\ConstantsAwareTrait;
 
 /**
  * @ApiResource(
@@ -41,7 +44,7 @@ use Unilend\Core\Traits\ConstantsAwareTrait;
  * )
  *
  * @Assert\Callback(
- *     callback={"Unilend\Core\Validator\Constraints\TraceableStatusValidator", "validate"},
+ *     callback={"KLS\Core\Validator\Constraints\TraceableStatusValidator", "validate"},
  *     payload={ "path": "status" }
  * )
  */
@@ -57,9 +60,7 @@ class StaffStatus implements StatusInterface
     public const STATUS_ARCHIVED = -20;
 
     /**
-     * @var Staff
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Staff", inversedBy="statuses")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Staff", inversedBy="statuses")
      * @ORM\JoinColumn(name="id_staff", nullable=false)
      *
      * @Groups({"staffStatus:create"})
@@ -67,8 +68,6 @@ class StaffStatus implements StatusInterface
     private Staff $staff;
 
     /**
-     * @var int
-     *
      * @ORM\Column(type="smallint")
      *
      * @Assert\Choice(callback="getPossibleStatuses")
@@ -78,10 +77,6 @@ class StaffStatus implements StatusInterface
     private int $status;
 
     /**
-     * @param Staff $staff
-     * @param int   $status
-     * @param Staff $addedBy
-     *
      * @throws Exception
      */
     public function __construct(Staff $staff, int $status, Staff $addedBy)
@@ -92,17 +87,11 @@ class StaffStatus implements StatusInterface
         $this->added   = new DateTimeImmutable();
     }
 
-    /**
-     * @return Staff
-     */
     public function getStaff(): Staff
     {
         return $this->staff;
     }
 
-    /**
-     * @return int
-     */
     public function getStatus(): int
     {
         return $this->status;

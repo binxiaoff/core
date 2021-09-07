@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\DataFixtures\Companies;
+namespace KLS\Test\Core\DataFixtures\Companies;
 
 use Closure;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Faker;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyAdmin;
+use KLS\Core\Entity\CompanyGroup;
+use KLS\Core\Entity\CompanyModule;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Team;
+use KLS\Core\Entity\User;
+use KLS\Test\Core\DataFixtures\AbstractFixtures;
+use KLS\Test\Core\DataFixtures\UserFixtures;
 use ReflectionException;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyAdmin;
-use Unilend\Core\Entity\CompanyGroup;
-use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\Team;
-use Unilend\Core\Entity\User;
-use Unilend\Test\Core\DataFixtures\AbstractFixtures;
-use Unilend\Test\Core\DataFixtures\UserFixtures;
 
 abstract class AbstractCompanyFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -28,8 +28,6 @@ abstract class AbstractCompanyFixtures extends AbstractFixtures implements Depen
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @throws ReflectionException
      * @throws Exception
      */

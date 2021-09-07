@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\Jwt;
+namespace KLS\Core\EventSubscriber\Jwt;
 
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
@@ -11,11 +11,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class VersionSubscriber implements EventSubscriberInterface
 {
-    public const JWT_VERSION = '2021-04-21';
+    public const JWT_VERSION = '2021-08-16';
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents(): array
     {
         return [

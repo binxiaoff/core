@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\DataFixtures;
+namespace KLS\Test\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Faker\Provider\fr_FR\Person;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserStatus;
 use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Entity\UserStatus;
 
 class UserFixtures extends AbstractFixtures
 {
@@ -34,11 +34,11 @@ class UserFixtures extends AbstractFixtures
 
         // User with symbols are meant to be staffless
         $users = [
-            ...array_map([$this, 'createInitializedUser'], [...range(1, 10), ...range(21, 25), ...range('a', 'z'), '€', '@', '$', '£', '+']),
-            ...array_map([$this, 'createUser'], [...range(11, 20), 'uninitialized']), // These users are meant to be uninitialized
+            ...\array_map([$this, 'createInitializedUser'], [...\range(1, 10), ...\range(21, 25), ...\range('a', 'z'), '€', '@', '$', '£', '+']),
+            ...\array_map([$this, 'createUser'], [...\range(11, 20), 'uninitialized']), // These users are meant to be uninitialized
         ];
 
-        array_walk($users, [$manager, 'persist']);
+        \array_walk($users, [$manager, 'persist']);
 
         $manager->flush();
     }

@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\ElectronicSignature;
+namespace KLS\Core\Service\ElectronicSignature;
 
 use DOMDocument;
 use Exception;
 use InvalidArgumentException;
-use RobRichards\XMLSecLibs\{XMLSecEnc, XMLSecurityDSig, XMLSecurityKey};
+use RobRichards\XMLSecLibs\XMLSecEnc;
+use RobRichards\XMLSecLibs\XMLSecurityDSig;
+use RobRichards\XMLSecLibs\XMLSecurityKey;
 use RuntimeException;
 
 class XmlSigner
@@ -26,10 +28,6 @@ class XmlSigner
      */
     private $privateKey;
 
-    /**
-     * @param string $publicKey
-     * @param string $privateKey
-     */
     public function __construct(string $publicKey, string $privateKey)
     {
         $this->publicKey  = $publicKey;
@@ -37,11 +35,7 @@ class XmlSigner
     }
 
     /**
-     * @param string $xmlSource
-     *
      * @throws Exception
-     *
-     * @return string
      */
     public function sign(string $xmlSource): string
     {
@@ -68,11 +62,7 @@ class XmlSigner
     }
 
     /**
-     * @param string $xmlSource
-     *
      * @throws Exception
-     *
-     * @return bool
      */
     public function verify(string $xmlSource): bool
     {

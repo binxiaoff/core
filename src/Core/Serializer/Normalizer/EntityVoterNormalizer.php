@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\Normalizer;
+namespace KLS\Core\Serializer\Normalizer;
 
 use ApiPlatform\Core\Api\ResourceClassResolverInterface;
 use Symfony\Component\Security\Core\Security;
@@ -16,39 +16,23 @@ class EntityVoterNormalizer implements NormalizerInterface, NormalizerAwareInter
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
-    /**
-     * @var Security
-     */
     private Security $security;
 
-    /**
-     * @var ResourceClassResolverInterface
-     */
     private ResourceClassResolverInterface $resourceClassResolver;
 
-    /**
-     * @param Security                       $security
-     * @param ResourceClassResolverInterface $resourceClassResolver
-     */
     public function __construct(Security $security, ResourceClassResolverInterface $resourceClassResolver)
     {
-        $this->security = $security;
+        $this->security              = $security;
         $this->resourceClassResolver = $resourceClassResolver;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function supportsNormalization($data, string $format = null, array $context = [])
     {
-        return false === isset($context[static::ALREADY_CALLED]) &&
-            \is_object($data) &&
-            $this->resourceClassResolver->isResourceClass(\get_class($data));
+        return false === isset($context[static::ALREADY_CALLED])
+            && \is_object($data)
+            && $this->resourceClassResolver->isResourceClass(\get_class($data));
     }
 
-    /**
-     * @inheritDoc
-     */
     public function normalize($object, string $format = null, array $context = [])
     {
         $context[static::ALREADY_CALLED] = true;
@@ -58,7 +42,7 @@ class EntityVoterNormalizer implements NormalizerInterface, NormalizerAwareInter
 
         if (\is_array($normalized)) {
             $normalized['permissions'] = [
-                'edit' => $this->security->isGranted('edit', $object),
+                'edit'   => $this->security->isGranted('edit', $object),
                 'delete' => $this->security->isGranted('delete', $object),
             ];
         }

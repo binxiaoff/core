@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DataFixtures;
+namespace KLS\Core\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
 
@@ -10,9 +10,6 @@ abstract class AbstractSQLFixtures extends AbstractFixtures
 {
     protected static string $sql;
 
-    /**
-     * @param ObjectManager $manager
-     */
     public function load(ObjectManager $manager): void
     {
         if (static::$sql) {

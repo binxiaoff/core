@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\CompanyGroupTag;
+use KLS\Core\Entity\CompanyGroupTag;
 
 /**
  * @method CompanyGroupTag|null find($id, $lockMode = null, $lockVersion = null)
@@ -16,9 +16,6 @@ use Unilend\Core\Entity\CompanyGroupTag;
  */
 class CompanyGroupTagRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, CompanyGroupTag::class);

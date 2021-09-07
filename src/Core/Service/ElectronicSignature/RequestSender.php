@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\ElectronicSignature;
+namespace KLS\Core\Service\ElectronicSignature;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
+use KLS\Core\Entity\FileVersionSignature;
+use KLS\Core\Repository\FileVersionSignatureRepository;
 use League\Flysystem\FilesystemException;
 use Psr\Log\LoggerInterface;
 use SimpleXMLElement;
@@ -17,8 +19,6 @@ use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
-use Unilend\Core\Entity\FileVersionSignature;
-use Unilend\Core\Repository\FileVersionSignatureRepository;
 
 class RequestSender
 {
@@ -56,7 +56,7 @@ class RequestSender
     {
         $this->handleResponse($fileSignature, $this->psnClient->request(Request::METHOD_POST, self::REQUEST_PATH, [
             'headers' => ['Content-Type' => 'application/gzip'],
-            'body'    => gzencode($this->xmlSigner->sign($this->xmlGenerator->generate($fileSignature))),
+            'body'    => \gzencode($this->xmlSigner->sign($this->xmlGenerator->generate($fileSignature))),
         ]));
 
         return $fileSignature;
@@ -76,7 +76,7 @@ class RequestSender
         try {
             $this->xmlSigner->verify($response->getContent());
         } catch (\Exception $exception) {
-            $this->handlePSNError($fileSignature, sprintf(
+            $this->handlePSNError($fileSignature, \sprintf(
                 'Exception occurs when verify the signature of XML. Message: %s File Signature id: %d',
                 $exception->getMessage(),
                 $fileSignature->getId()
@@ -85,14 +85,14 @@ class RequestSender
 
         $xml = new SimpleXMLElement($response->getContent());
 
-        $header = current($xml->xpath('//RETOURdePM'));
+        $header = \current($xml->xpath('//RETOURdePM'));
 
         if (false === $header instanceof SimpleXMLElement) {
             $this->handlePSNError($fileSignature, 'Cannot find RETOURdePM field from the PSN response');
         }
 
         if (200 !== (int) $header['CodeMessage']) {
-            $this->handlePSNError($fileSignature, sprintf(
+            $this->handlePSNError($fileSignature, \sprintf(
                 'The PSN server returns a code other than 200. Code: %d. State: %s. Message: %s',
                 (int) $header['CodeMessage'],
                 (string) $header['ETAT'],
@@ -100,7 +100,7 @@ class RequestSender
             ));
         }
 
-        $content = current($xml->xpath('//RETOURMETIER/RETOURSIGNATUREENTITE'));
+        $content = \current($xml->xpath('//RETOURMETIER/RETOURSIGNATUREENTITE'));
 
         $transactionNumber = (string) $content->TRANSNUM;
         if (empty($transactionNumber)) {
@@ -109,7 +109,7 @@ class RequestSender
 
         $signatureUrl = (string) $content->URL;
         if (empty($signatureUrl)) {
-            $this->handlePSNError($fileSignature, sprintf('PSN callback url is empty. PSN Transaction number : %s', $transactionNumber));
+            $this->handlePSNError($fileSignature, \sprintf('PSN callback url is empty. PSN Transaction number : %s', $transactionNumber));
         }
 
         $fileSignature

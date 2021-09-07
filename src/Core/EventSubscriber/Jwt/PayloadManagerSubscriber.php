@@ -2,23 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\Jwt;
+namespace KLS\Core\EventSubscriber\Jwt;
 
+use KLS\Core\Repository\UserRepository;
+use KLS\Core\Service\Jwt\PayloadManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTAuthenticatedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTDecodedEvent;
 use Lexik\Bundle\JWTAuthenticationBundle\Events as JwtEvents;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Service\Jwt\PayloadManagerInterface;
 
 class PayloadManagerSubscriber implements EventSubscriberInterface
 {
     private array $payloadManagers;
-
     private JWTTokenManagerInterface $jwtManager;
-
     private UserRepository $userRepository;
 
     public function __construct(JWTTokenManagerInterface $jwtManager, UserRepository $userRepository, iterable $payloadManagers = [])
@@ -78,7 +76,7 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
         $payloadManager = $this->payloadManagers[$scope] ?? null;
 
         if (null === $payloadManager) {
-            throw new \LogicException(sprintf('At this point there should be a corresponding payload generator for %s', $scope));
+            throw new \LogicException(\sprintf('At this point there should be a corresponding payload generator for %s', $scope));
         }
 
         $payloadManager->updateSecurityToken($token, $payload);
@@ -112,7 +110,7 @@ class PayloadManagerSubscriber implements EventSubscriberInterface
     public function addPayloadManager(PayloadManagerInterface $payloadManager)
     {
         if (isset($this->payloadManagers[$payloadManager::getScope()])) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new \InvalidArgumentException(\sprintf(
                 'This scope %s is already used by another jwt payload manager. Check the classes %s and %s',
                 $payloadManager::getScope(),
                 \get_class($payloadManager),

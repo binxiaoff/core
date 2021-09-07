@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Request;
+namespace KLS\Core\Entity\Request;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
@@ -11,12 +11,12 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
+use KLS\Core\Entity\Traits\ArchivableTrait;
+use KLS\Core\Entity\Traits\BlamableArchivedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\ArchivableTrait;
-use Unilend\Core\Entity\Traits\BlamableArchivedTrait;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ORM\Entity
@@ -28,7 +28,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     normalizationContext={"groups": {"file:read", "fileVersion:read", "timestampable:read"}},
  *     collectionOperations={
  *         "post": {
- *             "controller": "Unilend\Core\Controller\File\Upload",
+ *             "controller": "KLS\Core\Controller\File\Upload",
  *             "path": "/core/files/upload",
  *             "deserialize": false,
  *             "swagger_context": {
@@ -62,7 +62,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *     itemOperations={
  *         "upload_file_version": {
  *             "method": "POST",
- *             "controller": "Unilend\Core\Controller\File\Upload",
+ *             "controller": "KLS\Core\Controller\File\Upload",
  *             "path": "/core/files/{publicId}/file_versions/upload",
  *             "deserialize": false,
  *             "swagger_context": {
@@ -98,7 +98,7 @@ use Unilend\Core\Entity\Traits\TimestampableTrait;
  *             "output": false,
  *         },
  *         "delete": {
- *             "controller": "Unilend\Core\Controller\File\Delete",
+ *             "controller": "KLS\Core\Controller\File\Delete",
  *             "path": "/core/files/{publicId}/{type}",
  *         },
  *     }
@@ -114,7 +114,7 @@ class File
     /**
      * @var FileVersion[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\FileVersion", mappedBy="file")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\FileVersion", mappedBy="file")
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"file:read"})
@@ -122,7 +122,7 @@ class File
     private Collection $fileVersions;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\FileVersion", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\FileVersion", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_file_version")
      *
      * @Groups({"file:read"})

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\SwiftMailer;
+namespace KLS\Core\SwiftMailer;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
+use KLS\Core\Entity\MailQueue;
+use KLS\Core\Repository\MailQueueRepository;
 use Swift_ConfigurableSpool;
 use Swift_Mime_SimpleMessage;
 use Swift_Transport;
-use Unilend\Core\Entity\MailQueue;
-use Unilend\Core\Repository\MailQueueRepository;
 
 class DatabaseSpool extends Swift_ConfigurableSpool
 {
@@ -22,30 +22,19 @@ class DatabaseSpool extends Swift_ConfigurableSpool
         $this->mailQueueRepository = $mailQueueRepository;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function start()
     {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function stop()
     {
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function isStarted()
     {
     }
 
     /**
-     * {@inheritDoc}
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -73,7 +62,7 @@ class DatabaseSpool extends Swift_ConfigurableSpool
         $limit        = $limit > 0 ? $limit : null;
         $pendingMails = $this->mailQueueRepository->getPendingMails($limit);
 
-        if (!count($pendingMails)) {
+        if (!\count($pendingMails)) {
             return 0;
         }
 

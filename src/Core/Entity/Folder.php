@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\Core\Exception\Drive\FolderAlreadyExistsException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableAddedOnlyTrait;
-use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
 
 /**
  * @ORM\Entity
@@ -55,7 +55,7 @@ class Folder extends AbstractFolder
 
     /**
      * used for database unique index (path field is to big for unique index).
-     * unfortunatly it is a hassle to handle virtual column with doctrine so I need to create a true column for this.
+     * unfortunately it is a hassle to handle virtual column with doctrine so I need to create a true column for this.
      *
      * @Assert\NotBlank
      * @Assert\Length(max="10")
@@ -93,16 +93,16 @@ class Folder extends AbstractFolder
         $this->drive = $drive;
 
         if (null === $this->drive->getFolder($parentPath)) {
-            throw new InvalidArgumentException(sprintf('Given path %s is not a folder in drive', $parentPath));
+            throw new InvalidArgumentException(\sprintf('Given path %s is not a folder in drive', $parentPath));
         }
 
         if ($drive->exist(('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $name)) {
             throw new FolderAlreadyExistsException();
         }
 
-        $this->name     = trim($name);
+        $this->name     = \trim($name);
         $this->path     = ('/' === $parentPath ? '' : $parentPath) . DIRECTORY_SEPARATOR . $this->name;
-        $this->pathHash = hash('crc32b', $this->path);
+        $this->pathHash = \hash('crc32b', $this->path);
         $this->added    = new DateTimeImmutable();
         $this->setPublicId();
     }
@@ -125,7 +125,7 @@ class Folder extends AbstractFolder
     /**
      * @param string|Folder $relativePath
      */
-    public function deleteFolder($relativePath): AbstractFolder
+    public function deleteFolder($relativePath): self
     {
         $this->drive->deleteFolder($this->normalizePath($relativePath));
 
@@ -145,7 +145,7 @@ class Folder extends AbstractFolder
     /**
      * @throws FolderAlreadyExistsException
      */
-    public function createFolder(string $path): AbstractFolder
+    public function createFolder(string $path): self
     {
         $this->drive->createFolder($this->normalizePath($path));
 
@@ -155,7 +155,7 @@ class Folder extends AbstractFolder
     /**
      * @param string|Folder $toDelete
      */
-    public function delete($toDelete): Folder
+    public function delete($toDelete): self
     {
         $this->drive->delete($this->normalizePath($toDelete));
 
@@ -181,12 +181,12 @@ class Folder extends AbstractFolder
             throw new \InvalidArgumentException('The depth parameter must strictly be above 0');
         }
 
-        return $this->drive->getFolders(count(explode(DIRECTORY_SEPARATOR, $this->path)) + (int) $depth - 1)
-            ->filter(fn (Folder $folder) => 0 === mb_strpos($folder->getPath(), $this->path) && $this->path !== $folder->getPath())
+        return $this->drive->getFolders(\count(\explode(DIRECTORY_SEPARATOR, $this->path)) + (int) $depth - 1)
+            ->filter(fn (Folder $folder) => 0 === \mb_strpos($folder->getPath(), $this->path) && $this->path !== $folder->getPath())
         ;
     }
 
-    public function deleteFile($path): Folder
+    public function deleteFile($path): self
     {
         if ($path instanceof File) {
             $this->removeFile($path);
@@ -200,21 +200,21 @@ class Folder extends AbstractFolder
     /**
      * @param string|Folder $test
      */
-    private function assertDescendent($test)
+    private function assertDescendent($test): void
     {
         if ($test instanceof self) {
             $test = $test->getPath();
         }
 
-        if (str_starts_with(DIRECTORY_SEPARATOR, $test) && false === str_starts_with($test, $this->path)) {
-            throw new \LogicException();
+        if (\str_starts_with(DIRECTORY_SEPARATOR, $test) && false === \str_starts_with($test, $this->path)) {
+            throw new \LogicException(\sprintf('%s is not a descendant of %s', $test, $this->path));
         }
     }
 
     /**
      * @param string|Folder $path
      */
-    private function normalizePath($path)
+    private function normalizePath($path): string
     {
         $this->assertDescendent($path);
 
@@ -222,7 +222,7 @@ class Folder extends AbstractFolder
             $path = $path->getPath();
         }
 
-        $relativePath = 0 === mb_strpos($path, DIRECTORY_SEPARATOR) ? mb_substr($path, mb_strlen($this->path) + 1) : $path;
+        $relativePath = 0 === \mb_strpos($path, DIRECTORY_SEPARATOR) ? \mb_substr($path, \mb_strlen($this->path) + 1) : $path;
 
         return $this->path . DIRECTORY_SEPARATOR . $relativePath;
     }

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Entity;
+namespace KLS\Test\Core\Unit\Entity;
 
 use InvalidArgumentException;
+use KLS\Core\Entity\Drive;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\Folder;
+use KLS\Core\Entity\User;
+use KLS\Core\Exception\Drive\FolderAlreadyExistsException;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\Drive;
-use Unilend\Core\Entity\File;
-use Unilend\Core\Entity\FileVersion;
-use Unilend\Core\Entity\Folder;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Exception\Drive\FolderAlreadyExistsException;
 
 /**
- * @coversDefaultClass \Unilend\Core\Entity\Drive
+ * @coversDefaultClass \KLS\Core\Entity\Drive
  *
  * @internal
  */
@@ -86,12 +86,12 @@ class DriveTest extends TestCase
 
         $folders = [
             'It ignores attempt to create /'                                         => '/',
-            'It can create a folder directly when given path has leading /'          => implode('/', ['onelevel']),
-            'It can create all folders recursively when given path has leading /'    => implode('/', ['several', 'level', 'depth']),
-            'It can create a folder directly when given path has suffixed /'         => implode('/', ['onelevel']) . '/',
-            'It can create all folders recursively when given path has suffixed /'   => implode('/', ['several', 'level', 'depth']) . '/',
+            'It can create a folder directly when given path has leading /'          => \implode('/', ['onelevel']),
+            'It can create all folders recursively when given path has leading /'    => \implode('/', ['several', 'level', 'depth']),
+            'It can create a folder directly when given path has suffixed /'         => \implode('/', ['onelevel']) . '/',
+            'It can create all folders recursively when given path has suffixed /'   => \implode('/', ['several', 'level', 'depth']) . '/',
             'It can create a folder directly when given path has no affixed /'       => 'onelevelwithoutleadingslash',
-            'It can create all folders recursively when given path has no affixed /' => 'several' . implode('/', ['level', 'without', 'leading', 'slash']),
+            'It can create all folders recursively when given path has no affixed /' => 'several' . \implode('/', ['level', 'without', 'leading', 'slash']),
             'It does not throw an exception when folder already exist'               => 'existingFolder',
             'It handles nested folders with the same name 1'                         => '/one/one',
             'It handles nested folders with the same name 2'                         => '/one/one/one',
@@ -124,7 +124,7 @@ class DriveTest extends TestCase
         static::assertNull($drive->getFolder($path));
 
         foreach ($drive->getFolders() as $folder) {
-            static::assertFalse(mb_strpos($folder->getPath(), $path));
+            static::assertFalse(\mb_strpos($folder->getPath(), $path));
         }
     }
 
@@ -133,7 +133,7 @@ class DriveTest extends TestCase
      */
     public function providerDeleteFolder(): iterable
     {
-        $testDrives = array_map(static fn () => (new Drive())->createFolder(implode('/', ['toto', 'tata', 'titi'])), range(0, 5));
+        $testDrives = \array_map(static fn () => (new Drive())->createFolder(\implode('/', ['toto', 'tata', 'titi'])), \range(0, 5));
 
         $testDrives[5]->getFolder('/toto')->addFile($this->generateMockFile('test.png'));
 
@@ -145,9 +145,9 @@ class DriveTest extends TestCase
             'It throws an exception when attempting to delete the root folder'  => [new Drive(), '/', InvalidArgumentException::class],
             'It can delete folder when parameter is Folder and path is simple'  => [$testDrives[0], $testDrives[0]->getFolders()['/toto']],
             'It can delete folder when parameter is Folder and path is complex' => [$testDrives[1], $testDrives[1]->getFolders()['/toto/tata']],
-            'It can delete folder when parameter is string and path is simple'  => [$testDrives[2], implode('/', ['toto'])],
-            'It can delete folder when parameter is string and path is complex' => [$testDrives[3], implode('/', ['toto', 'tata'])],
-            'It ignore path targeting file'                                     => [$testDrives[5], implode('/', ['toto', 'test.png'])],
+            'It can delete folder when parameter is string and path is simple'  => [$testDrives[2], \implode('/', ['toto'])],
+            'It can delete folder when parameter is string and path is complex' => [$testDrives[3], \implode('/', ['toto', 'tata'])],
+            'It ignore path targeting file'                                     => [$testDrives[5], \implode('/', ['toto', 'test.png'])],
         ];
     }
 
@@ -171,7 +171,7 @@ class DriveTest extends TestCase
     public function providerGetFolder(): iterable
     {
         $drive = new Drive();
-        $drive->createFolder(implode('/', ['toto', 'tata', 'titi']));
+        $drive->createFolder(\implode('/', ['toto', 'tata', 'titi']));
 
         foreach ($drive->getFolders() as $folder) {
             $folder->addFile($this->generateMockFile('test.png'));
@@ -316,7 +316,7 @@ class DriveTest extends TestCase
     {
         $result = $drive->getContent();
 
-        static::assertCount(count($expected), $result);
+        static::assertCount(\count($expected), $result);
 
         foreach ($expected as $e) {
             static::assertContains($e, $result);
@@ -351,7 +351,7 @@ class DriveTest extends TestCase
     {
         $result = $depth ? $drive->list($depth) : $drive->list();
 
-        static::assertCount(count($expected), $result);
+        static::assertCount(\count($expected), $result);
 
         foreach ($expected as $e) {
             static::assertContains($e, $result);
@@ -401,7 +401,7 @@ class DriveTest extends TestCase
         $drive = new Drive();
 
         $fileNames = ['root.png', 'hidden.png', 'jamiroquai.png'];
-        $files     = array_map([$this, 'generateMockFile'], array_combine($fileNames, $fileNames));
+        $files     = \array_map([$this, 'generateMockFile'], \array_combine($fileNames, $fileNames));
 
         $drive->createFolder('/toto/tata/titi/tutu');
         $drive->createFolder('/foo/bar/qux/buz');

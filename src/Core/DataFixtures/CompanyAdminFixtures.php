@@ -2,18 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DataFixtures;
+namespace KLS\Core\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\Entity\CompanyAdmin;
-use Unilend\Core\Entity\Staff;
+use KLS\Core\Entity\CompanyAdmin;
+use KLS\Core\Entity\Staff;
 
 class CompanyAdminFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    /**
-     * @inheritDoc
-     */
     public function getDependencies()
     {
         return [
@@ -21,9 +18,6 @@ class CompanyAdminFixtures extends AbstractFixtures implements DependentFixtureI
         ];
     }
 
-    /**
-     * @inheritDoc
-     */
     public function load(ObjectManager $manager)
     {
         /** @var Staff $adminStaff */

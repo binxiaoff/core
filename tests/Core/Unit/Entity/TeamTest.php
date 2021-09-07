@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Test\Core\Unit\Entity;
+namespace KLS\Test\Core\Unit\Entity;
 
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Team;
 use PHPUnit\Framework\TestCase;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Team;
 
 /**
- * @coversDefaultClass \Unilend\Core\Entity\Team
+ * @coversDefaultClass \KLS\Core\Entity\Team
  *
  * @internal
  */
@@ -72,7 +72,7 @@ class TeamTest extends TestCase
         static::assertEmpty($team['C']->getDescendents());
         static::assertEmpty($team['3']->getDescendents());
         static::assertEqualsCanonicalizing([$team['#'], $team['@']], $team['A']->getDescendents());
-        static::assertEqualsCanonicalizing(array_map(static fn ($index) => $team[$index], ['A', '#', '@', 'B']), $team['1']->getDescendents());
+        static::assertEqualsCanonicalizing(\array_map(static fn ($index) => $team[$index], ['A', '#', '@', 'B']), $team['1']->getDescendents());
         static::assertNotContains($team['root'], $team['root']->getDescendents());
     }
 
@@ -101,7 +101,7 @@ class TeamTest extends TestCase
         static::assertEmpty($team['C']->getChildren());
         static::assertEmpty($team['3']->getChildren());
         static::assertEqualsCanonicalizing([$team['#'], $team['@']], $team['A']->getChildren());
-        static::assertEqualsCanonicalizing(array_map(static fn ($index) => $team[$index], ['A', 'B']), $team['1']->getChildren());
+        static::assertEqualsCanonicalizing(\array_map(static fn ($index) => $team[$index], ['A', 'B']), $team['1']->getChildren());
         static::assertNotContains($team['root'], $team['root']->getChildren());
     }
 
@@ -164,7 +164,7 @@ class TeamTest extends TestCase
 
         $descendents = $company->getRootTeam()->getDescendents();
 
-        $result = array_combine(array_map(static fn (Team $team) => $team->getName(), $descendents), $company->getRootTeam()->getDescendents());
+        $result = \array_combine(\array_map(static fn (Team $team) => $team->getName(), $descendents), $company->getRootTeam()->getDescendents());
 
         $result['root'] = $company->getRootTeam();
 

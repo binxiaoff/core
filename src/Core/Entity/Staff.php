@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -12,15 +12,15 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Generator;
+use KLS\Core\Entity\Interfaces\StatusInterface;
+use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\Core\Entity\Traits\TimestampableTrait;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
-use Unilend\Core\Entity\Interfaces\StatusInterface;
-use Unilend\Core\Entity\Interfaces\TraceableStatusAwareInterface;
-use Unilend\Core\Entity\Traits\PublicizeIdentityTrait;
-use Unilend\Core\Entity\Traits\TimestampableTrait;
 
 /**
  * @ApiResource(
@@ -69,7 +69,7 @@ class Staff implements TraceableStatusAwareInterface
     public const ID_ADMIN = 1;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\User", inversedBy="staff", cascade={"persist", "refresh"})
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\User", inversedBy="staff", cascade={"persist", "refresh"})
      * @ORM\JoinColumns({
      *     @ORM\JoinColumn(name="id_user", referencedColumnName="id", nullable=false)
      * })
@@ -84,7 +84,7 @@ class Staff implements TraceableStatusAwareInterface
     private User $user;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\Team", inversedBy="staff")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Team", inversedBy="staff")
      * @ORM\JoinColumn(name="id_team", nullable=false)
      *
      * @Assert\NotBlank
@@ -101,7 +101,7 @@ class Staff implements TraceableStatusAwareInterface
     private bool $manager;
 
     /**
-     * @ORM\OneToOne(targetEntity="Unilend\Core\Entity\StaffStatus", cascade={"persist"})
+     * @ORM\OneToOne(targetEntity="KLS\Core\Entity\StaffStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
      * @Assert\NotBlank
@@ -118,7 +118,7 @@ class Staff implements TraceableStatusAwareInterface
      *
      * @Assert\Valid
      *
-     * @ORM\OneToMany(targetEntity="Unilend\Core\Entity\StaffStatus", mappedBy="staff", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\StaffStatus", mappedBy="staff", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
      */
     private Collection $statuses;
 
@@ -137,7 +137,7 @@ class Staff implements TraceableStatusAwareInterface
     private bool $agencyProjectCreationPermission;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Unilend\Core\Entity\CompanyGroupTag")
+     * @ORM\ManyToMany(targetEntity="KLS\Core\Entity\CompanyGroupTag")
      * @ORM\JoinTable(name="core_staff_company_group_tag")
      *
      * @Groups({"staff:read", "staff:create", "staff:update"})
@@ -316,17 +316,6 @@ class Staff implements TraceableStatusAwareInterface
         $this->agencyProjectCreationPermission = $agencyProjectCreationPermission;
 
         return $this;
-    }
-
-    public function isGrantedLogin(): bool
-    {
-        $company = $this->getCompany();
-
-        if ($company->isCAGMember() && false === $company->hasSigned()) {
-            return false;
-        }
-
-        return $this->isActive();
     }
 
     /**

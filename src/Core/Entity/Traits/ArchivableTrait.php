@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Traits;
+namespace KLS\Core\Entity\Traits;
 
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
@@ -21,8 +21,6 @@ trait ArchivableTrait
 
     /**
      * @param DateTime $archived
-     *
-     * @return self
      */
     public function setArchived(?DateTime $archived): self
     {

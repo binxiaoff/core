@@ -2,31 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Serializer\ContextBuilder;
+namespace KLS\Core\Serializer\ContextBuilder;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
+use KLS\Core\Entity\AcceptationsLegalDocs;
+use KLS\Core\Entity\User;
+use KLS\Core\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\AcceptationsLegalDocs;
-use Unilend\Core\Entity\User;
-use Unilend\Core\Repository\UserRepository;
 
 class CurrentUser implements SerializerContextBuilderInterface
 {
-    /**  @var SerializerContextBuilderInterface */
     private SerializerContextBuilderInterface $decorated;
-    /** @var Security */
     private Security $security;
-    /** @var UserRepository */
     private UserRepository $userRepository;
 
-    /**
-     * @param SerializerContextBuilderInterface $decorated
-     * @param Security                          $security
-     * @param UserRepository                    $userRepository
-     */
     public function __construct(SerializerContextBuilderInterface $decorated, Security $security, UserRepository $userRepository)
     {
         $this->decorated      = $decorated;
@@ -36,12 +28,6 @@ class CurrentUser implements SerializerContextBuilderInterface
 
     /**
      * Creates a serialization context from a Request.
-     *
-     * @param Request    $request
-     * @param bool       $normalization
-     * @param array|null $extractedAttributes
-     *
-     * @return array
      */
     public function createFromRequest(Request $request, bool $normalization, array $extractedAttributes = null): array
     {

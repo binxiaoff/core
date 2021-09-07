@@ -2,18 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Query\{Expr\Join};
-use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
 use Doctrine\Persistence\ManagerRegistry;
 use JsonException;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\HubspotContact;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserStatus;
 use PDO;
-use Unilend\Core\Entity\{Company, Staff, User, UserStatus};
-use Unilend\Syndication\Entity\ProjectParticipation;
 
-    /**
+/**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
  * @method User|null findOneBy(array $criteria, array $orderBy = null)
  * @method User[]    findAll()
@@ -21,17 +26,14 @@ use Unilend\Syndication\Entity\ProjectParticipation;
  */
 class UserRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
+    private const MAX_USER_LOAD = 10;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
     }
 
     /**
-     * @param User $user
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -44,10 +46,9 @@ class UserRepository extends ServiceEntityRepository
     /**
      * @param int|User $idUser
      *
-     * @return mixed
-
-     **@throws NonUniqueResultException
+     * @throws NonUniqueResultException
      *
+     * @return mixed
      */
     public function getCompany($idUser)
     {
@@ -67,12 +68,7 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string $email
-     *
-     * @return User|null
-
-     **@throws NonUniqueResultException
-     *
+     * @throws NonUniqueResultException
      */
     public function findGrantedLoginAccountByEmail(string $email): ?User
     {
@@ -89,12 +85,9 @@ class UserRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param Company $company
-     * @param array   $roles
+     * @throws JsonException
      *
      * @return User[]
-     *
-     * @throws JsonException
      */
     public function findByStaffRoles(Company $company, array $roles): iterable
     {
@@ -102,28 +95,32 @@ class UserRepository extends ServiceEntityRepository
             ->innerJoin(Staff::class, 's', Join::WITH, 'c.idUser = s.user')
             ->where('JSON_CONTAINS(s.roles, :role) = 1')
             ->andWhere('s.company = :company')
-            ->setParameter('role', json_encode($roles, JSON_THROW_ON_ERROR))
+            ->setParameter('role', \json_encode($roles, JSON_THROW_ON_ERROR))
             ->setParameter('company', $company)
         ;
 
         return $queryBuilder->getQuery()->getResult();
     }
 
-    /**
-     * @param ProjectParticipation $projectParticipation
-     *
-     * @return array
-     */
-    public function findDefaultConcernedUsers(ProjectParticipation $projectParticipation): array
+    public function findHubspotUsersToCreate(int $limit): ?array
     {
-        $queryBuilder = $this->createQueryBuilder('users')
-            ->innerJoin('users.staff', 'staff')
-            ->where('staff.company = :company')
-            ->setParameters([
-                'company'       => $projectParticipation->getParticipant(),
-            ])
+        $qb = $this->createQueryBuilder('u')
+            ->leftJoin(HubspotContact::class, 'hc', Join::WITH, 'u.id = hc.user')
+            ->where('hc.id IS NULL')
         ;
 
-        return $queryBuilder->getQuery()->getResult();
+        return $qb->setMaxResults($limit)->getQuery()->getResult();
+    }
+
+    public function findHubspotUsersToUpdate(int $limit): ?array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->leftJoin(HubspotContact::class, 'hc', Join::WITH, 'u.id = hc.user')
+            ->where('hc.id IS NOT NULL')
+            ->andWhere('u.updated > hc.synchronized')
+            ->orderBy('hc.synchronized', 'DESC')
+        ;
+
+        return $qb->setMaxResults($limit)->getQuery()->getResult();
     }
 }

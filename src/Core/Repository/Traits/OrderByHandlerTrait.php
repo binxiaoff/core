@@ -2,17 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository\Traits;
+namespace KLS\Core\Repository\Traits;
 
 use Doctrine\ORM\QueryBuilder;
 use RuntimeException;
 
 trait OrderByHandlerTrait
 {
-    /**
-     * @param QueryBuilder $queryBuilder
-     * @param array        $orderBy
-     */
     private function handleOrderBy(QueryBuilder $queryBuilder, array $orderBy): void
     {
         $aliases = $queryBuilder->getRootAliases();
@@ -22,7 +18,7 @@ trait OrderByHandlerTrait
         $alias = $aliases[0];
 
         foreach ($orderBy as $sort => $order) {
-            if (false === mb_strpos($sort, '.')) {
+            if (false === \mb_strpos($sort, '.')) {
                 $sort = $alias . '.' . $sort;
             }
 

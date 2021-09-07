@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Model;
+namespace KLS\Core\Model;
 
 use InvalidArgumentException;
 
 class Bitmask
 {
-    /** @var int */
     private int $bitmask;
 
     /**
@@ -19,10 +18,13 @@ class Bitmask
         $this->bitmask = $this->normalize($bitmask);
     }
 
+    public function __toString(): string
+    {
+        return (string) $this->bitmask;
+    }
+
     /**
      * @param $addendum
-     *
-     * @return Bitmask
      */
     public function add($addendum): Bitmask
     {
@@ -33,8 +35,6 @@ class Bitmask
 
     /**
      * @param $subtract
-     *
-     * @return Bitmask
      */
     public function remove($subtract): Bitmask
     {
@@ -43,9 +43,6 @@ class Bitmask
         return $this;
     }
 
-    /**
-     * @return int
-     */
     public function get(): int
     {
         return $this->bitmask;
@@ -53,8 +50,6 @@ class Bitmask
 
     /**
      * @param $query
-     *
-     * @return bool
      */
     public function has($query): bool
     {
@@ -62,17 +57,7 @@ class Bitmask
     }
 
     /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return (string) $this->bitmask;
-    }
-
-    /**
      * @param $bitmask
-     *
-     * @return int
      */
     private function normalize($bitmask): int
     {
@@ -89,10 +74,10 @@ class Bitmask
         }
 
         throw new InvalidArgumentException(
-            sprintf(
+            \sprintf(
                 'Argument of %s %s given; %s, int, or numeric string expected',
                 \is_object($bitmask) ? 'class' : 'type',
-                \is_object($bitmask) ? \get_class($bitmask) : gettype($bitmask),
+                \is_object($bitmask) ? \get_class($bitmask) : \gettype($bitmask),
                 __CLASS__
             )
         );

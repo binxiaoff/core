@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Embeddable;
+namespace KLS\Core\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
 
 /**
  * @ORM\Embeddable
@@ -46,6 +46,11 @@ class NullableMoney implements MoneyInterface
     {
         $this->amount   = $amount;
         $this->currency = $currency;
+    }
+
+    public function __toString(): string
+    {
+        return false === $this->isNull() ? $this->amount . $this->currency : '';
     }
 
     public function isValid(): bool

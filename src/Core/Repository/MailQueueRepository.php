@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
-use Unilend\Core\Entity\{MailQueue};
+use KLS\Core\Entity\MailQueue;
 
 /**
  * @method MailQueue|null find($id, $lockMode = null, $lockVersion = null)
@@ -20,11 +20,6 @@ use Unilend\Core\Entity\{MailQueue};
  */
 class MailQueueRepository extends ServiceEntityRepository
 {
-    /**
-     * MailQueueRepository constructor.
-     *
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MailQueue::class);
@@ -39,8 +34,6 @@ class MailQueueRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int|null $limit
-     *
      * @throws Exception
      *
      * @return MailQueue[]
@@ -52,9 +45,9 @@ class MailQueueRepository extends ServiceEntityRepository
             ->andWhere('mq.scheduledAt <= :now')
             ->setParameters([
                 'status' => MailQueue::STATUS_PENDING,
-                'now' => new DateTime(),
+                'now'    => new DateTime(),
             ])
-            ->setMaxResults(is_numeric($limit) ? $limit : null)
+            ->setMaxResults(\is_numeric($limit) ? $limit : null)
             ->orderBy('mq.scheduledAt', 'ASC')
             ->getQuery()
             ->getResult()

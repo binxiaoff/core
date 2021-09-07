@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\{NonUniqueResultException, ORMException, OptimisticLockException};
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use KLS\Core\Entity\AcceptationsLegalDocs;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Core\Entity\AcceptationsLegalDocs;
 
 /**
  * @method AcceptationsLegalDocs|null find($id, $lockMode = null, $lockVersion = null)
@@ -18,17 +20,12 @@ use Unilend\Core\Entity\AcceptationsLegalDocs;
  */
 class AcceptationLegalDocsRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, AcceptationsLegalDocs::class);
     }
 
     /**
-     * @param AcceptationsLegalDocs $acceptationsLegalDocs
-     *
      * @throws ORMException
      * @throws OptimisticLockException
      */
@@ -39,8 +36,6 @@ class AcceptationLegalDocsRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param int $limit
-     *
      * @return AcceptationsLegalDocs[]
      */
     public function findByIdLegalDocWithoutPfd(int $limit): array
@@ -57,11 +52,7 @@ class AcceptationLegalDocsRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param UserInterface $user
-     *
      * @throws NonUniqueResultException
-     *
-     * @return AcceptationsLegalDocs|null
      */
     public function findUsersLastSigned(UserInterface $user): ?AcceptationsLegalDocs
     {

@@ -2,16 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Repository;
+namespace KLS\Core\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
-use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\Persistence\ManagerRegistry;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\Team;
+use KLS\Core\Entity\Team;
 
 /**
  * @method Team|null find($id, $lockMode = null, $lockVersion = null)
@@ -21,9 +16,6 @@ use Unilend\Core\Entity\Team;
  */
 class TeamRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Team::class);

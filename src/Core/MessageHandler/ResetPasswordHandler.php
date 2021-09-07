@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\MessageHandler;
+namespace KLS\Core\MessageHandler;
 
 use Exception;
+use KLS\Core\Entity\Request\ResetPassword;
+use KLS\Core\Repository\UserRepository;
+use KLS\Core\Service\GoogleRecaptchaManager;
+use KLS\Core\Service\User\UserNotifier;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Unilend\Core\Entity\Request\ResetPassword;
-use Unilend\Core\Repository\UserRepository;
-use Unilend\Core\Service\{GoogleRecaptchaManager, User\UserNotifier};
 
 class ResetPasswordHandler implements MessageHandlerInterface
 {
@@ -19,11 +20,6 @@ class ResetPasswordHandler implements MessageHandlerInterface
     /** @var GoogleRecaptchaManager */
     private $googleRecaptchaManager;
 
-    /**
-     * @param UserRepository         $userRepository
-     * @param UserNotifier           $notifier
-     * @param GoogleRecaptchaManager $googleRecaptchaManager
-     */
     public function __construct(
         UserRepository $userRepository,
         UserNotifier $notifier,
@@ -35,8 +31,6 @@ class ResetPasswordHandler implements MessageHandlerInterface
     }
 
     /**
-     * @param ResetPassword $resetPasswordRequest
-     *
      * @throws Exception
      */
     public function __invoke(ResetPassword $resetPasswordRequest): void

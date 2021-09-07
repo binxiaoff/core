@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity;
+namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
-use Unilend\Core\Entity\Traits\{BlamableAddedTrait, TimestampableAddedOnlyTrait};
+use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
  * @ORM\Entity
@@ -19,23 +20,17 @@ class CompanyModuleLog
     use BlamableAddedTrait;
 
     /**
-     * @var CompanyModule
-     *
-     * @ORM\ManyToOne(targetEntity="Unilend\Core\Entity\CompanyModule", inversedBy="logs")
+     * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\CompanyModule", inversedBy="logs")
      * @ORM\JoinColumn(nullable=false, name="id_module")
      */
     private CompanyModule $companyModule;
 
     /**
-     * @var bool
-     *
      * @ORM\Column(type="boolean")
      */
     private bool $activated;
 
     /**
-     * @var int
-     *
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
@@ -43,8 +38,6 @@ class CompanyModuleLog
     private int $id;
 
     /**
-     * @param CompanyModule $module
-     *
      * @throws Exception
      */
     public function __construct(CompanyModule $module)
@@ -55,25 +48,16 @@ class CompanyModuleLog
         $this->added         = new DateTimeImmutable();
     }
 
-    /**
-     * @return int
-     */
     public function getId(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return bool
-     */
     public function isActivated(): bool
     {
         return $this->activated;
     }
 
-    /**
-     * @return CompanyModule
-     */
     public function getCompanyModule(): CompanyModule
     {
         return $this->companyModule;

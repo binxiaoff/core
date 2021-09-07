@@ -2,18 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\FileSystem;
+namespace KLS\Core\Service\FileSystem;
 
 use Defuse\Crypto\Exception\BadFormatException;
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Defuse\Crypto\Exception\IOException;
 use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
 use Exception;
+use KLS\Core\Entity\FileVersion;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use RuntimeException;
-use Unilend\Core\Entity\FileVersion;
-
 use function Symfony\Component\String\s;
 
 class FileSystemHelper
@@ -44,18 +43,18 @@ class FileSystemHelper
             $key      = $this->fileCrypto->encryptFile($temporaryFilePath, $filePath);
         }
 
-        $fileResource = @fopen($filePath, 'r+b');
+        $fileResource = @\fopen($filePath, 'r+b');
 
-        if (is_resource($fileResource)) {
+        if (\is_resource($fileResource)) {
             $filesystem->writeStream($filesystemDestPath, $fileResource);
-            fclose($fileResource);
+            \fclose($fileResource);
         }
 
         /* We delete only the temporary file that we created for the encryption.
          * The orignal file ($temporaryFilePath) is managed by other module (for example, Symfony file system), which should not be touched.
         */
         if ($encryption) {
-            @unlink($filePath);
+            @\unlink($filePath);
         }
 
         return $key;
@@ -78,7 +77,7 @@ class FileSystemHelper
                 break;
 
             default:
-                throw new RuntimeException(sprintf('The filesystem %s is not be supported', $fileVersion->getFileSystem()));
+                throw new RuntimeException(\sprintf('The filesystem %s is not be supported', $fileVersion->getFileSystem()));
         }
 
         return $filesystem;
@@ -103,9 +102,9 @@ class FileSystemHelper
 
     public function normalizeFileName(string $fileName): string
     {
-        $pathInfo  = pathinfo($fileName);
-        $fileName  = s(trim($pathInfo['filename']))->ascii()->snake()->toString();
-        $extension = s(trim($pathInfo['extension'] ?? ''))->ascii()->snake()->toString();
+        $pathInfo  = \pathinfo($fileName);
+        $fileName  = s(\trim($pathInfo['filename']))->ascii()->snake()->toString();
+        $extension = s(\trim($pathInfo['extension'] ?? ''))->ascii()->snake()->toString();
 
         return $fileName . ($extension ? '.' . $extension : '');
     }
@@ -119,10 +118,10 @@ class FileSystemHelper
      */
     private function decrypt($fileResource, string $key)
     {
-        $outputFileResource = tmpfile();
+        $outputFileResource = \tmpfile();
         $this->fileCrypto->decryptFileResource($fileResource, $outputFileResource, $key);
 
         // Re-open the file to change the resource mode, so that the mode is the same as FilesystemOperator::readStream
-        return fopen(stream_get_meta_data($outputFileResource)['uri'], 'rb');
+        return \fopen(\stream_get_meta_data($outputFileResource)['uri'], 'rb');
     }
 }

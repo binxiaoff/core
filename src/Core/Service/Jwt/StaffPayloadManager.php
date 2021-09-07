@@ -2,22 +2,58 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service\Jwt;
+namespace KLS\Core\Service\Jwt;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Exception\ItemNotFoundException;
+use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
+use KLS\Core\Service\Staff\StaffLoginChecker;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Unilend\Core\Entity\Staff;
-use Unilend\Core\Entity\User;
 
 class StaffPayloadManager implements PayloadManagerInterface
 {
     private IriConverterInterface $iriConverter;
+    private StaffLoginChecker $staffLoginChecker;
 
-    public function __construct(IriConverterInterface $iriConverter)
+    public function __construct(IriConverterInterface $iriConverter, StaffLoginChecker $staffLoginChecker)
     {
-        $this->iriConverter = $iriConverter;
+        $this->iriConverter      = $iriConverter;
+        $this->staffLoginChecker = $staffLoginChecker;
+    }
+
+    public static function getScope(): string
+    {
+        return 'staff';
+    }
+
+    /**
+     * @return iterable|array
+     */
+    public function getPayloads(User $user): iterable
+    {
+        foreach ($user->getStaff() as $staff) {
+            if ($this->staffLoginChecker->isGrantedLogin($staff)) {
+                yield ['staff' => $this->iriConverter->getIriFromItem($staff)];
+            }
+        }
+    }
+
+    public function updateSecurityToken(TokenInterface $token, array $payload): void
+    {
+        if (false === isset($payload['staff'])) {
+            return;
+        }
+
+        /** @var Staff $currentStaff */
+        $currentStaff = $this->iriConverter->getItemFromIri($payload['staff'], [AbstractNormalizer::GROUPS => []]);
+
+        // Legacy way of storing current staff for security
+        $token->getUser()->setCurrentStaff($currentStaff);
+
+        $token->setAttribute('staff', $currentStaff);
+        $token->setAttribute('company', $currentStaff->getCompany());
     }
 
     /**
@@ -36,42 +72,11 @@ class StaffPayloadManager implements PayloadManagerInterface
                 return false;
             }
 
-            if (false === ($staff instanceof Staff && $staff->isGrantedLogin())) {
+            if (false === ($staff instanceof Staff && $this->staffLoginChecker->isGrantedLogin($staff))) {
                 return false;
             }
         }
 
         return true;
-    }
-
-    public function updateSecurityToken(TokenInterface $token, array $payload): void
-    {
-        if (isset($payload['staff'])) {
-            /** @var Staff $currentStaff */
-            $currentStaff = $this->iriConverter->getItemFromIri($payload['staff'], [AbstractNormalizer::GROUPS => []]);
-
-            // Legacy way of storing current staff for security
-            $token->getUser()->setCurrentStaff($currentStaff);
-
-            $token->setAttribute('staff', $currentStaff);
-            $token->setAttribute('company', $currentStaff->getCompany());
-        }
-    }
-
-    public static function getScope(): string
-    {
-        return 'staff';
-    }
-
-    /**
-     * @return iterable|array
-     */
-    public function getPayloads(User $user): iterable
-    {
-        foreach ($user->getStaff() as $staff) {
-            if ($staff->isGrantedLogin()) {
-                yield ['staff' => $this->iriConverter->getIriFromItem($staff)];
-            }
-        }
     }
 }

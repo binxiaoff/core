@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Extension\Company;
+namespace KLS\Core\Extension\Company;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\User;
 use Symfony\Component\Security\Core\Security;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\User;
 
 class ListExtension implements QueryCollectionExtensionInterface
 {

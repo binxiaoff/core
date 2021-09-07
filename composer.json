@@ -1,13 +1,13 @@
 {
-  "name": "unilend/application",
+  "name": "kls/api",
   "description": "KLS API application",
   "license": "proprietary",
   "type": "project",
   "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
-      "Unilend\\": "src/",
-      "Unilend\\Test\\": "tests/",
+      "KLS\\": "src/",
+      "KLS\\Test\\": "tests/",
       "PHPUnit\\": "bin/.phpunit/phpunit"
     }
   },

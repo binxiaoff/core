@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\DataFixtures;
+namespace KLS\Core\DataFixtures;
 
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
-use Unilend\Core\Entity\Company;
-use Unilend\Core\Entity\CompanyModule;
-use Unilend\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Company;
+use KLS\Core\Entity\CompanyModule;
+use KLS\Core\Entity\Embeddable\NullableMoney;
 
 class CompanyModuleFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
@@ -51,7 +51,7 @@ class CompanyModuleFixtures extends AbstractFixtures implements DependentFixture
         }
 
         foreach (CompanyModule::getAvailableModuleCodes() as $moduleCode) {
-            if (in_array($moduleCode, $excludeModules, true)) {
+            if (\in_array($moduleCode, $excludeModules, true)) {
                 continue;
             }
 

@@ -2,32 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\EventSubscriber\ApiPlatform\User;
+namespace KLS\Core\EventSubscriber\ApiPlatform\User;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Exception;
+use KLS\Core\Entity\User;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Unilend\Core\Entity\User;
 
 class EncodePassword implements EventSubscriberInterface
 {
     /** @var UserPasswordEncoderInterface */
     private $encoder;
 
-    /**
-     * @param UserPasswordEncoderInterface $encoder
-     */
     public function __construct(UserPasswordEncoderInterface $encoder)
     {
         $this->encoder = $encoder;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public static function getSubscribedEvents()
     {
         return [
@@ -36,8 +30,6 @@ class EncodePassword implements EventSubscriberInterface
     }
 
     /**
-     * @param ViewEvent $event
-     *
      * @throws Exception
      */
     public function encodePassword(ViewEvent $event)

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Security\Voter;
+namespace KLS\Core\Security\Voter;
 
-use Unilend\Core\Entity\MessageThread;
-use Unilend\Core\Entity\User;
-use Unilend\Syndication\Security\Voter\ProjectParticipationVoter;
+use KLS\Core\Entity\MessageThread;
+use KLS\Core\Entity\User;
+use KLS\Syndication\Arrangement\Security\Voter\ProjectParticipationVoter;
 
 class MessageThreadVoter extends AbstractEntityVoter
 {

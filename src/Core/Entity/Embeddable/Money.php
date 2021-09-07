@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Embeddable;
+namespace KLS\Core\Entity\Embeddable;
 
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use Unilend\Core\Entity\Interfaces\MoneyInterface;
 
 /**
  * @ORM\Embeddable
@@ -41,27 +41,22 @@ class Money implements MoneyInterface
      */
     protected $currency;
 
-    /**
-     * @param string $currency
-     * @param string $amount
-     */
     public function __construct(string $currency, string $amount = '0')
     {
         $this->currency = $currency;
         $this->amount   = $amount;
     }
 
-    /**
-     * @return string
-     */
+    public function __toString(): string
+    {
+        return $this->amount . $this->currency;
+    }
+
     public function getAmount(): string
     {
         return $this->amount;
     }
 
-    /**
-     * @return string
-     */
     public function getCurrency(): string
     {
         return $this->currency;

@@ -2,10 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Service;
+namespace KLS\Core\Service;
 
-use Defuse\Crypto\Exception\{BadFormatException, EnvironmentIsBrokenException, WrongKeyOrModifiedCiphertextException};
-use Defuse\Crypto\{Crypto, Key, KeyProtectedByPassword};
+use Defuse\Crypto\Crypto;
+use Defuse\Crypto\Exception\BadFormatException;
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException;
+use Defuse\Crypto\Key;
+use Defuse\Crypto\KeyProtectedByPassword;
 
 class DataCrypto
 {
@@ -15,24 +19,17 @@ class DataCrypto
     private $masterKey;
 
     /**
-     * @param string $masterKeyPath
-     * @param string $masterKeyPassPhrase
-     *
      * @throws BadFormatException
      * @throws EnvironmentIsBrokenException
      * @throws WrongKeyOrModifiedCiphertextException
      */
     public function __construct(string $masterKeyPath, string $masterKeyPassPhrase)
     {
-        $this->masterKey = (KeyProtectedByPassword::loadFromAsciiSafeString(file_get_contents($masterKeyPath)))->unlockKey(hex2bin($masterKeyPassPhrase));
+        $this->masterKey = (KeyProtectedByPassword::loadFromAsciiSafeString(\file_get_contents($masterKeyPath)))->unlockKey(\hex2bin($masterKeyPassPhrase));
     }
 
     /**
-     * @param string $plaintext
-     *
      * @throws EnvironmentIsBrokenException
-     *
-     * @return string
      */
     public function encrypt(string $plaintext): string
     {
@@ -40,12 +37,8 @@ class DataCrypto
     }
 
     /**
-     * @param string $cipherText
-     *
      * @throws EnvironmentIsBrokenException
      * @throws WrongKeyOrModifiedCiphertextException
-     *
-     * @return string
      */
     public function decrypt(string $cipherText): string
     {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Entity\Interfaces;
+namespace KLS\Core\Entity\Interfaces;
 
 interface FileStorageInterface
 {
@@ -12,8 +12,6 @@ interface FileStorageInterface
     public function getRelativeFilePath(): ?string;
 
     /**
-     * @param string|null $relativeFilePath
-     *
      * @return mixed
      */
     public function setRelativeFilePath(?string $relativeFilePath);

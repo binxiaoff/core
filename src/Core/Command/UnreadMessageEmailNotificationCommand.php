@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Unilend\Core\Command;
+namespace KLS\Core\Command;
 
 use Exception;
+use KLS\Core\Repository\MessageStatusRepository;
+use KLS\Core\SwiftMailer\MailjetMessage;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Swift_Mailer;
@@ -15,8 +17,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Core\Repository\MessageStatusRepository;
-use Unilend\Core\SwiftMailer\MailjetMessage;
 
 class UnreadMessageEmailNotificationCommand extends Command
 {
