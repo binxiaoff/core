@@ -56,6 +56,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "controller": NotFoundAction::class,
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "patch": {
  *             "denormalization_context": {
