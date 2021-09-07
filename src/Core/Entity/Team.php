@@ -22,6 +22,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', object)",

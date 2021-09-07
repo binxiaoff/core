@@ -27,6 +27,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "delete": {"security_post_denormalize": "is_granted('delete', previous_object)"}
  *     },

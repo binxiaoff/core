@@ -25,6 +25,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "download": {
  *             "method": "GET",
