@@ -134,24 +134,30 @@ class ProjectUpdateNotifier implements ProjectNotifierInterface
         if ($projectCurrentStatus) {
             switch ($projectCurrentStatus->getStatus()) {
                 case ProjectStatus::STATUS_INTEREST_EXPRESSION:
-                    return \implode(' - ', \array_filter(
-                        [
-                            $this->formatter->formatCurrency(
-                                (float) $participation->getInterestRequest()->getMoney()->getAmount(),
-                                $participation->getInterestRequest()->getMoney()->getCurrency()
-                            ),
-                            $this->formatter->formatCurrency(
-                                (float) $participation->getInterestRequest()->getMaxMoney()->getAmount(),
-                                $participation->getInterestRequest()->getMaxMoney()->getCurrency()
-                            ),
-                        ]
-                    ));
+                    $money    = null;
+                    $maxMoney = null;
+                    if (false === $participation->getInterestRequest()->getMoney()->isNull()) {
+                        $money = $this->formatter->formatCurrency(
+                            (float) $participation->getInterestRequest()->getMoney()->getAmount(),
+                            $participation->getInterestRequest()->getMoney()->getCurrency()
+                        );
+                    }
+
+                    if (false === $participation->getInterestRequest()->getMaxMoney()->isNull()) {
+                        $maxMoney = $this->formatter->formatCurrency(
+                            (float) $participation->getInterestRequest()->getMaxMoney()->getAmount(),
+                            $participation->getInterestRequest()->getMaxMoney()->getCurrency()
+                        );
+                    }
+
+                    return \implode(' - ', \array_filter([$money, $maxMoney]));
 
                 case ProjectStatus::STATUS_PARTICIPANT_REPLY:
-                    return $this->formatter->formatCurrency(
-                        (float) $participation->getInvitationRequest()->getMoney()->getAmount(),
-                        $participation->getInvitationRequest()->getMoney()->getCurrency()
-                    );
+                    return $participation->getInvitationRequest()->getMoney()->isNull() ? '' :
+                        $this->formatter->formatCurrency(
+                            (float) $participation->getInvitationRequest()->getMoney()->getAmount(),
+                            $participation->getInvitationRequest()->getMoney()->getCurrency()
+                        );
 
                 case ProjectStatus::STATUS_ALLOCATION:
                     return $this->formatter->formatCurrency(
