@@ -13,6 +13,8 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class ProgramVoter extends AbstractEntityVoter
 {
+    public const ATTRIBUTE_DATAROOM = 'dataroom';
+
     private StaffPermissionManager $staffPermissionManager;
 
     public function __construct(AuthorizationCheckerInterface $authorizationChecker, StaffPermissionManager $staffPermissionManager)
@@ -59,5 +61,15 @@ class ProgramVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff && $this->canEdit($program, $staff->getUser());
+    }
+
+    protected function canDataroom(Program $program, User $user): bool
+    {
+        $staff = $user->getCurrentStaff();
+
+        return $staff
+            && $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
+            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_PROGRAM)
+            && false === $program->isArchived();
     }
 }
