@@ -39,7 +39,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "user_status:read",
  *                     "nullableMoney:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "collection-get-read",
  *             },
  *         },
  *     },
@@ -57,7 +57,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "nullableMoney:read",
  *                     "team:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-get-read",
  *             },
  *         },
  *         "staff": {
@@ -71,7 +71,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "user_status:read",
  *                     "staffStatus:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-staff-read",
  *             },
  *         },
  *         "companyGroupTags": {
@@ -82,7 +82,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "groups": {
  *                     "companyGroupTag:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-companyGroupTags-read",
  *             },
  *         },
  *         "teams": {
@@ -93,7 +93,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "groups": {
  *                     "team:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-teams-read",
  *             },
  *         },
  *     },

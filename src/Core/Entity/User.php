@@ -56,7 +56,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "company:read",
  *                     "legalDocument:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-get-read",
  *             },
  *         },
  *         "put": {"security": "is_granted('edit', object)"},

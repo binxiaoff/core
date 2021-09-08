@@ -34,7 +34,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "groups": {
  *                     "projectParticipationStatus:create",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-create",
  *             },
  *         },
  *     },

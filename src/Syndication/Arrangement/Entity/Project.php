@@ -90,7 +90,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "nullablePerson:read",
  *                     "companyGroupTag:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "collection-get-read",
  *             },
  *         },
  *         "post": {
@@ -105,7 +105,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "nullablePerson:write",
  *                     "companyGroupTag:read",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *     },
@@ -143,7 +143,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "companyStatus:read",
  *                     "companyGroupTag:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-get-read",
  *             },
  *         },
  *         "project_nda": {
@@ -164,7 +164,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "nullableMoney:write",
  *                     "nullablePerson:write",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "item-patch-write",
  *             },
  *             "normalization_context": {
  *                 "groups": {
@@ -197,7 +197,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "companyStatus:read",
  *                     "companyGroupTag:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-patch-read",
  *             },
  *         },
  *         "delete": {

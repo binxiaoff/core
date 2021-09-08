@@ -45,7 +45,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "nullableMoney:write",
  *                     "money:write",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "item-patch-write",
  *             },
  *         },
  *         "get_agent_dataroom": {
@@ -67,7 +67,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "core:abstractFolder:read",
  *                     "file:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-get_agent_dataroom-read",
  *             },
  *         },
  *         "post_agent_dataroom": {
@@ -90,7 +90,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "core:abstractFolder:read",
  *                     "file:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-post_agent_dataroom-read",
  *             },
  *         },
  *         "delete_agent_dataroom": {

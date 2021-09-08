@@ -37,7 +37,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "user:create",
  *                     "user:write",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *     },
@@ -56,7 +56,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                 "groups": {
  *                     "agency:agentMember:write",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "item-patch-write",
  *             },
  *         },
  *         "delete": {

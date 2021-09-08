@@ -56,7 +56,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "lendingRate:write",
  *                     "money:write",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *     },

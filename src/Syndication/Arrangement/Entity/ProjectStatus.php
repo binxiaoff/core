@@ -45,7 +45,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                 "groups": {
  *                     "projectStatus:create",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-create",
  *             },
  *         },
  *     },

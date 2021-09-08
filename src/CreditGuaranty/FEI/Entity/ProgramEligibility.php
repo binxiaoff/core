@@ -34,19 +34,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *         "openapi_definition_name": "write",
  *     },
  *     itemOperations={
- *         "get": {
- *             "security": "is_granted('view', object)",
- *             "normalization_context": {
- *                 "groups": {
- *                     "creditGuaranty:programEligibility:read",
- *                     "creditGuaranty:field:read",
- *                     "creditGuaranty:programChoiceOption:read",
- *                     "creditGuaranty:programEligibilityConfiguration:read",
- *                     "timestampable:read",
- *                 },
- *                 "openapi_definition_name": "read",
- *             },
- *         },
+ *         "get": {"security": "is_granted('view', object)"},
  *         "delete": {"security": "is_granted('delete', object)"},
  *     },
  *     collectionOperations={
@@ -57,7 +45,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *                     "creditGuaranty:programEligibility:write",
  *                     "creditGuaranty:programEligibility:create",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *     },

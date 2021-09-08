@@ -52,7 +52,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "creditGuaranty:programContact:write",
  *                     "creditGuaranty:programContact:create",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *     },

@@ -57,7 +57,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "creditGuaranty:programChoiceOption:write",
  *                     "creditGuaranty:programChoiceOption:create",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *     },

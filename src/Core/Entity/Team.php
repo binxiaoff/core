@@ -37,7 +37,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "groups": {
  *                     "team:update",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "item-patch-update",
  *             },
  *         },
  *     },
@@ -48,7 +48,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "groups": {
  *                     "team:create",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-create",
  *             },
  *             "input": "KLS\Core\DTO\Team\CreateTeam",
  *         },

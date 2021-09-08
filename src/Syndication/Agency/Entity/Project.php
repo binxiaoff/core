@@ -70,7 +70,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "nullablePerson:write",
  *                     "nullableMoney:write",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *             "openapi_context": {
  *                 "parameters": {
@@ -100,7 +100,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                 "groups": {
  *                     "agency:term:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-terms-read",
  *             },
  *             "controller": GetTerms::class,
  *         },
@@ -113,7 +113,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:covenant:read",
  *                     "agency:inequality:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-covenants-read",
  *             },
  *             "controller": GetCovenants::class,
  *         },
@@ -127,7 +127,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "nullableMoney:write",
  *                     "agency:covenant:update",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "item-patch-write",
  *             },
  *             "validation_groups": {Project::class, "getCurrentValidationGroups"},
  *         },
@@ -153,7 +153,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "core:abstractFolder:read",
  *                     "file:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-get_borrower_dataroom_shared-read",
  *             },
  *         },
  *         "post_borrower_dataroom_shared": {
@@ -176,7 +176,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "core:abstractFolder:read",
  *                     "file:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-post_borrower_dataroom_shared-read",
  *             },
  *         },
  *         "delete_borrower_dataroom_shared": {
@@ -211,7 +211,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "core:abstractFolder:read",
  *                     "file:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-get_borrower_dataroom_confidential-read",
  *             },
  *         },
  *         "post_borrower_dataroom_confidential": {
@@ -234,7 +234,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "core:abstractFolder:read",
  *                     "file:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-post_borrower_dataroom_confidential-read",
  *             },
  *         },
  *         "delete_borrower_dataroom_confidential": {

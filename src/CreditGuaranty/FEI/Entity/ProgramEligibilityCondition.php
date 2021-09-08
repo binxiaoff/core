@@ -53,7 +53,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "creditGuaranty:programEligibilityCondition:write",
  *                     "creditGuaranty:programEligibilityCondition:create",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *     },

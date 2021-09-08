@@ -46,7 +46,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "groups": {
  *                     "ndaSignature:create"
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-create",
  *             },
  *         },
  *     },

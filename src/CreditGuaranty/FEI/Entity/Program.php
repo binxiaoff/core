@@ -82,7 +82,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "core:abstractFolder:read",
  *                     "file:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-get_program_dataroom-read",
  *             },
  *         },
  *         "post_program_dataroom": {
@@ -104,7 +104,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "core:abstractFolder:read",
  *                     "file:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-post_program_dataroom-read",
  *             },
  *         },
  *         "delete_program_dataroom": {

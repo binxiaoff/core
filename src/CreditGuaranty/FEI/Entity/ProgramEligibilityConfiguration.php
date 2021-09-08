@@ -45,7 +45,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "creditGuaranty:programEligibilityCondition:read",
  *                     "timestampable:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "item-get-read",
  *             },
  *         },
  *         "patch": {"security": "is_granted('edit', object)"},

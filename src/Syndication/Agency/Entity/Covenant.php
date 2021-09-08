@@ -54,7 +54,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:marginImpact:create",
  *                     "agency:inequality:write",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "item-patch-write",
  *             },
  *         },
  *         "delete": {
@@ -73,7 +73,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:marginImpact:create",
  *                     "agency:inequality:write",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *     },

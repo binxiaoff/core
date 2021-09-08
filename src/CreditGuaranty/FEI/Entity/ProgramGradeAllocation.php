@@ -54,7 +54,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "creditGuaranty:programGradeAllocation:write",
  *                     "creditGuaranty:programGradeAllocation:create",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *     },

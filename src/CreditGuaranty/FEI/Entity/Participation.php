@@ -53,7 +53,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "creditGuaranty:participation:write",
  *                     "creditGuaranty:participation:create",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *         "get": {
@@ -63,7 +63,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "creditGuaranty:programStatus:read",
  *                     "money:read",
  *                 },
- *                 "openapi_definition_name": "read",
+ *                 "openapi_definition_name": "collection-get-read",
  *             },
  *         },
  *     },

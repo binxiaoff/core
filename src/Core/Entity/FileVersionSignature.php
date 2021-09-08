@@ -40,7 +40,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "groups": {
  *                     "fileVersionSignature:sign",
  *                 },
- *                 "openapi_definition_name": "sign",
+ *                 "openapi_definition_name": "item-sign-sign",
  *             },
  *         },
  *     },

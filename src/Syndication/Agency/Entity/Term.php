@@ -43,7 +43,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "groups": {
  *                     "agency:term:update",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "item-patch-update",
  *             },
  *             "security": "is_granted('edit', object)",
  *         },

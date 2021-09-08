@@ -48,7 +48,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "projectOrganizer:create",
  *                     "role:write",
  *                 },
- *                 "openapi_definition_name": "write",
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *         },
  *     },
