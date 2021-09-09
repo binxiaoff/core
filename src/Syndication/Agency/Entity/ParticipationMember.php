@@ -23,8 +23,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "agency:participationMember:read"
- *         }
+ *             "agency:participationMember:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     collectionOperations={
  *         "post": {
@@ -34,10 +35,11 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:participationMember:create",
  *                     "agency:participationMember:write",
  *                     "user:create",
- *                     "user:write"
- *                 }
- *             }
- *         }
+ *                     "user:write",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -54,11 +56,12 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                 "groups": {
  *                     "agency:participationMember:write",
  *                     "user:create",
- *                     "user:write"
- *                 }
- *             }
- *         }
- *     }
+ *                     "user:write",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-write",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @ORM\Table(name="agency_participation_member", uniqueConstraints={

@@ -23,8 +23,20 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * Pagination need to be enabled (which is the default configuration) on the resource, otherwise it will be out of memory.
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:programChoiceOption:read", "creditGuaranty:field:read", "timestampable:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:programChoiceOption:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programChoiceOption:read",
+ *             "creditGuaranty:field:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programChoiceOption:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -35,14 +47,20 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *         },
  *         "patch": {"security": "is_granted('edit', object)"},
- *         "delete": {"security": "is_granted('delete', object)"}
+ *         "delete": {"security": "is_granted('delete', object)"},
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"creditGuaranty:programChoiceOption:write", "creditGuaranty:programChoiceOption:create"}}
- *         }
- *     }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:programChoiceOption:write",
+ *                     "creditGuaranty:programChoiceOption:create",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @ApiFilter(SearchFilter::class, properties={"field.publicId", "field.fieldAlias"})

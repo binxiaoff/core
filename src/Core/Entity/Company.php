@@ -37,10 +37,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "staff:read",
  *                     "user:read",
  *                     "user_status:read",
- *                     "nullableMoney:read"
- *                 }
- *             }
- *         }
+ *                     "nullableMoney:read",
+ *                 },
+ *                 "openapi_definition_name": "collection-get-read",
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -54,8 +55,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "user:read",
  *                     "user_status:read",
  *                     "nullableMoney:read",
- *                     "team:read"
- *                 }
+ *                     "team:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get-read",
  *             },
  *         },
  *         "staff": {
@@ -67,9 +69,10 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "staff:read",
  *                     "user:read",
  *                     "user_status:read",
- *                     "staffStatus:read"
- *                 }
- *             }
+ *                     "staffStatus:read",
+ *                 },
+ *                 "openapi_definition_name": "item-staff-read",
+ *             },
  *         },
  *         "companyGroupTags": {
  *             "method": "GET",
@@ -77,9 +80,10 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "controller": "\KLS\Core\Controller\Company\CompanyGroupTag",
  *             "normalization_context": {
  *                 "groups": {
- *                     "companyGroupTag:read"
- *                 }
- *             }
+ *                     "companyGroupTag:read",
+ *                 },
+ *                 "openapi_definition_name": "item-companyGroupTags-read",
+ *             },
  *         },
  *         "teams": {
  *             "method": "GET",
@@ -87,11 +91,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "controller": "\KLS\Core\Controller\Company\Team",
  *             "normalization_context": {
  *                 "groups": {
- *                     "team:read"
- *                 }
- *             }
- *         }
- *     }
+ *                     "team:read",
+ *                 },
+ *                 "openapi_definition_name": "item-teams-read",
+ *             },
+ *         },
+ *     },
  * )
  * @ApiFilter("KLS\Core\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
  * @ApiFilter(SearchFilter::class, properties={"groupName"})

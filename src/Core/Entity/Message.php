@@ -24,20 +24,23 @@ use Throwable;
  * @ORM\Table(name="core_message")
  *
  * @ApiResource(
- *     normalizationContext={"groups": {
- *         "message:read",
- *         "user:read",
- *         "staff:read",
- *         "company:read",
- *         "timestampable:read",
- *         "file:read",
- *         "fileVersion:read"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "message:read",
+ *             "user:read",
+ *             "staff:read",
+ *             "company:read",
+ *             "timestampable:read",
+ *             "file:read",
+ *             "fileVersion:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     collectionOperations={
  *         "post": {
- *             "input": MessageInput::class
- *         }
- *     }
+ *             "input": MessageInput::class,
+ *         },
+ *     },
  * )
  */
 class Message implements FileTypesAwareInterface

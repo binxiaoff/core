@@ -21,10 +21,20 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:reservationStatus:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:reservationStatus:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:reservationStatus:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:reservationStatus:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)"}
+ *         "post": {"security_post_denormalize": "is_granted('create', object)"},
  *     },
  *     itemOperations={
  *         "get": {
@@ -35,7 +45,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                 "x-visibility": "hide",
  *             },
  *         },
- *     }
+ *     },
  * )
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_reservation_status")

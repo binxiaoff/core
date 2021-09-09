@@ -30,16 +30,21 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @ApiResource(
  *     attributes={
- *         "validation_groups": {Covenant::class, "getCurrentValidationGroups"}
+ *         "validation_groups": {Covenant::class, "getCurrentValidationGroups"},
  *     },
  *     normalizationContext={
- *         "groups": {"agency:covenant:read", "agency:inequality:read"}
+ *         "groups": {
+ *             "agency:covenant:read",
+ *             "agency:inequality:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
+ *             "security_denormalize": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:covenant:update",
@@ -47,17 +52,18 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:covenantRule:create",
  *                     "agency:marginRule:create",
  *                     "agency:marginImpact:create",
- *                     "agency:inequality:write"
- *                 }
+ *                     "agency:inequality:write",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-write",
  *             },
- *             "security_denormalize": "is_granted('edit', object)"
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object)"
- *         }
+ *             "security": "is_granted('delete', object)",
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
+ *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:covenant:create",
@@ -65,12 +71,12 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:covenantRule:create",
  *                     "agency:marginRule:create",
  *                     "agency:marginImpact:create",
- *                     "agency:inequality:write"
- *                 }
+ *                     "agency:inequality:write",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
- *             "security_post_denormalize": "is_granted('create', object)"
- *         }
- *     }
+ *         },
+ *     },
  * )
  *
  * @ApiFilter(

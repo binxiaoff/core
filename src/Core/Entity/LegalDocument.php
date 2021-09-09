@@ -14,7 +14,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"legalDocument:read", "timestampable:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "legalDocument:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -23,15 +29,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *             "openapi_context": {
  *                 "x-visibility": "hide",
  *             },
- *         }
+ *         },
  *     },
  *     collectionOperations={
  *         "current_service_terms": {
  *             "method": "GET",
  *             "controller": "KLS\Core\Controller\LegalDocument\CurrentServiceTerms",
  *             "path": "/core/legal_documents/current_service_terms",
- *         }
- *     }
+ *         },
+ *     },
  * )
  *
  * @ORM\Entity

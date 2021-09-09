@@ -62,10 +62,19 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "projectStatus:read",
  *             "projectOrganizer:read",
  *             "role:read",
- *             "companyGroupTag:read"
- *         }
+ *             "companyGroupTag:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
- *     denormalizationContext={"groups": {"project:write", "company:write", "money:write", "nullablePerson:write"}},
+ *     denormalizationContext={
+ *         "groups": {
+ *             "project:write",
+ *             "company:write",
+ *             "money:write",
+ *             "nullablePerson:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     collectionOperations={
  *         "get": {
  *             "normalization_context": {
@@ -79,9 +88,10 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "money:read",
  *                     "nullableMoney:read",
  *                     "nullablePerson:read",
- *                     "companyGroupTag:read"
- *                 }
- *             }
+ *                     "companyGroupTag:read",
+ *                 },
+ *                 "openapi_definition_name": "collection-get-read",
+ *             },
  *         },
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
@@ -93,55 +103,68 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "money:write",
  *                     "nullableMoney:write",
  *                     "nullablePerson:write",
- *                     "companyGroupTag:read"
- *                 }
- *             }
- *         }
+ *                     "companyGroupTag:read",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
  *             "security": "is_granted('view', object)",
- *             "normalization_context": {"groups": {
- *                 "project:read",
- *                 "company:read",
- *                 "projectParticipation:read",
- *                 "projectParticipationTranche:read",
- *                 "projectParticipationStatus:read",
- *                 "money:read",
- *                 "file:read",
- *                 "fileVersion:read",
- *                 "projectStatus:read",
- *                 "projectParticipationMember:read",
- *                 "permission:read",
- *                 "archivable:read",
- *                 "projectOrganizer:read",
- *                 "tranche_project:read",
- *                 "tranche:read",
- *                 "role:read",
- *                 "user:read",
- *                 "timestampable:read",
- *                 "traceableStatus:read",
- *                 "lendingRate:read",
- *                 "fee:read",
- *                 "nullablePerson:read",
- *                 "nullableMoney:read",
- *                 "rangedOfferWithFee:read",
- *                 "offerWithFee:read",
- *                 "offer:read",
- *                 "companyStatus:read",
- *                 "companyGroupTag:read"
- *             }}
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "project:read",
+ *                     "company:read",
+ *                     "projectParticipation:read",
+ *                     "projectParticipationTranche:read",
+ *                     "projectParticipationStatus:read",
+ *                     "money:read",
+ *                     "file:read",
+ *                     "fileVersion:read",
+ *                     "projectStatus:read",
+ *                     "projectParticipationMember:read",
+ *                     "permission:read",
+ *                     "archivable:read",
+ *                     "projectOrganizer:read",
+ *                     "tranche_project:read",
+ *                     "tranche:read",
+ *                     "role:read",
+ *                     "user:read",
+ *                     "timestampable:read",
+ *                     "traceableStatus:read",
+ *                     "lendingRate:read",
+ *                     "fee:read",
+ *                     "nullablePerson:read",
+ *                     "nullableMoney:read",
+ *                     "rangedOfferWithFee:read",
+ *                     "offerWithFee:read",
+ *                     "offer:read",
+ *                     "companyStatus:read",
+ *                     "companyGroupTag:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get-read",
+ *             },
  *         },
  *         "project_nda": {
  *             "method": "GET",
  *             "security": "is_granted('view_nda', object)",
  *             "normalization_context": {"groups": {"project:nda:read", "file:read"}},
- *             "path": "/syndication/projects/{publicId}/nda"
+ *             "path": "/syndication/projects/{publicId}/nda",
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
- *                 "groups": {"project:update", "projectStatus:create", "project:write", "company:write", "money:write", "nullableMoney:write", "nullablePerson:write"}
+ *                 "groups": {
+ *                     "project:update",
+ *                     "projectStatus:create",
+ *                     "project:write",
+ *                     "company:write",
+ *                     "money:write",
+ *                     "nullableMoney:write",
+ *                     "nullablePerson:write",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-write",
  *             },
  *             "normalization_context": {
  *                 "groups": {
@@ -172,14 +195,15 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "offerWithFee:read",
  *                     "offer:read",
  *                     "companyStatus:read",
- *                     "companyGroupTag:read"
- *                 }
- *             }
+ *                     "companyGroupTag:read",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-read",
+ *             },
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object)"
- *         }
- *     }
+ *             "security": "is_granted('delete', object)",
+ *         },
+ *     },
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})

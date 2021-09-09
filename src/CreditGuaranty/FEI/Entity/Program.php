@@ -42,8 +42,24 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:program:read", "creditGuaranty:programStatus:read", "timestampable:read", "money:read", "nullableMoney:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:program:write", "money:write", "nullableMoney:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:program:read",
+ *             "creditGuaranty:programStatus:read",
+ *             "timestampable:read",
+ *             "money:read",
+ *             "nullableMoney:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:program:write",
+ *             "money:write",
+ *             "nullableMoney:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
  *         "patch": {"security": "is_granted('edit', object)"},
@@ -54,14 +70,20 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('view', object)",
  *             "controller": Get::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
- *                 "path": "/"
+ *                 "path": "/",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get_program_dataroom-read",
+ *             },
  *         },
  *         "post_program_dataroom": {
  *             "method": "POST",
@@ -70,14 +92,20 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "deserialize": false,
  *             "controller": Post::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
- *                 "path": "/"
+ *                 "path": "/",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-post_program_dataroom-read",
+ *             },
  *         },
  *         "delete_program_dataroom": {
  *             "method": "DELETE",
@@ -85,12 +113,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('dataroom', object)",
  *             "controller": Delete::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
- *                 "path": "/"
- *             }
- *         }
+ *                 "path": "/",
+ *             },
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
@@ -106,12 +134,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                             "maximum": 1
  *                         },
  *                         "description": "Public id of the existing program from which you want to copy"
- *                     }
- *                 }
- *             }
+ *                     },
+ *                 },
+ *             },
  *         },
- *         "get"
- *     }
+ *         "get",
+ *     },
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})

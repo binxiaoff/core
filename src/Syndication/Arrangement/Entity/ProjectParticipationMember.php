@@ -25,7 +25,15 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationMember:read", "archivable:read", "companyGroupTag:read", "permission:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "projectParticipationMember:read",
+ *             "archivable:read",
+ *             "companyGroupTag:read",
+ *             "permission:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -37,15 +45,28 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"archivable:write", "permission:write"}}
- *         }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "archivable:write",
+ *                     "permission:write",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-write",
+ *             },
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"projectParticipationMember:create", "projectParticipationMember:write", "permission:write"}}
- *         }
- *     }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "projectParticipationMember:create",
+ *                     "projectParticipationMember:write",
+ *                     "permission:write",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
+ *             },
+ *         },
+ *     },
  * )
  * @ORM\Table(
  *     name="syndication_project_participation_member",

@@ -25,27 +25,33 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Table(name="agency_term")
  *
  * @ApiResource(
- *     normalizationContext={
- *         "groups": {"agency:term:read"}
- *     },
  *     attributes={
- *         "validation_groups": {Term::class, "getValidationGroups"}
+ *         "validation_groups": {Term::class, "getValidationGroups"},
+ *     },
+ *     normalizationContext={
+ *         "groups": {
+ *             "agency:term:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
  *             "denormalization_context": {
- *                 "groups": {"agency:term:update"}
+ *                 "groups": {
+ *                     "agency:term:update",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-update",
  *             },
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object)"
- *         }
+ *             "security": "is_granted('delete', object)",
+ *         },
  *     },
- *     collectionOperations={}
+ *     collectionOperations={},
  * )
  *
  * @ApiFilter(

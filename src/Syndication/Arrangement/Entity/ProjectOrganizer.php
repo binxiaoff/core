@@ -20,7 +20,14 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectOrganizer:read", "role:read", "company:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "projectOrganizer:read",
+ *             "role:read",
+ *             "company:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
@@ -31,15 +38,22 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             },
  *         },
  *         "delete": {"security": "is_granted('delete', object)"},
- *         "patch": {"security": "is_granted('edit', object)", "groups": {"projectOrganizer:write", "role:write"}}
+ *         "patch": {"security": "is_granted('edit', object)", "groups": {"projectOrganizer:write", "role:write"}},
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"projectOrganizer:create", "role:write"}}
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "projectOrganizer:create",
+ *                     "role:write",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
+ *             },
  *         },
- *     }
+ *     },
  * )
+ *
  * @ORM\Entity
  * @ORM\Table(
  *     name="syndication_project_organizer",

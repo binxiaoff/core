@@ -32,28 +32,34 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {
- *         "creditGuaranty:reservation:read",
- *         "creditGuaranty:reservationStatus:read",
- *         "creditGuaranty:borrower:read",
- *         "creditGuaranty:project:read",
- *         "money:read",
- *         "nullableMoney:read"
- *     }},
- *     denormalizationContext={"groups": {
- *         "creditGuaranty:reservation:write",
- *         "money:write",
- *         "nullableMoney:write"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:reservation:read",
+ *             "creditGuaranty:reservationStatus:read",
+ *             "creditGuaranty:borrower:read",
+ *             "creditGuaranty:project:read",
+ *             "money:read",
+ *             "nullableMoney:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:reservation:write",
+ *             "money:write",
+ *             "nullableMoney:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object)"
+ *             "security": "is_granted('delete', object)",
  *         },
  *         "get_reservation_dataroom": {
  *             "method": "GET",
@@ -61,14 +67,20 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('view', object)",
  *             "controller": Get::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
- *                 "path": "/"
+ *                 "path": "/",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get_reservation_dataroom-read",
+ *             },
  *         },
  *         "post_reservation_dataroom": {
  *             "method": "POST",
@@ -77,14 +89,20 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "deserialize": false,
  *             "controller": Post::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
- *                 "path": "/"
+ *                 "path": "/",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-post_reservation_dataroom-read",
+ *             },
  *         },
  *         "delete_reservation_dataroom": {
  *             "method": "DELETE",
@@ -92,23 +110,23 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('edit', object)",
  *             "controller": Delete::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
- *                 "path": "/"
- *             }
- *         }
+ *                 "path": "/",
+ *             },
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
- *             "security_post_denormalize": "is_granted('create', object)"
+ *             "security_post_denormalize": "is_granted('create', object)",
  *         },
  *         "get",
  *         "api_credit_guaranty_programs_reservations_get_subresource": {
  *             "method": "GET",
- *             "pagination_client_items_per_page": true
- *         }
- *     }
+ *             "pagination_client_items_per_page": true,
+ *         },
+ *     },
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})

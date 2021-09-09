@@ -54,8 +54,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "money:read",
  *             "nullablePerson:read",
  *             "nullableMoney:read",
- *             "lendingRate:read"
+ *             "lendingRate:read",
  *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     collectionOperations={
  *         "get",
@@ -67,8 +68,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:project:write",
  *                     "money:write",
  *                     "nullablePerson:write",
- *                     "nullableMoney:write"
- *                 }
+ *                     "nullableMoney:write",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *             "openapi_context": {
  *                 "parameters": {
@@ -81,10 +83,10 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                             "maximum": 1
  *                         },
  *                         "description": "Public id of the imported arragement project"
- *                     }
- *                 }
- *             }
- *         }
+ *                     },
+ *                 },
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -95,18 +97,25 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "method": "GET",
  *             "security": "is_granted('view', object)",
  *             "normalization_context": {
- *                 "groups": {"agency:term:read"},
+ *                 "groups": {
+ *                     "agency:term:read",
+ *                 },
+ *                 "openapi_definition_name": "item-terms-read",
  *             },
- *             "controller": GetTerms::class
+ *             "controller": GetTerms::class,
  *         },
  *         "covenants": {
  *             "path": "/agency/projects/{publicId}/covenants",
  *             "method": "GET",
  *             "security": "is_granted('view', object)",
  *             "normalization_context": {
- *                 "groups": {"agency:covenant:read", "agency:inequality:read"},
+ *                 "groups": {
+ *                     "agency:covenant:read",
+ *                     "agency:inequality:read",
+ *                 },
+ *                 "openapi_definition_name": "item-covenants-read",
  *             },
- *             "controller": GetCovenants::class
+ *             "controller": GetCovenants::class,
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
@@ -116,10 +125,11 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "money:write",
  *                     "nullablePerson:write",
  *                     "nullableMoney:write",
- *                     "agency:covenant:update"
- *                 }
+ *                     "agency:covenant:update",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-write",
  *             },
- *             "validation_groups": {Project::class, "getCurrentValidationGroups"}
+ *             "validation_groups": {Project::class, "getCurrentValidationGroups"},
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)",
@@ -130,15 +140,21 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "security": "is_granted('agent', object) || is_granted('borrower', object)",
  *             "controller": Get::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "borrowerSharedDrive"
+ *                 "drive": "borrowerSharedDrive",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {"
+ *                     core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get_borrower_dataroom_shared-read",
+ *             },
  *         },
  *         "post_borrower_dataroom_shared": {
  *             "method": "POST",
@@ -147,15 +163,21 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "deserialize": false,
  *             "controller": Post::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "borrowerSharedDrive"
+ *                 "drive": "borrowerSharedDrive",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-post_borrower_dataroom_shared-read",
+ *             },
  *         },
  *         "delete_borrower_dataroom_shared": {
  *             "method": "DELETE",
@@ -163,12 +185,12 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "security": "is_granted('agent', object)",
  *             "controller": Delete::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "borrowerSharedDrive"
- *             }
+ *                 "drive": "borrowerSharedDrive",
+ *             },
  *         },
  *         "get_borrower_dataroom_confidential": {
  *             "method": "GET",
@@ -176,15 +198,21 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "security": "is_granted('borrower', object)",
  *             "controller": Get::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "borrowerConfidentialDrive"
+ *                 "drive": "borrowerConfidentialDrive",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get_borrower_dataroom_confidential-read",
+ *             },
  *         },
  *         "post_borrower_dataroom_confidential": {
  *             "method": "POST",
@@ -193,15 +221,21 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "deserialize": false,
  *             "controller": Post::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "borrowerConfidentialDrive"
+ *                 "drive": "borrowerConfidentialDrive",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-post_borrower_dataroom_confidential-read",
+ *             },
  *         },
  *         "delete_borrower_dataroom_confidential": {
  *             "method": "DELETE",
@@ -210,14 +244,14 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "deserialize": false,
  *             "controller": Delete::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "borrowerConfidentialDrive"
- *             }
- *         }
- *     }
+ *                 "drive": "borrowerConfidentialDrive",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @ORM\Table(name="agency_project")

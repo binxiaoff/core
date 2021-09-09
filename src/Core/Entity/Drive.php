@@ -14,7 +14,7 @@ use KLS\Core\Exception\Drive\FolderAlreadyExistsException;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Represent a collection of folders akin to a filesystem with a base folder (represented by it self) root who has path /.
+ * Represents a collection of folders akin to a filesystem with a base folder (represented by itself) root who has path /.
  *
  * Mainly used in dataroom
  *
@@ -27,8 +27,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "openapi_context": {
  *                 "x-visibility": "hide",
  *             },
- *         }
- *     }
+ *         },
+ *     },
  * )
  *
  * @ORM\Entity

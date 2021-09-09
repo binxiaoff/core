@@ -19,10 +19,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:programStatus:read", "timestampable:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:programStatus:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programStatus:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programStatus:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)"}
+ *         "post": {"security_post_denormalize": "is_granted('create', object)"},
  *     },
  *     itemOperations={
  *         "get": {
@@ -33,7 +44,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "x-visibility": "hide",
  *             },
  *         },
- *     }
+ *     },
  * )
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_program_status")

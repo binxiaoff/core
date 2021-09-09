@@ -25,7 +25,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "x-visibility": "hide",
  *             },
  *         },
- *     }
+ *     },
  * )
  *
  * @ORM\Entity

@@ -17,7 +17,7 @@ use KLS\CreditGuaranty\FEI\Entity\Reservation;
  *             "path": "/credit_guaranty/eligibilities/checking",
  *             "controller": EligibilityChecking::class,
  *             "security_post_denormalize": "is_granted('create', object)",
- *         }
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
@@ -27,8 +27,8 @@ use KLS\CreditGuaranty\FEI\Entity\Reservation;
  *             "openapi_context": {
  *                 "x-visibility": "hide",
  *             },
- *         }
- *     }
+ *         },
+ *     },
  * )
  */
 class Eligibility
