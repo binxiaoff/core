@@ -74,7 +74,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "openapi_definition_name": "item-staff-read",
  *             },
  *         },
- *         "companyGroupTags": {
+ *         "company_group_tags": {
  *             "method": "GET",
  *             "path": "/core/companies/{publicId}/company_group_tags",
  *             "controller": "\KLS\Core\Controller\Company\CompanyGroupTag",
@@ -82,7 +82,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "groups": {
  *                     "companyGroupTag:read",
  *                 },
- *                 "openapi_definition_name": "item-companyGroupTags-read",
+ *                 "openapi_definition_name": "item-company_group_tags-read",
  *             },
  *         },
  *         "teams": {
