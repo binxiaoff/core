@@ -222,7 +222,11 @@ class Team
 
     public function addStaff(Staff $staff)
     {
-        if (false === $this->staff->exists(fn (int $key, Staff $s) => $staff->getUser() === $s->getUser())) {
+        $callback = function (int $key, Staff $s) use ($staff): bool {
+            return $staff->getUser() === $s->getUser() && $staff->getTeam() === $s->getTeam();
+        };
+
+        if (false === $this->staff->exists($callback)) {
             $this->staff->add($staff);
         }
 

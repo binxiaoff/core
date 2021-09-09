@@ -585,7 +585,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
 
     public function addProjectParticipationMember(ProjectParticipationMember $projectParticipationMember): ProjectParticipation
     {
-        if (false === $this->projectParticipationMembers->contains($projectParticipationMember)) {
+        $callback = function (int $key, ProjectParticipationMember $ppm) use ($projectParticipationMember): bool {
+            return $projectParticipationMember->getProjectParticipation() === $ppm->getProjectParticipation() && $projectParticipationMember->getStaff() === $ppm->getStaff();
+        };
+
+        if (false === $this->projectParticipationMembers->exists($callback)) {
             $this->projectParticipationMembers->add($projectParticipationMember);
         }
 
@@ -668,7 +672,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
 
     public function hasProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche): bool
     {
-        return $this->projectParticipationTranches->contains($projectParticipationTranche);
+        $callback = function (int $key, ProjectParticipationTranche $ppt) use ($projectParticipationTranche): bool {
+            return $projectParticipationTranche->getProjectParticipation() === $ppt->getProjectParticipation() && $projectParticipationTranche->getTranche() === $ppt->getTranche();
+        };
+
+        return $this->projectParticipationTranches->exists($callback);
     }
 
     public function isArrangerParticipation(): bool

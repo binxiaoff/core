@@ -210,12 +210,9 @@ class File
         return null;
     }
 
-    /**
-     * @return $this
-     */
     private function addVersion(FileVersion $version): File
     {
-        if (!$this->fileVersions->contains($version)) {
+        if (false === $this->fileVersions->contains($version)) {
             $version->setFile($this);
             $this->fileVersions->add($version);
         }
