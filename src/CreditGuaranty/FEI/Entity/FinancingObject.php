@@ -156,11 +156,6 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      * @ORM\Column(type="smallint", nullable=true)
      *
      * @Assert\GreaterThanOrEqual(1)
-     * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && null !== value")
-     * }, message="CreditGuaranty.Reservation.financingObject.loanDuration.requiredForEsb", includeInternalMessages=false)
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */

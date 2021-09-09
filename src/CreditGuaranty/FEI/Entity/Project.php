@@ -105,11 +105,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      * @ORM\JoinColumn(name="id_aid_intensity", nullable=true)
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
-     * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && null === value")
-     * }, message="CreditGuaranty.Reservation.project.aidIntensity.requiredForEsb", includeInternalMessages=false)
      *
      * @Groups({"creditGuaranty:project:write"})
      */
@@ -159,12 +154,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
-     * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && false === value.isNull()")
-     * }, message="CreditGuaranty.Reservation.project.totalFeiCredit.requiredForEsb", includeInternalMessages=false)
-     *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private NullableMoney $totalFeiCredit;
@@ -192,12 +181,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
 
     /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
-     *
-     * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && false === value.isNull()")
-     * }, message="CreditGuaranty.Reservation.project.grant.requiredForEsb", includeInternalMessages=false)
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
@@ -506,9 +489,16 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this->updated;
     }
 
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
     public function getMaxFeiCredit(): MoneyInterface
     {
         $programMaxFeiCredit = $this->getProgram()->getMaxFeiCredit();
+
+        if (false === ($this->getAidIntensity() instanceof ProgramChoiceOption)) {
+            return new NullableMoney();
+        }
 
         $publicAidLimit      = MoneyCalculator::multiply($this->getTotalFeiCredit(), (float) $this->getAidIntensity()->getDescription());
         $remainingGrantLimit = MoneyCalculator::subtract($publicAidLimit, $this->getGrant());
@@ -517,6 +507,22 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $maxFeiCredit        = MoneyCalculator::multiply($maxFeiCredit, (float) $duration);
 
         return MoneyCalculator::max($programMaxFeiCredit, $maxFeiCredit);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getTotalGrossSubsidyEquivalent(): MoneyInterface
+    {
+        $financingObjects = $this->getReservation()->getFinancingObjects();
+
+        if ($financingObjects->count() < 1) {
+            return new NullableMoney();
+        }
+
+        $grossSubsidyEquivalents = $financingObjects->map(static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent())->toArray();
+
+        return MoneyCalculator::sum($grossSubsidyEquivalents);
     }
 
     public function checkBalance(): bool
