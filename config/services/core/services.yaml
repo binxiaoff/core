@@ -40,7 +40,7 @@ services:
 
   KLS\Core\:
     resource: '%kernel.project_dir%/src/Core/*'
-    exclude: '%kernel.project_dir%/src/Core/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
+    exclude: '%kernel.project_dir%/src/Core/{Console,Entity,Controller,Tests,Traits,Listener/Doctrine}'
 
   KLS\Core\ApiPlatform\Metadata\Metadata\Resource\Factory\ShortNameResourceMetadataFactory:
     decorates: 'api_platform.metadata.resource.metadata_factory'

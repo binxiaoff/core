@@ -12,6 +12,6 @@ parameters:
     bootstrapFiles:
         - tests/bootstrapPHPUnit.php
     excludes_analyse:
-        - src/Core/Migrations
+        - migrations
     symfony:
         container_xml_path: %rootDir%/../../../var/cache/dev/KLS_KernelDevDebugContainer.xml
