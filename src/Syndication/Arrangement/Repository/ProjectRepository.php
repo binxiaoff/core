@@ -10,6 +10,7 @@ use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use KLS\Core\Entity\Company;
 use KLS\Core\Repository\Traits\OrderByHandlerTrait;
 use KLS\Core\Repository\Traits\PaginationHandlerTrait;
 use KLS\Syndication\Arrangement\Entity\Project;
@@ -64,5 +65,20 @@ class ProjectRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult()
         ;
+    }
+
+    /**
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    public function countProjectsByCompany(Company $company)
+    {
+        return $this->createQueryBuilder('p')
+            ->select('count(p.id)')
+            ->where('p.submitterCompany = :company')
+            ->setParameter('company', $company)
+            ->getQuery()
+            ->getSingleScalarResult()
+            ;
     }
 }
