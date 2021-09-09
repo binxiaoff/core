@@ -6,17 +6,12 @@ namespace KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\Company;
 
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 use KLS\Core\Entity\Company;
-use KLS\Core\Entity\CompanyStatus;
-use KLS\Core\Service\Notifier\CompanyStatus\CompanyStatusNotifier;
+use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Core\Message\Company\CompanyStatusUpdated;
 
 class CompanyStatusUpdatedListener
 {
-    private CompanyStatusNotifier $companyStatusNotifier;
-
-    public function __construct(CompanyStatusNotifier $companyStatusNotifier)
-    {
-        $this->companyStatusNotifier = $companyStatusNotifier;
-    }
+    use MessageDispatcherTrait;
 
     public function preUpdate(Company $company, PreUpdateEventArgs $args): void
     {
@@ -24,12 +19,10 @@ class CompanyStatusUpdatedListener
         $oldValue        = $args->getOldValue('currentStatus');
         $newValue        = $args->getNewValue('currentStatus');
 
-        if (
-            $hasChangedValue
-            && CompanyStatus::STATUS_PROSPECT === $oldValue->getStatus()
-            && CompanyStatus::STATUS_SIGNED === $newValue->getStatus()
-        ) {
-            $this->companyStatusNotifier->notify($company);
+        if ($hasChangedValue) {
+            $this->messageBus->dispatch(
+                new CompanyStatusUpdated($company, $oldValue, $newValue)
+            );
         }
     }
 }

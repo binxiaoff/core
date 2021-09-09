@@ -13,7 +13,7 @@ use Nexy\Slack\Client as Slack;
 use Nexy\Slack\Exception\SlackApiException;
 use Nexy\Slack\MessageInterface;
 
-class CompanyStatusNotifier
+class CompanyHasSignedNotifier
 {
     private Slack $slack;
 
