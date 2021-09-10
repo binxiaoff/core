@@ -90,7 +90,8 @@ class HubspotCompanyManagerTest extends TestCase
 
         $result = $this->createTestObject()->importCompaniesFromHubspot(0);
 
-        static::assertEmpty($result);
+        static::assertArrayHasKey('lastCompanyId', $result);
+        static::assertArrayHasKey('companyAddedNb', $result);
     }
 
     /**
