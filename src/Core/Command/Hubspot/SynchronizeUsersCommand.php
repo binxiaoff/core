@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace KLS\Core\Command\Hubspot;
 
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use JsonException;
 use KLS\Core\Service\Hubspot\HubspotContactManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class SynchronizeUsersCommand extends Command
 {
@@ -34,23 +41,31 @@ class SynchronizeUsersCommand extends Command
         ;
     }
 
+    /**
+     * @throws JsonException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        $usersCount   = 0;
         $usersCreated = 0;
         $usersUpdated = 0;
-        $limit        = $input->getOption('limit') ?: self::DEFAULT_USERS_CHANGED_LIMIT;
+        $limit        = (int) $input->getOption('limit') ?: self::DEFAULT_USERS_CHANGED_LIMIT;
 
         do {
-            $data = $this->hubspotManager->synchronizeUsers((int) $limit);
+            $data = $this->hubspotManager->synchronizeUsers($limit);
 
             $usersCreated += $data['usersCreated'];
             $usersUpdated += $data['usersUpdated'];
-            $usersCount   += $usersCreated + $usersUpdated;
+            $usersCount = $usersCreated + $usersUpdated;
 
-            if (0 === $data['usersUpdated'] || 0 === $data['usersCreated']) {
+            if (0 === $data['usersUpdated'] && 0 === $data['usersCreated']) {
                 break; // all users have been created on hubspot
             }
         } while ($usersCount <= $limit);

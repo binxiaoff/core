@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 namespace KLS\Core\Command\Hubspot;
 
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\ORMException;
+use JsonException;
 use KLS\Core\Service\Hubspot\HubspotCompanyManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class SynchronizeCompanyCommand extends Command
 {
@@ -34,23 +43,33 @@ class SynchronizeCompanyCommand extends Command
         ;
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     * @throws JsonException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        $companiesCount   = 0;
         $companiesCreated = 0;
         $companiesUpdated = 0;
-        $limit            = $input->getOption('limit') ?: self::DEFAULT_COMPANIES_LIMIT;
+        $limit            = (int) $input->getOption('limit') ?: self::DEFAULT_COMPANIES_LIMIT;
 
         do {
-            $data = $this->hubspotCompanyManager->exportCompaniesToHubspot((int) $limit);
+            $data = $this->hubspotCompanyManager->exportCompaniesToHubspot($limit);
 
             $companiesCreated += $data['companiesCreated'];
             $companiesUpdated += $data['companiesUpdated'];
-            $companiesCount   += $companiesCreated + $companiesUpdated;
+            $companiesCount = $companiesCreated + $companiesUpdated;
 
-            if (0 === $data['companiesUpdated'] || 0 === $data['companiesCreated']) {
+            if (0 === $data['companiesUpdated'] && 0 === $data['companiesCreated']) {
                 break; // all companies have been created on hubspot
             }
         } while ($companiesCount <= $limit);

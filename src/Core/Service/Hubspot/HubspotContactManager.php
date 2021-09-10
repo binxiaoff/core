@@ -79,7 +79,7 @@ class HubspotContactManager
     {
         $content = $this->fetchContacts($lastContactId);
 
-        if (!\array_key_exists('results', $content)) {
+        if (false === \array_key_exists('results', $content)) {
             $this->logger->info('No contacts found, try to add users from our database');
 
             return [
@@ -123,13 +123,16 @@ class HubspotContactManager
     }
 
     /**
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \JsonException
+     * @throws ClientExceptionInterface
+     * @throws JsonException
+     * @throws ORMException
+     * @throws OptimisticLockException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     public function synchronizeUsers(int $limit): array
     {
-        $dataReturn   = [];
         $usersCreated = 0;
         $usersUpdated = 0;
 
@@ -138,20 +141,24 @@ class HubspotContactManager
 
         if ($users) {
             foreach ($users as $user) {
-                if (!$this->createContactOnHubspot($user)) {
+                if (false === $this->createContactOnHubspot($user)) {
                     continue;
                 }
                 ++$usersCreated;
             }
         }
 
+        //In case of we got an error on the part below, our synchronized users won't be flush on our database
+        $this->hubspotContactRepository->flush();
+
         // Get all users when a corresponding hubspot id exist
         $users = $this->userRepository->findHubspotUsersToUpdate($limit);
+
         if ($users) {
             foreach ($users as $user) {
                 $hubspotContact = $this->hubspotContactRepository->findOneBy(['user' => $user]);
 
-                if (!$hubspotContact) {
+                if (false === $hubspotContact instanceof HubspotContact) {
                     continue;
                 }
 
@@ -162,10 +169,11 @@ class HubspotContactManager
         }
 
         $this->hubspotContactRepository->flush();
-        $dataReturn['usersCreated'] = $usersCreated;
-        $dataReturn['usersUpdated'] = $usersUpdated;
 
-        return $dataReturn;
+        return [
+            'usersCreated' => $usersCreated,
+            'usersUpdated' => $usersUpdated,
+        ];
     }
 
     /**
@@ -240,6 +248,12 @@ class HubspotContactManager
         ];
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     private function updateContactOnHubspot(HubspotContact $hubspotContact, array $data): bool
     {
         $response = $this->hubspotClient->updateContact($hubspotContact->getContactId(), $data);
@@ -257,6 +271,13 @@ class HubspotContactManager
 
     /**
      * Flow: Post new contact on hubspot. If 201, we create the relation between our user and the contact Id that Hubspot just sent us back.
+     *
+     * @throws ORMException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     * @throws JsonException
      */
     private function createContactOnHubspot(User $user): bool
     {

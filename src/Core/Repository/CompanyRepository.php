@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace KLS\Core\Repository;
 
+use DateInterval;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -57,6 +59,7 @@ class CompanyRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('c')
             ->leftJoin(HubspotCompany::class, 'hc', Join::WITH, 'c.id = hc.company')
             ->where('hc.id IS NULL')
+            ->orderBy('c.added', 'ASC')
         ;
 
         return $qb->setMaxResults($limit)->getQuery()->getResult();
@@ -64,11 +67,14 @@ class CompanyRepository extends ServiceEntityRepository
 
     public function findCompaniesToUpdateOnHubspot(int $limit)
     {
+        $date = new DateTimeImmutable();
+
         $qb = $this->createQueryBuilder('c')
-            ->leftJoin(HubspotCompany::class, 'hc', Join::WITH, 'c.id = hc.company')
-            ->where('hc.id IS NOT NULL')
-            ->andWhere('c.updated > hc.synchronized')
-            ->orderBy('hc.synchronized', 'DESC')
+            ->innerJoin(HubspotCompany::class, 'hc', Join::WITH, 'c.id = hc.company')
+            ->where('c.updated > hc.synchronized')
+            ->orWhere('hc.synchronized < :dateSubOneDay')
+            ->orderBy('hc.synchronized', 'ASC')
+            ->setParameter('dateSubOneDay', $date->sub(new DateInterval('P1D')))
         ;
 
         return $qb->setMaxResults($limit)->getQuery()->getResult();
