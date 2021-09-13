@@ -13,7 +13,7 @@
     <file>src/</file>
     <file>tests/</file>
 
-    <exclude-pattern>*/src/Core/Migrations/*$</exclude-pattern>
+    <exclude-pattern>*/migrations/*$</exclude-pattern>
 
     <rule ref="PSR1"/>
     <rule ref="PSR2">
