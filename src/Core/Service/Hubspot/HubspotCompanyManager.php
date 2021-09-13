@@ -8,6 +8,7 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use JsonException;
 use KLS\Core\Entity\Company;
 use KLS\Core\Entity\CompanyStatus;
 use KLS\Core\Entity\HubspotCompany;
@@ -57,7 +58,7 @@ class HubspotCompanyManager
      *
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws \JsonException
+     * @throws JsonException
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
@@ -67,10 +68,13 @@ class HubspotCompanyManager
     {
         $content = $this->fetchCompanies($lastCompanyId);
 
-        if (!\array_key_exists('results', $content) || ((isset($content['results'])) && 0 === \count($content['results']))) {
+        if (false === \array_key_exists('results', $content) || ((isset($content['results'])) && 0 === \count($content['results']))) {
             $this->logger->info('There is an error on the request URI or no company found on Hubspot');
 
-            return [];
+            return [
+                'lastCompanyId'  => 0,
+                'companyAddedNb' => 0,
+            ];
         }
 
         $companiesAddedNb = 0;
@@ -107,15 +111,18 @@ class HubspotCompanyManager
     }
 
     /**
+     * @throws ClientExceptionInterface
+     * @throws JsonException
      * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws \JsonException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     public function exportCompaniesToHubspot(int $limit): array
     {
-        $dataReturn       = [];
         $companiesCreated = 0;
         $companiesUpdated = 0;
 
@@ -124,7 +131,7 @@ class HubspotCompanyManager
 
         if ($companies) {
             foreach ($companies as $company) {
-                if (!$this->createCompanyOnHubspot($company)) {
+                if (false === $this->createCompanyOnHubspot($company)) {
                     continue;
                 }
                 ++$companiesCreated;
@@ -150,14 +157,14 @@ class HubspotCompanyManager
 
         $this->hubspotCompanyRepository->flush();
 
-        $dataReturn['companiesCreated'] = $companiesCreated;
-        $dataReturn['companiesUpdated'] = $companiesUpdated;
-
-        return $dataReturn;
+        return [
+            'companiesCreated' => $companiesCreated,
+            'companiesUpdated' => $companiesUpdated,
+        ];
     }
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
@@ -176,6 +183,16 @@ class HubspotCompanyManager
         return \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     * @throws JsonException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     * @throws ORMException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     private function createCompanyOnHubspot(Company $company): bool
     {
         // Create company on hubspot
@@ -194,6 +211,12 @@ class HubspotCompanyManager
         return true;
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     private function updateCompanyOnHubspot(HubspotCompany $hubspotCompany, array $data): bool
     {
         $response = $this->hubspotClient->updateCompany($hubspotCompany->getHubspotCompanyId(), $data);

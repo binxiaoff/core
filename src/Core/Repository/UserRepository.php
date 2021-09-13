@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace KLS\Core\Repository;
 
+use DateInterval;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -31,8 +33,6 @@ use PDO;
  */
 class UserRepository extends ServiceEntityRepository
 {
-    private const MAX_USER_LOAD = 10;
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
@@ -112,6 +112,7 @@ class UserRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('u')
             ->leftJoin(HubspotContact::class, 'hc', Join::WITH, 'u.id = hc.user')
             ->where('hc.id IS NULL')
+            ->orderBy('u.added', 'ASC')
         ;
 
         return $qb->setMaxResults($limit)->getQuery()->getResult();
@@ -119,11 +120,14 @@ class UserRepository extends ServiceEntityRepository
 
     public function findHubspotUsersToUpdate(int $limit): ?array
     {
+        $date = new DateTimeImmutable();
+
         $qb = $this->createQueryBuilder('u')
-            ->leftJoin(HubspotContact::class, 'hc', Join::WITH, 'u.id = hc.user')
-            ->where('hc.id IS NOT NULL')
-            ->andWhere('u.updated > hc.synchronized')
-            ->orderBy('hc.synchronized', 'DESC')
+            ->innerJoin(HubspotContact::class, 'hc', Join::WITH, 'u.id = hc.user')
+            ->where('u.updated > hc.synchronized')
+            ->orWhere('hc.synchronized < :dateSubOneDay')
+            ->orderBy('hc.synchronized', 'ASC')
+            ->setParameter('dateSubOneDay', $date->sub(new DateInterval('P1D')))
         ;
 
         return $qb->setMaxResults($limit)->getQuery()->getResult();

@@ -238,7 +238,7 @@ class HubspotContactManagerTest extends TestCase
         ));
 
         $this->hubspotContactRepository->persist(Argument::type(HubspotContact::class))->shouldBeCalledOnce();
-        $this->hubspotContactRepository->flush()->shouldBeCalledOnce();
+        $this->hubspotContactRepository->flush()->shouldBeCalledTimes(2);
 
         $result = $this->createTestObject()->synchronizeUsers(1);
 
@@ -268,7 +268,7 @@ class HubspotContactManagerTest extends TestCase
 
         $this->hubspotClient->updateContact($hubspotContact->getContactId(), $this->getFormatData())->shouldBeCalledOnce()->willReturn($response->reveal());
 
-        $this->hubspotContactRepository->flush()->shouldBeCalledOnce();
+        $this->hubspotContactRepository->flush()->shouldBeCalledTimes(2);
 
         $result = $this->createTestObject()->synchronizeUsers(1);
 
