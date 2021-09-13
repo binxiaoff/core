@@ -123,7 +123,7 @@ class ProgramEligibilityCondition
      * @ORM\Column(type="decimal", precision=15, scale=2)
      *
      * @Assert\Expression(
-     *     "(value <= 1 && value >= 0) || constant('KLS\\CreditGuaranty\FEI\\Entity\\ProgramEligibilityCondition::VALUE_TYPE_VALUE') === this.getValueType()",
+     *     "(value <= 1 && value >= 0) || constant('KLS\\CreditGuaranty\\FEI\\Entity\\ProgramEligibilityCondition::VALUE_TYPE_VALUE') === this.getValueType()",
      *     message="CreditGuaranty.ProgramEligibilityCondition.value.outOfRange"
      * )
      *
