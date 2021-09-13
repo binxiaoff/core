@@ -298,7 +298,11 @@ class Staff implements TraceableStatusAwareInterface
             return $this;
         }
 
-        if (false === $this->companyGroupTags->contains($tag)) {
+        $callback = function (int $key, CompanyGroupTag $cgt) use ($tag): bool {
+            return $tag->getCompanyGroup() === $cgt->getCompanyGroup() && $tag->getCode() === $cgt->getCode();
+        };
+
+        if (false === $this->companyGroupTags->exists($callback)) {
             $this->companyGroupTags[] = $tag;
         }
 

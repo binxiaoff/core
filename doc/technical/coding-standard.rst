@@ -74,6 +74,7 @@ Doctrine
  - Use annotations for meta-data
  - Use ``trait`` for the repeated columns in different tables
  - Name the FK column without the id. Ex: the name of ``id_user_submitter`` (which is a FK of User) in Project entity should named after ``submitterUser``.
+ - Favor the use of ``ArrayCollection::exists`` instead of ``ArrayCollection::contains`` for entities having unique properties
  - Use Query Builder
  - The queries should be put in xRepository classes
  - The use of the named bind is required in queries (DQL / Query Builder)

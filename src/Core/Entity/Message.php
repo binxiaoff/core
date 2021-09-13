@@ -145,7 +145,7 @@ class Message implements FileTypesAwareInterface
 
     public function addMessageFile(MessageFile $messageFile): Message
     {
-        if (!$this->messageFiles->contains($messageFile)) {
+        if (false === $this->messageFiles->contains($messageFile)) {
             $this->messageFiles->add($messageFile);
         }
 

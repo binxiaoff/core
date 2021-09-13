@@ -967,7 +967,11 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
 
     public function addProjectParticipation(ProjectParticipation $projectParticipation): Project
     {
-        if (false === $this->projectParticipations->contains($projectParticipation)) {
+        $callback = function (int $key, ProjectParticipation $pp) use ($projectParticipation): bool {
+            return $projectParticipation->getProject() === $pp->getProject() && $projectParticipation->getParticipant() === $pp->getParticipant();
+        };
+
+        if (false === $this->projectParticipations->exists($callback)) {
             $this->projectParticipations->add($projectParticipation);
         }
 
