@@ -101,7 +101,6 @@
     "escapestudios/symfony2-coding-standard": "^3.5",
     "fakerphp/faker": "^1.4",
     "friendsofphp/php-cs-fixer": "^2.14",
-    "hautelook/alice-bundle": "^2.5",
     "pheromone/phpcs-security-audit": "^2.0",
     "phpmd/phpmd": "^2.6",
     "phpro/grumphp": "^1.2.0",
