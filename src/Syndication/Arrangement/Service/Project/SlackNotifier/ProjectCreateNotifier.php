@@ -12,7 +12,7 @@ use Nexy\Slack\Client as Slack;
 use Nexy\Slack\MessageInterface;
 use NumberFormatter;
 
-class ProjectCreateNotifier implements ProjectNotifierInterface
+class ProjectCreateNotifier
 {
     private Slack $slack;
     private NumberFormatter $formatter;
