@@ -43,3 +43,8 @@ npm-debug.log
 ###> Maxmind ###
 *.mmdb
 ###< Maxmind ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
