@@ -42,7 +42,7 @@ class PublishedProjectFixtures extends DraftProjectFixtures
         $loxParticipation->addMember($participationMember);
         $loxParticipation->archive();
 
-        $borrower       = $this->createTestBorrower($project, $project->getAddedBy());
+        $borrower       = $this->createTestBorrower($project);
         $borrowerMember = new BorrowerMember($borrower, $this->getReference('user-@'));
 
         \array_map(
