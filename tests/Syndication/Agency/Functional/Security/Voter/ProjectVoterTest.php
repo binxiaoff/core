@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Test\Syndication\Agency\Functionnal\Security\Voter;
+namespace KLS\Test\Syndication\Agency\Functional\Security\Voter;
 
 use KLS\Syndication\Agency\Entity\Project;
 use KLS\Syndication\Agency\Security\Voter\ProjectVoter;
