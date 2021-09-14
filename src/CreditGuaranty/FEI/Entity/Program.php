@@ -443,6 +443,15 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      */
     private Collection $reservations;
 
+    /**
+     * @var Collection|ReportingTemplate[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReportingTemplate", mappedBy="program")
+     */
+    private Collection $reportingTemplates;
+
     public function __construct(string $name, CompanyGroupTag $companyGroupTag, Money $funds, Staff $addedBy)
     {
         $this->name                           = $name;
@@ -899,6 +908,14 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     public function getReservations()
     {
         return $this->reservations;
+    }
+
+    /**
+     * @return Collection|ReportingTemplate[]
+     */
+    public function getReportingTemplate(): Collection
+    {
+        return $this->reportingTemplates;
     }
 
     /**
