@@ -46,6 +46,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         },
  *     },
  *     collectionOperations={
+ *         "get": {
+ *             "security": "is_granted('create', object)",
+ *         },
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *         },
