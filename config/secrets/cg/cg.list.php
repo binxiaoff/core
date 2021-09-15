@@ -1,7 +1,6 @@
 <?php
 
 return array (
-  'APP_SECRET' => NULL,
   'AWS_API_SECRET' => NULL,
   'ENQUEUE_DSN' => NULL,
   'GOOGLE_RECAPTCHA_SECRET' => NULL,
