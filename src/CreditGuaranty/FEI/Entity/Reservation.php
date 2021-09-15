@@ -130,7 +130,8 @@ use Symfony\Component\Validator\Constraints as Assert;
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
- * @ApiFilter(OrderFilter::class, properties={"currentStatus.added"}, arguments={"orderParameterName": "order"})
+ * @ApiFilter(OrderFilter::class, properties={"added"})
+ * @ApiFilter("KLS\CreditGuaranty\FEI\Filter\ReservationSentDateOrderFilter")
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_reservation")
