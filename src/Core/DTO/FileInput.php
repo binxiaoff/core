@@ -13,6 +13,11 @@ class FileInput
 {
     public const ACCEPTED_MEDIA_TYPE = [
         'application/zip',
+        'application/x-zip',
+        'application/x-zip-compressed',
+        'application/x-compress',
+        'application/x-compressed',
+        'multipart/x-zip',
         'application/pdf',
         'application/vnd.ms-excel',
         'application/vnd.ms-excel.sheet.macroenabled.12', // .xlsm
