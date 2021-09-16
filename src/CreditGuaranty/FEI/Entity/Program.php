@@ -470,6 +470,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         $this->addedBy                        = $addedBy->getUser();
         $this->added                          = new DateTimeImmutable();
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
+        $this->reportingTemplates = new ArrayCollection();
     }
 
     public function getName(): string
