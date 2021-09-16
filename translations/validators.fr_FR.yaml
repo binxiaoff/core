@@ -199,6 +199,9 @@ CreditGuaranty:
             notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
             greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
             draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.
+        reportingTemplate:
+            name:
+                unique: Le nom d'un template de reporting doit être unique.
     ProgramChoiceOption:
         invalid: La description du nouveau programChoiceOption doit exister dans les éléments prédéfinis.
     ProgramEligibilityConfiguration:

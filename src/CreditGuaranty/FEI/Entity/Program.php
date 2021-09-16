@@ -914,7 +914,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     /**
      * @return Collection|ReportingTemplate[]
      */
-    public function getReportingTemplate(): Collection
+    public function getReportingTemplates(): Collection
     {
         return $this->reportingTemplates;
     }

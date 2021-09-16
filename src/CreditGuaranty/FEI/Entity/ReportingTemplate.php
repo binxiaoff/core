@@ -11,6 +11,7 @@ use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
@@ -28,13 +29,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)",
+ *             "security": "is_granted('create', object)",
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object)",
+ *             "security": "is_granted('create', object)",
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object)"
+ *             "security": "is_granted('create', object)"
  *         },
  *     },
  *     collectionOperations={
@@ -61,9 +62,10 @@ class ReportingTemplate
     private Program $program;
 
     /**
-     * @ORM\Column(type="string", nullable=false)
+     * @ORM\Column(type="string", length=100, nullable=false)
      *
      * @Assert\NotBlank
+     * @Assert\Length(max=100)
      *
      * @Groups({"creditGuaranty:reportingTemplate:read", "creditGuaranty:reportingTemplate:write"})
      */
@@ -91,5 +93,21 @@ class ReportingTemplate
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateNameUniqueness(ExecutionContextInterface $context): void
+    {
+        $currentReportingTemplate = $this;
+
+        $callback = function (int $key, ReportingTemplate $rt) use ($currentReportingTemplate): bool {
+            return $currentReportingTemplate->getName() === $rt->getName() && $currentReportingTemplate->getId() !== $rt->getId();
+        };
+
+        if (true === $this->program->getReportingTemplates()->exists($callback)) {
+            $context->buildViolation('CreditGuaranty.Program.reportingTemplate.name.unique')->atPath('name')->addViolation();
+        }
     }
 }
