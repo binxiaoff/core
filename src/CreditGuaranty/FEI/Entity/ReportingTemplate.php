@@ -9,6 +9,8 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use KLS\Core\Entity\Staff;
@@ -46,6 +48,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         },
  *     },
  *     collectionOperations={
+ *         "get": {
+ *             "security": "is_granted('create', object)",
+ *         },
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *         },
@@ -92,12 +97,22 @@ class ReportingTemplate
      */
     private string $name;
 
+    /**
+     * @var Collection|ReportingTemplateField[]
+     *
+     * @ORM\OneToMany(targetEntity="ReportingTemplateField", mappedBy="reportingTemplate")
+     *
+     * @Groups({"creditGuaranty:reportingTemplate:read"})
+     */
+    private Collection $reportingTemplateField;
+
     public function __construct(Program $program, string $name, Staff $addedBy)
     {
-        $this->program = $program;
-        $this->name    = $name;
+        $this->program                = $program;
+        $this->name                   = $name;
         $this->addedBy = $addedBy;
-        $this->added   = new DateTimeImmutable();
+        $this->added                  = new DateTimeImmutable();
+        $this->reportingTemplateField = new ArrayCollection();
     }
 
     public function getProgram(): Program
@@ -115,5 +130,10 @@ class ReportingTemplate
         $this->name = $name;
 
         return $this;
+    }
+
+    public function getReportingTemplateField(): Collection
+    {
+        return $this->reportingTemplateField;
     }
 }
