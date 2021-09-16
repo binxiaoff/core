@@ -229,16 +229,16 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?ProgramChoiceOption $investmentLocation = null;
 
     /**
-     * @var Collection|FinancingObjectUnblocking[]
+     * @var Collection|FinancingObjectRelease[]
      *
      * @ApiSubresource
      *
      * @ORM\OneToMany(
-     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObjectUnblocking",
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObjectRelease",
      *     mappedBy="financingObject", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
      * )
      */
-    private Collection $financingObjectUnblockings;
+    private Collection $financingObjectReleases;
 
     public function __construct(
         Reservation $reservation,
@@ -525,11 +525,11 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     }
 
     /**
-     * @return Collection|FinancingObjectUnblocking[]
+     * @return Collection|FinancingObjectRelease[]
      */
-    public function getFinancingObjectUnblockings(): Collection
+    public function getFinancingObjectReleases(): Collection
     {
-        return $this->financingObjectUnblockings;
+        return $this->financingObjectReleases;
     }
 
     /**

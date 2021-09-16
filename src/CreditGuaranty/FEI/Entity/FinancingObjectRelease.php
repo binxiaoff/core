@@ -19,14 +19,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "creditGuaranty:financingObjectUnblocking:read",
+ *             "creditGuaranty:financingObjectRelease:read",
  *             "money:read",
  *         },
  *         "openapi_definition_name": "read",
  *     },
  *     denormalizationContext={
  *         "groups": {
- *             "creditGuaranty:financingObjectUnblocking:write",
+ *             "creditGuaranty:financingObjectRelease:write",
  *             "money:write",
  *         },
  *         "openapi_definition_name": "write",
@@ -47,30 +47,30 @@ use Symfony\Component\Validator\Constraints as Assert;
  * )
  *
  * @ORM\Entity
- * @ORM\Table(name="credit_guaranty_financing_object_unblocking")
+ * @ORM\Table(name="credit_guaranty_financing_object_release")
  * @ORM\HasLifecycleCallbacks
  */
-class FinancingObjectUnblocking implements ProgramAwareInterface
+class FinancingObjectRelease implements ProgramAwareInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObject", inversedBy="financingObjectUnblockings")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObject", inversedBy="financingObjectReleases")
      * @ORM\JoinColumn(name="id_financing_object", nullable=false)
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:financingObjectUnblocking:read", "creditGuaranty:financingObjectUnblocking:write"})
+     * @Groups({"creditGuaranty:financingObjectRelease:read", "creditGuaranty:financingObjectRelease:write"})
      */
     private FinancingObject $financingObject;
 
     /**
      * @ORM\Column(type="date_immutable", nullable=false)
      *
-     * @Groups({"creditGuaranty:financingObjectUnblocking:read", "creditGuaranty:financingObjectUnblocking:write"})
+     * @Groups({"creditGuaranty:financingObjectRelease:read", "creditGuaranty:financingObjectRelease:write"})
      */
-    private DateTimeImmutable $unblockingDate;
+    private DateTimeImmutable $releaseDate;
 
     /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
@@ -79,9 +79,9 @@ class FinancingObjectUnblocking implements ProgramAwareInterface
      *     @Assert\Expression("null === this.getProgram().isLoanReleasedOnInvoice()"),
      *     @Assert\Expression("false === this.getProgram().isLoanReleasedOnInvoice()"),
      *     @Assert\Expression("true === this.getProgram().isLoanReleasedOnInvoice() && false === value.isNull()")
-     * }, message="CreditGuaranty.Reservation.financingObjectUnblocking.invoiceMoney.requiredForLoanReleasedOnInvoice", includeInternalMessages=false)
+     * }, message="CreditGuaranty.Reservation.financingObjectRelease.invoiceMoney.requiredForLoanReleasedOnInvoice", includeInternalMessages=false)
      *
-     * @Groups({"creditGuaranty:financingObjectUnblocking:read", "creditGuaranty:financingObjectUnblocking:write"})
+     * @Groups({"creditGuaranty:financingObjectRelease:read", "creditGuaranty:financingObjectRelease:write"})
      */
     private Money $invoiceMoney;
 
@@ -92,28 +92,28 @@ class FinancingObjectUnblocking implements ProgramAwareInterface
      *     @Assert\Expression("null === this.getProgram().isLoanReleasedOnInvoice()"),
      *     @Assert\Expression("false === this.getProgram().isLoanReleasedOnInvoice()"),
      *     @Assert\Expression("true === this.getProgram().isLoanReleasedOnInvoice() && false === value.isNull()")
-     * }, message="CreditGuaranty.Reservation.financingObjectUnblocking.achievementMoney.requiredForLoanReleasedOnInvoice", includeInternalMessages=false)
+     * }, message="CreditGuaranty.Reservation.financingObjectRelease.achievementMoney.requiredForLoanReleasedOnInvoice", includeInternalMessages=false)
      *
-     * @Groups({"creditGuaranty:financingObjectUnblocking:read", "creditGuaranty:financingObjectUnblocking:write"})
+     * @Groups({"creditGuaranty:financingObjectRelease:read", "creditGuaranty:financingObjectRelease:write"})
      */
     private Money $achievementMoney;
 
     /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
-     * @Groups({"creditGuaranty:financingObjectUnblocking:read", "creditGuaranty:financingObjectUnblocking:write"})
+     * @Groups({"creditGuaranty:financingObjectRelease:read", "creditGuaranty:financingObjectRelease:write"})
      */
     private Money $totalMoney;
 
     public function __construct(
         FinancingObject $financingObject,
-        DateTimeImmutable $unblockingDate,
+        DateTimeImmutable $releaseDate,
         Money $invoiceMoney,
         Money $achievementMoney,
         Money $totalMoney
     ) {
         $this->financingObject  = $financingObject;
-        $this->unblockingDate   = $unblockingDate;
+        $this->releaseDate      = $releaseDate;
         $this->invoiceMoney     = $invoiceMoney;
         $this->achievementMoney = $achievementMoney;
         $this->totalMoney       = $totalMoney;
@@ -140,7 +140,7 @@ class FinancingObjectUnblocking implements ProgramAwareInterface
         return $this->invoiceMoney;
     }
 
-    public function setInvoiceMoney(Money $invoiceMoney): FinancingObjectUnblocking
+    public function setInvoiceMoney(Money $invoiceMoney): FinancingObjectRelease
     {
         $this->invoiceMoney = $invoiceMoney;
 
@@ -152,7 +152,7 @@ class FinancingObjectUnblocking implements ProgramAwareInterface
         return $this->achievementMoney;
     }
 
-    public function setAchievementMoney(Money $achievementMoney): FinancingObjectUnblocking
+    public function setAchievementMoney(Money $achievementMoney): FinancingObjectRelease
     {
         $this->achievementMoney = $achievementMoney;
 
@@ -164,7 +164,7 @@ class FinancingObjectUnblocking implements ProgramAwareInterface
         return $this->totalMoney;
     }
 
-    public function setTotalMoney(Money $totalMoney): FinancingObjectUnblocking
+    public function setTotalMoney(Money $totalMoney): FinancingObjectRelease
     {
         $this->totalMoney = $totalMoney;
 
