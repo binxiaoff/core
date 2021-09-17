@@ -21,9 +21,13 @@ class ReportingTemplateVoter extends AbstractEntityVoter
         $this->staffPermissionManager = $staffPermissionManager;
     }
 
-    protected function canCreate(ReportingTemplate $reportingTemplate, User $user): bool
+    /**
+     * @param ReportingTemplate $subject
+     */
+    protected function isGrantedAll($subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $reportingTemplate->getProgram())
-            && $this->staffPermissionManager->hasPermissions($user->getCurrentStaff(), StaffPermission::PERMISSION_CREATE_PROGRAM);
+        return $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $subject->getProgram())
+            && $this->staffPermissionManager->hasPermissions($user->getCurrentStaff(), StaffPermission::PERMISSION_READ_PROGRAM)
+            && $this->staffPermissionManager->hasPermissions($user->getCurrentStaff(), StaffPermission::PERMISSION_REPORTING);
     }
 }
