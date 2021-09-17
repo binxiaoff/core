@@ -234,7 +234,7 @@ class HubspotContactManager
                 'firstname'                      => $user->getFirstName(),
                 'lastname'                       => $user->getLastName(),
                 'email'                          => $user->getEmail(),
-                'job_function'                   => $user->getJobFunction(),
+                'jobtitle'                       => $user->getJobFunction(),
                 'phone'                          => $user->getPhone(),
                 'kls_user_status'                => 10 === $user->getCurrentStatus()->getStatus() ? 'invited' : 'created',
                 'kls_last_login'                 => $lastLoginDate ? $lastLoginDate->format('Y-m-d') : null,
