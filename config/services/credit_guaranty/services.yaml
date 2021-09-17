@@ -21,4 +21,7 @@ services:
 
   KLS\CreditGuaranty\FEI\Serializer\ContextBuilder\ProjectContextBuilder:
     decorates: 'api_platform.serializer.context_builder'
-    autoconfigure: false
+    arguments:
+      $decorated: '@.inner'
+      $security: '@Symfony\Component\Security\Core\Security'
+      $programRepository: '@KLS\CreditGuaranty\FEI\Repository\ProgramRepository'

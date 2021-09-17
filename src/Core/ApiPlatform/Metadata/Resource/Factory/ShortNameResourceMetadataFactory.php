@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Core\ApiPlatform\Metadata\Metadata\Resource\Factory;
+namespace KLS\Core\ApiPlatform\Metadata\Resource\Factory;
 
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
 use ApiPlatform\Core\Metadata\Resource\ResourceMetadata;
