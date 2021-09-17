@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b6b2ba019af394354146aa9cbc8cc8af",
+    "content-hash": "ec1c0d0ad3b1cfe37240c2c4f5953c49",
     "packages": [
         {
             "name": "api-platform/core",
@@ -2104,12 +2104,12 @@
             "version": "3.0.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/docusign/docusign-php-client.git",
+                "url": "https://github.com/docusign/docusign-esign-php-client.git",
                 "reference": "4e7d192783f3a1996203c1a087806385bd6c513f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/docusign/docusign-php-client/zipball/4e7d192783f3a1996203c1a087806385bd6c513f",
+                "url": "https://api.github.com/repos/docusign/docusign-esign-php-client/zipball/4e7d192783f3a1996203c1a087806385bd6c513f",
                 "reference": "4e7d192783f3a1996203c1a087806385bd6c513f",
                 "shasum": ""
             },
@@ -2149,8 +2149,8 @@
                 "swagger"
             ],
             "support": {
-                "issues": "https://github.com/docusign/docusign-php-client/issues",
-                "source": "https://github.com/docusign/docusign-php-client/tree/v3.0.1"
+                "issues": "https://github.com/docusign/docusign-esign-php-client/issues",
+                "source": "https://github.com/docusign/docusign-esign-php-client/tree/v3.0.1"
             },
             "time": "2017-10-25T22:08:40+00:00"
         },
@@ -15697,7 +15697,6 @@
                     "type": "github"
                 }
             ],
-            "abandoned": true,
             "time": "2020-09-28T06:45:17+00:00"
         },
         {
