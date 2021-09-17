@@ -37,6 +37,8 @@ class UserCreatedHandler implements MessageHandlerInterface
             foreach ($user->getStaff() as $staff) {
                 if ($staff->isAdmin()) {
                     $this->userCreatedNotifier->notify($user);
+
+                    break;
                 }
             }
         }
