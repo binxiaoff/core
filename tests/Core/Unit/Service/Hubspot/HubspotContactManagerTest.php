@@ -345,7 +345,7 @@ class HubspotContactManagerTest extends TestCase
                 'firstname'                      => $user->getFirstName(),
                 'lastname'                       => $user->getLastName(),
                 'email'                          => $user->getEmail(),
-                'job_function'                   => $user->getJobFunction(),
+                'jobtitle'                       => $user->getJobFunction(),
                 'phone'                          => $user->getPhone(),
                 'kls_user_status'                => 'created',
                 'kls_last_login'                 => null,
