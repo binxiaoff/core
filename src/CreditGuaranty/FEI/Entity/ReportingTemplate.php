@@ -8,7 +8,9 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\Traits\ArchivableTrait;
 use KLS\Core\Entity\Traits\BlamableAddedTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
@@ -57,12 +59,15 @@ use Symfony\Component\Validator\Constraints as Assert;
  * )
  *
  * @UniqueEntity(fields={"program", "name"}, message="CreditGuaranty.Program.reportingTemplate.name.unique")
+ *
+ * @Gedmo\SoftDeleteable(fieldName="archived")
  */
 class ReportingTemplate
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
     use BlamableAddedTrait;
+    use ArchivableTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Program", inversedBy="reportingTemplates")
