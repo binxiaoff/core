@@ -86,7 +86,7 @@ class UserCreatedHandlerTest extends TestCase
     public function testInvokeWithUserIsAdmin(): void
     {
         $user = $this->createUserWithStaff();
-        $this->createCompanyAdmin($user, $user->getCompany());
+        $this->defineAsCompanyAdmin($user, $user->getCompany());
 
         $this->forcePropertyValue($user, 'id', 1);
 

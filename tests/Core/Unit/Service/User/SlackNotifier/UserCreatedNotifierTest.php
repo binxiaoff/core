@@ -62,7 +62,7 @@ class UserCreatedNotifierTest extends TestCase
     public function testNotifyWithAdminStaff(): void
     {
         $user = $this->createUserWithStaff();
-        $this->createCompanyAdmin($user, $user->getCompany());
+        $this->defineAsCompanyAdmin($user, $user->getCompany());
 
         $messageInterface = $this->prophesize(MessageInterface::class);
 

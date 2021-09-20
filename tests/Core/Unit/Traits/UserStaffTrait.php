@@ -33,7 +33,7 @@ trait UserStaffTrait
         return $staff;
     }
 
-    private function createCompanyAdmin(User $user, Company $company): CompanyAdmin
+    private function defineAsCompanyAdmin(User $user, Company $company): CompanyAdmin
     {
         $companyAdmin = new CompanyAdmin($user, $company);
         $admins       = $company->getAdmins();
