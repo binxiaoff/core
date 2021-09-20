@@ -19,13 +19,13 @@ class ProgramCreatedListener
     }
 
     /**
-     * Auto-create the ProgramChoiceOptions with pre-defined list
-     * Get all "list" type fields, because we create only the choice options for the field defined in this list.
+     * Auto-create the ProgramChoiceOptions for all eligibility fields of pre-defined list type.
      */
     public function createPredefinedChoiceOption(Program $program): void
     {
-        $listField = $this->fieldRepository->findBy(['type' => Field::TYPE_LIST]);
-        foreach ($listField as $field) {
+        $listFields = $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY, 'type' => Field::TYPE_LIST]);
+
+        foreach ($listFields as $field) {
             if (null === $field->getPredefinedItems()) {
                 continue;
             }

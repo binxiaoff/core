@@ -41,8 +41,8 @@ class EligibilityChecker
     {
         /** @var iterable|Field[] $fields */
         $fields = (false === empty($category))
-            ? $this->fieldRepository->findBy(['category' => $category])
-            : $this->fieldRepository->findAll();
+            ? $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY, 'category' => $category])
+            : $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY]);
 
         $ineligibles = [];
 

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace KLS\CreditGuaranty\FEI\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,6 +18,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     collectionOperations={"get"},
  * )
  *
+ * @ApiFilter(SearchFilter::class, properties={"tag": "exact"})
+ *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_field")
  */
@@ -23,12 +27,15 @@ class Field
 {
     use PublicizeIdentityTrait;
 
-    // The criteria contains a list of items pre-defined or defined later by the user. The eligibility is configured on each item.
-    public const TYPE_LIST = 'list';
-    // It is a special version of "list". The listed items are booleans (yes or no).
-    public const TYPE_BOOL = 'bool';
-    // Other type that we haven't yet managed.
-    public const TYPE_OTHER = 'other';
+    // These tags are used for reporting
+    public const TAG_ELIGIBILITY = 'eligibility';
+    public const TAG_INFO        = 'info';
+    public const TAG_IMPORTED    = 'imported';
+    public const TAG_CALCUL      = 'calcul';
+
+    public const TYPE_LIST  = 'list'; // for fields of type pre-defined list or user-defined list
+    public const TYPE_BOOL  = 'bool'; // for fields of type boolean "list" (yes or no)
+    public const TYPE_OTHER = 'other'; // for other fields that we haven't yet managed
 
     public const VALUE_BOOL_YES = '1';
     public const VALUE_BOOL_NO  = '0';
@@ -41,6 +48,17 @@ class Field
     private string $fieldAlias;
 
     /**
+     * The different tag that a field can be in a reporting template.
+     *
+     * @ORM\Column(length=11)
+     *
+     * @Groups({"creditGuaranty:field:read"})
+     */
+    private string $tag;
+
+    /**
+     * The different sections of a reservation.
+     *
      * @ORM\Column(length=100)
      *
      * @Groups({"creditGuaranty:field:read"})
@@ -48,6 +66,8 @@ class Field
     private string $category;
 
     /**
+     * The different data types that a field can be in a program eligibility.
+     *
      * @ORM\Column(length=20)
      *
      * @Groups({"creditGuaranty:field:read"})
@@ -88,15 +108,6 @@ class Field
     private bool $comparable;
 
     /**
-     * If the field is a pre-defined list (and not an user-defined's), we store its items here.
-     *
-     * @ORM\Column(type="json", nullable=true)
-     *
-     * @Groups({"creditGuaranty:field:read"})
-     */
-    private ?array $predefinedItems;
-
-    /**
      * If comparable, we need to specify its unit to compare the value of the same unit.
      * It can also be used to build the translation of a unit.
      *
@@ -106,8 +117,18 @@ class Field
      */
     private ?string $unit;
 
+    /**
+     * The items of a field of type pre-defined list (and not an user-defined's).
+     *
+     * @ORM\Column(type="json", nullable=true)
+     *
+     * @Groups({"creditGuaranty:field:read"})
+     */
+    private ?array $predefinedItems;
+
     public function __construct(
         string $fieldAlias,
+        string $tag,
         string $category,
         string $type,
         string $reservationPropertyName,
@@ -119,6 +140,7 @@ class Field
         ?array $predefinedItems
     ) {
         $this->fieldAlias              = $fieldAlias;
+        $this->tag                     = $tag;
         $this->category                = $category;
         $this->type                    = $type;
         $this->reservationPropertyName = $reservationPropertyName;
@@ -133,6 +155,11 @@ class Field
     public function getFieldAlias(): string
     {
         return $this->fieldAlias;
+    }
+
+    public function getTag(): string
+    {
+        return $this->tag;
     }
 
     public function getCategory(): string
