@@ -19,6 +19,7 @@ use KLS\Core\Service\MoneyCalculator;
 use KLS\CreditGuaranty\FEI\Entity\Constant\GrossSubsidyEquivalent;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramAwareInterface;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
+use KLS\CreditGuaranty\FEI\Entity\Traits\ReportingDatesTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -67,6 +68,7 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use ReportingDatesTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Reservation", inversedBy="financingObjects")
