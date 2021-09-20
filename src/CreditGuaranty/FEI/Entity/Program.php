@@ -443,6 +443,15 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      */
     private Collection $reservations;
 
+    /**
+     * @var Collection|ReportingTemplate[]
+     *
+     * @ApiSubresource
+     *
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReportingTemplate", mappedBy="program")
+     */
+    private Collection $reportingTemplates;
+
     public function __construct(string $name, CompanyGroupTag $companyGroupTag, Money $funds, Staff $addedBy)
     {
         $this->name                           = $name;
@@ -458,6 +467,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         $this->programChoiceOptions           = new ArrayCollection();
         $this->participations                 = new ArrayCollection();
         $this->reservations                   = new ArrayCollection();
+        $this->reportingTemplates             = new ArrayCollection();
         $this->addedBy                        = $addedBy->getUser();
         $this->added                          = new DateTimeImmutable();
         $this->setCurrentStatus(new ProgramStatus($this, ProgramStatus::STATUS_DRAFT, $addedBy));
@@ -899,6 +909,14 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     public function getReservations()
     {
         return $this->reservations;
+    }
+
+    /**
+     * @return Collection|ReportingTemplate[]
+     */
+    public function getReportingTemplates(): Collection
+    {
+        return $this->reportingTemplates;
     }
 
     /**
