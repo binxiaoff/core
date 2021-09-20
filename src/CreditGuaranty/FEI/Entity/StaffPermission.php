@@ -72,6 +72,8 @@ class StaffPermission
 
     public const PERMISSION_REPORTING = 1 << 6;
 
+    public const PERMISSION_REPORTING_FIELD = 1 << 7;
+
     // The grant permission is in the same position as the corresponding permission to grant, so that we can easily check if a staff can grant a given permission.
     public const PERMISSION_GRANT_READ_PROGRAM   = 1 << 0;
     public const PERMISSION_GRANT_CREATE_PROGRAM = 1 << 1;
@@ -83,12 +85,15 @@ class StaffPermission
 
     public const PERMISSION_GRANT_REPORTING = 1 << 6;
 
+    public const PERMISSION_GRANT_REPORTING_FIELD = 1 << 7;
+
     // A typical admin of program managing company (CASA) has 1001111 (or 79 in decimal).
     public const MANAGING_COMPANY_ADMIN_PERMISSIONS = self::PERMISSION_GRANT_READ_PROGRAM
     | self::PERMISSION_GRANT_EDIT_PROGRAM
     | self::PERMISSION_GRANT_CREATE_PROGRAM
     | self::PERMISSION_GRANT_READ_RESERVATION
-    | self::PERMISSION_GRANT_REPORTING;
+    | self::PERMISSION_GRANT_REPORTING
+    | self::PERMISSION_GRANT_REPORTING_FIELD;
     // A typical admin of participant has 111001 (or 57 in decimal)
     public const PARTICIPANT_ADMIN_PERMISSIONS = self::PERMISSION_GRANT_READ_PROGRAM
     | self::PERMISSION_GRANT_READ_RESERVATION

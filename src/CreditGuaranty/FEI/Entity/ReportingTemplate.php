@@ -48,9 +48,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         },
  *     },
  *     collectionOperations={
- *         "get": {
- *             "security": "is_granted('create', object)",
- *         },
+ *         "get",
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *         },
@@ -100,19 +98,19 @@ class ReportingTemplate
     /**
      * @var Collection|ReportingTemplateField[]
      *
-     * @ORM\OneToMany(targetEntity="ReportingTemplateField", mappedBy="reportingTemplate")
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReportingTemplateField", mappedBy="reportingTemplate")
      *
      * @Groups({"creditGuaranty:reportingTemplate:read"})
      */
-    private Collection $reportingTemplateField;
+    private Collection $reportingTemplateFields;
 
     public function __construct(Program $program, string $name, Staff $addedBy)
     {
-        $this->program                = $program;
-        $this->name                   = $name;
-        $this->addedBy = $addedBy;
-        $this->added                  = new DateTimeImmutable();
-        $this->reportingTemplateField = new ArrayCollection();
+        $this->program                 = $program;
+        $this->name                    = $name;
+        $this->addedBy                 = $addedBy;
+        $this->added                   = new DateTimeImmutable();
+        $this->reportingTemplateFields = new ArrayCollection();
     }
 
     public function getProgram(): Program
@@ -132,8 +130,11 @@ class ReportingTemplate
         return $this;
     }
 
-    public function getReportingTemplateField(): Collection
+    /**
+     * @return Collection|ReportingTemplateField[]
+     */
+    public function getReportingTemplateFields(): Collection
     {
-        return $this->reportingTemplateField;
+        return $this->reportingTemplateFields;
     }
 }
