@@ -168,7 +168,7 @@ class HubspotCompanyManagerTest extends TestCase
     /**
      * @covers ::exportCompaniesToHubspot
      */
-    public function testSynchronizeCompaniesToHubspotWithCompanyToCreate(): void
+    public function testExportCompaniesToHubspotWithCompanyToCreate(): void
     {
         $response     = $this->prophesize(ResponseInterface::class);
         $arrCompanies = [
@@ -211,7 +211,7 @@ class HubspotCompanyManagerTest extends TestCase
     /**
      * @covers ::exportCompaniesToHubspot
      */
-    public function testSynchronizeCompaniesToHubspotWithCompanyToCreateWithErrorReponse(): void
+    public function testExportCompaniesToHubspotWithCompanyToCreateWithErrorReponse(): void
     {
         $response     = $this->prophesize(ResponseInterface::class);
         $arrCompanies = [
@@ -241,7 +241,7 @@ class HubspotCompanyManagerTest extends TestCase
     /**
      * @covers ::exportCompaniesToHubspot
      */
-    public function testSynchronizeCompaniesToHubspotWithCompanyToUpdate(): void
+    public function testExportCompaniesToHubspotWithCompanyToUpdate(): void
     {
         $response     = $this->prophesize(ResponseInterface::class);
         $arrCompanies = [
@@ -276,7 +276,7 @@ class HubspotCompanyManagerTest extends TestCase
     /**
      * @covers ::exportCompaniesToHubspot
      */
-    public function testSynchronizeCompaniesToHubspotWithCompanyToUpdateWithErrorResponse(): void
+    public function testExportCompaniesToHubspotWithCompanyToUpdateWithErrorResponse(): void
     {
         $response     = $this->prophesize(ResponseInterface::class);
         $arrCompanies = [

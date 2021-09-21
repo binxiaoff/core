@@ -18,11 +18,11 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class SynchronizeUsersCommand extends Command
+class ExportUsersCommand extends Command
 {
     public const DEFAULT_USERS_CHANGED_LIMIT = 100;
 
-    protected static $defaultName = 'kls:core:hubspot:user:synchronize';
+    protected static $defaultName = 'kls:core:hubspot:user:export';
 
     private HubspotContactManager $hubspotManager;
 
@@ -59,7 +59,7 @@ class SynchronizeUsersCommand extends Command
         $limit        = (int) $input->getOption('limit') ?: self::DEFAULT_USERS_CHANGED_LIMIT;
 
         do {
-            $data = $this->hubspotManager->synchronizeUsers($limit);
+            $data = $this->hubspotManager->exportUsers($limit);
 
             $usersCreated += $data['usersCreated'];
             $usersUpdated += $data['usersUpdated'];

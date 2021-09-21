@@ -20,11 +20,11 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class SynchronizeCompanyCommand extends Command
+class ExportCompanyCommand extends Command
 {
     public const DEFAULT_COMPANIES_LIMIT = 100;
 
-    protected static $defaultName = 'kls:core:hubspot:company:synchronize';
+    protected static $defaultName = 'kls:core:hubspot:company:export';
 
     private HubspotCompanyManager $hubspotCompanyManager;
 

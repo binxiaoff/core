@@ -114,9 +114,9 @@ class HubspotContactManagerTest extends TestCase
     }
 
     /**
-     * @covers ::synchronizeContacts
+     * @covers ::importContacts
      */
-    public function testSynchronizeContactsWithNoContactFound(): void
+    public function testImportContactsWithNoContactFound(): void
     {
         $response = $this->prophesize(ResponseInterface::class);
 
@@ -131,7 +131,7 @@ class HubspotContactManagerTest extends TestCase
         $this->hubspotContactRepository->persist(Argument::any())->shouldNotBeCalled();
         $this->hubspotContactRepository->flush()->shouldBeCalledOnce();
 
-        $result = $this->createTestObject()->synchronizeContacts(0);
+        $result = $this->createTestObject()->importContacts(0);
         static::assertArrayHasKey('lastContactId', $result);
         static::assertArrayHasKey('contactAddedNb', $result);
         static::assertSame(0, $result['lastContactId']);
@@ -139,9 +139,9 @@ class HubspotContactManagerTest extends TestCase
     }
 
     /**
-     * @covers ::synchronizeContacts
+     * @covers ::importContacts
      */
-    public function testSynchronizeContactsWithAddContact(): void
+    public function testImportContactsWithAddContact(): void
     {
         $response = $this->prophesize(ResponseInterface::class);
         $user     = new User('test@test.fr');
@@ -157,7 +157,7 @@ class HubspotContactManagerTest extends TestCase
         $this->hubspotContactRepository->persist(Argument::type(HubspotContact::class))->shouldBeCalledOnce();
         $this->hubspotContactRepository->flush()->shouldBeCalledOnce();
 
-        $result = $this->createTestObject()->synchronizeContacts(0);
+        $result = $this->createTestObject()->importContacts(0);
         static::assertArrayHasKey('lastContactId', $result);
         static::assertArrayHasKey('contactAddedNb', $result);
         static::assertSame(0, $result['lastContactId']);
@@ -165,9 +165,9 @@ class HubspotContactManagerTest extends TestCase
     }
 
     /**
-     * @covers ::synchronizeContacts
+     * @covers ::importContacts
      */
-    public function testSynchronizeContactWithNoResult(): void
+    public function testImportContactWithNoResult(): void
     {
         $response = $this->prophesize(ResponseInterface::class);
 
@@ -181,16 +181,16 @@ class HubspotContactManagerTest extends TestCase
         $this->hubspotContactRepository->persist(Argument::any())->shouldNotBeCalled();
         $this->hubspotContactRepository->flush()->shouldNotBeCalled();
 
-        $result = $this->createTestObject()->synchronizeContacts(0);
+        $result = $this->createTestObject()->importContacts(0);
 
         static::assertArrayHasKey('lastContactId', $result);
         static::assertArrayHasKey('contactAddedNb', $result);
     }
 
     /**
-     * @covers ::synchronizeUsers
+     * @covers ::exportUsers
      */
-    public function testSynchronizeUsersWithNoUsersToCreateAndUpdate(): void
+    public function testExportUsersWithNoUsersToCreateAndUpdate(): void
     {
         $this->userRepository->findHubspotUsersToCreate(2)->shouldBeCalledOnce()->willReturn(null);
         $this->userRepository->findHubspotUsersToUpdate(2)->shouldBeCalledOnce()->willReturn(null);
@@ -201,16 +201,16 @@ class HubspotContactManagerTest extends TestCase
         $this->hubspotClient->postNewContact(Argument::any())->shouldNotBeCalled();
         $this->hubspotContactRepository->flush()->shouldBeCalled();
 
-        $result = $this->createTestObject()->synchronizeUsers(2);
+        $result = $this->createTestObject()->exportUsers(2);
 
         static::assertArrayHasKey('usersUpdated', $result);
         static::assertArrayHasKey('usersCreated', $result);
     }
 
     /**
-     * @covers ::synchronizeUsers
+     * @covers ::exportUsers
      */
-    public function testSynchronizeUsersWithUsersToCreate(): void
+    public function testExportUsersWithUsersToCreate(): void
     {
         $arrUsers = [
             0 => $this->createUser(),
@@ -240,16 +240,16 @@ class HubspotContactManagerTest extends TestCase
         $this->hubspotContactRepository->persist(Argument::type(HubspotContact::class))->shouldBeCalledOnce();
         $this->hubspotContactRepository->flush()->shouldBeCalledTimes(2);
 
-        $result = $this->createTestObject()->synchronizeUsers(1);
+        $result = $this->createTestObject()->exportUsers(1);
 
         static::assertArrayHasKey('usersUpdated', $result);
         static::assertArrayHasKey('usersCreated', $result);
     }
 
     /**
-     * @covers ::synchronizeUsers
+     * @covers ::exportUsers
      */
-    public function testSynchronizeUsersWithUsersToUpdate(): void
+    public function testExportUsersWithUsersToUpdate(): void
     {
         $arrUsers = [
             0 => $this->createUser(),
@@ -270,7 +270,7 @@ class HubspotContactManagerTest extends TestCase
 
         $this->hubspotContactRepository->flush()->shouldBeCalledTimes(2);
 
-        $result = $this->createTestObject()->synchronizeUsers(1);
+        $result = $this->createTestObject()->exportUsers(1);
 
         static::assertArrayHasKey('usersUpdated', $result);
         static::assertArrayHasKey('usersCreated', $result);
