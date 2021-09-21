@@ -41,4 +41,23 @@ class FileDownloadManager
 
         return $response;
     }
+
+    public function downloadWriter($writer, array $rows, string $fileName): StreamedResponse
+    {
+        $response = new StreamedResponse(static function () use ($writer, $rows) {
+            $writer->openToFile('php://output');
+            foreach ($rows as $row) {
+                $writer->addRow($row);
+            }
+            $writer->close();
+        });
+
+        $fileNameFallback = \preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $fileName);
+
+        $contentDisposition = $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $fileName, $fileNameFallback);
+        $response->headers->set('Content-Disposition', $contentDisposition);
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+
+        return $response;
+    }
 }

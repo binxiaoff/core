@@ -46,6 +46,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "delete": {
  *             "security": "is_granted('delete', object)",
  *         },
+ *         "download": {
+ *             "method": "GET",
+ *             "controller": "KLS\CreditGuaranty\FEI\Controller\Reporting\Download",
+ *             "path": "/credit_guaranty/reporting_templates/{publicId}/import-file/download",
+ *             "security": "is_granted('view', object)",
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
@@ -73,6 +79,8 @@ class ReportingTemplate
     use TimestampableTrait;
     use BlamableAddedTrait;
     use ArchivableTrait;
+
+    public const IMPORT_FILE_COLUMNS = ['n° GREEN', 'n° d\'opération', 'CRD', 'Maturité'];
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Program", inversedBy="reportingTemplates")
