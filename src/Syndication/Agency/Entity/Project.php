@@ -147,8 +147,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                 "drive": "borrowerSharedDrive",
  *             },
  *             "normalization_context": {
- *                 "groups": {"
- *                     core:folder:read",
+ *                 "groups": {
+ *                     "core:folder:read",
  *                     "core:drive:read",
  *                     "core:abstractFolder:read",
  *                     "file:read",
