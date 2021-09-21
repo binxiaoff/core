@@ -10,6 +10,7 @@ use Doctrine\ORM\QueryBuilder;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
+use KLS\CreditGuaranty\FEI\Entity\StaffPermission;
 use KLS\CreditGuaranty\FEI\Extension\Traits\ProgramPermissionTrait;
 use Symfony\Component\Security\Core\Security;
 
@@ -33,6 +34,12 @@ class ReportingTemplateExtension implements QueryCollectionExtensionInterface
         $token = $this->security->getToken();
         /** @var Staff|null $staff */
         $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        if (null === $staff || false === $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_REPORTING)) {
+            $queryBuilder->andWhere('1 = 0');
+
+            return;
+        }
 
         $programAlias = 'p';
 
