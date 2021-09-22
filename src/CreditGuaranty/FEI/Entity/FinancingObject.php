@@ -229,6 +229,13 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?ProgramChoiceOption $investmentLocation = null;
 
     /**
+     * @ORM\Column(type="date_immutable", nullable=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?DateTimeImmutable $firstReleaseDate;
+
+    /**
      * @var Collection|FinancingObjectRelease[]
      *
      * @ApiSubresource
@@ -522,6 +529,18 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         }
 
         return null;
+    }
+
+    public function getFirstReleaseDate(): ?DateTimeImmutable
+    {
+        return $this->firstReleaseDate;
+    }
+
+    public function setFirstReleaseDate(?DateTimeImmutable $firstReleaseDate): FinancingObject
+    {
+        $this->firstReleaseDate = $firstReleaseDate;
+
+        return $this;
     }
 
     /**

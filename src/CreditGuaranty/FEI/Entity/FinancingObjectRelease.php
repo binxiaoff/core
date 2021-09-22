@@ -66,13 +66,6 @@ class FinancingObjectRelease implements ProgramAwareInterface
     private FinancingObject $financingObject;
 
     /**
-     * @ORM\Column(type="date_immutable", nullable=false)
-     *
-     * @Groups({"creditGuaranty:financingObjectRelease:read", "creditGuaranty:financingObjectRelease:write"})
-     */
-    private DateTimeImmutable $releaseDate;
-
-    /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
      *
      * @Assert\AtLeastOneOf({
@@ -107,13 +100,11 @@ class FinancingObjectRelease implements ProgramAwareInterface
 
     public function __construct(
         FinancingObject $financingObject,
-        DateTimeImmutable $releaseDate,
         Money $invoiceMoney,
         Money $achievementMoney,
         Money $totalMoney
     ) {
         $this->financingObject  = $financingObject;
-        $this->releaseDate      = $releaseDate;
         $this->invoiceMoney     = $invoiceMoney;
         $this->achievementMoney = $achievementMoney;
         $this->totalMoney       = $totalMoney;
