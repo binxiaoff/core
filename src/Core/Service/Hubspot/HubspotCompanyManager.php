@@ -206,6 +206,7 @@ class HubspotCompanyManager
         $content = \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         $hubspotCompany = new HubspotCompany($company, (string) $content['id']);
+        $hubspotCompany->synchronize();
         $this->hubspotCompanyRepository->persist($hubspotCompany);
 
         return true;
