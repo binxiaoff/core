@@ -65,7 +65,7 @@ class HubspotContactManager
     }
 
     /**
-     * Hubspot contact to our database.
+     * Hubspot contact (corresponding to our users) to our database.
      *
      * @throws ORMException
      * @throws OptimisticLockException
@@ -75,7 +75,7 @@ class HubspotContactManager
      * @throws TransportExceptionInterface
      * @throws JsonException
      */
-    public function synchronizeContacts(int $lastContactId = 0): array
+    public function importContacts(int $lastContactId = 0): array
     {
         $content = $this->fetchContacts($lastContactId);
 
@@ -131,7 +131,7 @@ class HubspotContactManager
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      */
-    public function synchronizeUsers(int $limit): array
+    public function exportUsers(int $limit): array
     {
         $usersCreated = 0;
         $usersUpdated = 0;
