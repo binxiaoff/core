@@ -87,7 +87,7 @@ class StaffPermission
 
     public const PERMISSION_GRANT_REPORTING_FIELD = 1 << 7;
 
-    // A typical admin of program managing company (CASA) has 1001111 (or 79 in decimal).
+    // A typical admin of program managing company (CASA) has 11001111 (or 207 in decimal).
     public const MANAGING_COMPANY_ADMIN_PERMISSIONS = self::PERMISSION_GRANT_READ_PROGRAM
     | self::PERMISSION_GRANT_EDIT_PROGRAM
     | self::PERMISSION_GRANT_CREATE_PROGRAM
