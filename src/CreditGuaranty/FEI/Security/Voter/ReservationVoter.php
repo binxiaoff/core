@@ -58,6 +58,6 @@ class ReservationVoter extends AbstractEntityVoter
 
     protected function canDelete(Reservation $reservation, User $user): bool
     {
-        return $this->canCreate($reservation, $user);
+        return $this->canCreate($reservation, $user) && $reservation->getManagingCompany() === $user->getCompany();
     }
 }
