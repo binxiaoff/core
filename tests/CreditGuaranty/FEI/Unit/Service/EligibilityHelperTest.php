@@ -49,7 +49,7 @@ class EligibilityHelperTest extends TestCase
     {
         $this->withBorrower($this->reservation);
 
-        $field = new Field('company_name', 'category', 'type', 'borrower', 'companyName', 'string', Borrower::class, false, null, null);
+        $field = new Field('company_name', Field::TAG_ELIGIBILITY, 'category', 'type', 'borrower', 'companyName', 'string', Borrower::class, false, null, null);
 
         $this->propertyAccessor->getValue($this->reservation, 'borrower')->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
 
@@ -64,7 +64,7 @@ class EligibilityHelperTest extends TestCase
      */
     public function testGetEntityExceptionWithUnexistedPath(): void
     {
-        $field = new Field('company_name', 'category', 'type', 'borrow', 'companyName', 'string', 'Name\\Class\\Borrow', false, null, null);
+        $field = new Field('company_name', Field::TAG_ELIGIBILITY, 'category', 'type', 'borrow', 'companyName', 'string', 'Name\\Class\\Borrow', false, null, null);
 
         $this->propertyAccessor->getValue($this->reservation, 'borrow')->shouldBeCalledOnce()->willThrow(AccessException::class);
 
@@ -82,7 +82,7 @@ class EligibilityHelperTest extends TestCase
         $this->withBorrower($this->reservation);
 
         $entity = $this->reservation->getBorrower();
-        $field  = new Field('beneficiary_name', 'profile', 'other', 'borrower', 'beneficiaryName', 'string', Borrower::class, false, null, null);
+        $field  = new Field('beneficiary_name', Field::TAG_ELIGIBILITY, 'profile', 'other', 'borrower', 'beneficiaryName', 'string', Borrower::class, false, null, null);
 
         $this->propertyAccessor->getValue($entity, 'beneficiaryName')->shouldBeCalledOnce()->willReturn('Borrower Name');
 
@@ -100,7 +100,7 @@ class EligibilityHelperTest extends TestCase
         $this->withBorrower($this->reservation);
 
         $entity = $this->reservation->getBorrower();
-        $field  = new Field('turnover', 'profile', 'other', 'borrower', 'turnover', 'MoneyInterface', Borrower::class, true, 'money', null);
+        $field  = new Field('turnover', Field::TAG_ELIGIBILITY, 'profile', 'other', 'borrower', 'turnover', 'MoneyInterface', Borrower::class, true, 'money', null);
 
         $this->propertyAccessor->getValue($entity, 'turnover')->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower()->getTurnover());
 
@@ -118,7 +118,7 @@ class EligibilityHelperTest extends TestCase
         $this->withBorrower($this->reservation);
 
         $entity              = $this->reservation->getBorrower();
-        $field               = new Field('borrower_type', 'profile', 'list', 'borrower', 'borrowerType', 'ProgramChoiceOption', Borrower::class, false, null, null);
+        $field               = new Field('borrower_type', Field::TAG_ELIGIBILITY, 'profile', 'list', 'borrower', 'borrowerType', 'ProgramChoiceOption', Borrower::class, false, null, null);
         $programChoiceOption = new ProgramChoiceOption($this->reservation->getProgram(), 'borrower type', $field);
 
         $this->propertyAccessor->getValue($entity, 'borrowerType')->shouldBeCalledOnce()->willReturn($programChoiceOption);

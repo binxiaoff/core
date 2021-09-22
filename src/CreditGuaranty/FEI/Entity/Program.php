@@ -160,6 +160,8 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     public const COMPANY_GROUP_TAG_CORPORATE   = 'corporate';
     public const COMPANY_GROUP_TAG_AGRICULTURE = 'agriculture';
 
+    private const RATING_MODEL_DEFAULT = 'Banque de France';
+
     /**
      * @ORM\Column(length=100, unique=true)
      *
@@ -335,6 +337,13 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private ?string $requestedDocumentsDescription;
 
     /**
+     * @ORM\Column(length=16, nullable=false)
+     *
+     * @Groups({"creditGuaranty:program:read"})
+     */
+    private string $ratingModel;
+
+    /**
      * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramStatus", cascade={"persist"})
      * @ORM\JoinColumn(name="id_current_status", unique=true, onDelete="CASCADE")
      *
@@ -460,6 +469,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         $this->funds                          = $funds;
         $this->guarantyCost                   = new NullableMoney();
         $this->maxFeiCredit                   = new NullableMoney();
+        $this->ratingModel                    = self::RATING_MODEL_DEFAULT;
         $this->drive                          = new Drive();
         $this->statuses                       = new ArrayCollection();
         $this->programGradeAllocations        = new ArrayCollection();

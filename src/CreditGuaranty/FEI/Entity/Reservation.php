@@ -26,6 +26,7 @@ use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
+use KLS\CreditGuaranty\FEI\Entity\Traits\ReportingDatesTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -141,6 +142,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
+    use ReportingDatesTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Program", inversedBy="reservations")
