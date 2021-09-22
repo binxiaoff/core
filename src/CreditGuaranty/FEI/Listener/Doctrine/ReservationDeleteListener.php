@@ -34,7 +34,8 @@ class ReservationDeleteListener
         $reservationStatusClassMetadata = $em->getClassMetadata(ReservationStatus::class);
 
         foreach ($uow->getScheduledEntityDeletions() as $entity) {
-            if (false === ($entity instanceof Reservation)) {
+            // Enforce true delete for draft reservation
+            if (false === ($entity instanceof Reservation) || $entity->isInDraft()) {
                 continue;
             }
 
