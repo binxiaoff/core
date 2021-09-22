@@ -42,16 +42,15 @@ class HubspotContact
     private int $contactId;
 
     /**
-     * @ORM\Column(type="datetime_immutable")
+     * @ORM\Column(type="datetime_immutable", nullable=true)
      */
     private \DateTimeImmutable $synchronized;
 
     public function __construct(User $user, int $contactId)
     {
-        $this->user         = $user;
-        $this->contactId    = $contactId;
-        $this->added        = new DateTimeImmutable();
-        $this->synchronized = new DateTimeImmutable();
+        $this->user      = $user;
+        $this->contactId = $contactId;
+        $this->added     = new DateTimeImmutable();
     }
 
     public function getId(): int

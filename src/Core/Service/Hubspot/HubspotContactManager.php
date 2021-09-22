@@ -294,6 +294,7 @@ class HubspotContactManager
         $content = \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         $hubspotContact = new HubspotContact($user, (int) $content['id']);
+        $hubspotContact->synchronize();
         $this->hubspotContactRepository->persist($hubspotContact);
 
         return true;
