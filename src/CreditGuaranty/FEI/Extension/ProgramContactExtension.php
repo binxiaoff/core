@@ -42,7 +42,7 @@ class ProgramContactExtension implements QueryCollectionExtensionInterface
         $rootAlias          = $queryBuilder->getRootAliases()[0];
         $queryBuilder
             ->innerJoin("{$rootAlias}.program", $programAlias)
-            ->innerJoin(Participation::class, $participationAlias, Join::WITH, "{$participationAlias}.program = {$programAlias}.id")
+            ->leftJoin(Participation::class, $participationAlias, Join::WITH, "{$participationAlias}.program = {$programAlias}.id")
         ;
 
         $this->applyProgramManagerOrParticipantFilter($staff, $queryBuilder, $programAlias, $participationAlias);

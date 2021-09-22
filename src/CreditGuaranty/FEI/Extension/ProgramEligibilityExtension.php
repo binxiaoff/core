@@ -44,7 +44,7 @@ class ProgramEligibilityExtension implements QueryCollectionExtensionInterface
         // it needs to join participation to get programEligibility fields for generating reservation request forms
         $queryBuilder
             ->innerJoin("{$queryBuilder->getRootAliases()[0]}.program", $programAlias)
-            ->innerJoin(Participation::class, $participationAlias, Join::WITH, "{$participationAlias}.program = {$programAlias}.id")
+            ->leftJoin(Participation::class, $participationAlias, Join::WITH, "{$participationAlias}.program = {$programAlias}.id")
         ;
         $this->applyProgramManagerOrParticipantFilter($staff, $queryBuilder, $programAlias, $participationAlias);
     }
