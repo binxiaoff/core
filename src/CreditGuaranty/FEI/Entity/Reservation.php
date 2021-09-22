@@ -188,7 +188,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObject", mappedBy="reservation", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObject", mappedBy="reservation", cascade={"remove"}, orphanRemoval=true, fetch="EXTRA_LAZY")
      */
     private Collection $financingObjects;
 
