@@ -12,6 +12,7 @@ use KLS\Core\Entity\User;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
 use KLS\CreditGuaranty\FEI\Entity\StaffPermission;
 use KLS\CreditGuaranty\FEI\Extension\Traits\ProgramPermissionTrait;
+use KLS\CreditGuaranty\FEI\Service\StaffPermissionManager;
 use Symfony\Component\Security\Core\Security;
 
 class ReportingTemplateExtension implements QueryCollectionExtensionInterface
@@ -19,10 +20,12 @@ class ReportingTemplateExtension implements QueryCollectionExtensionInterface
     use ProgramPermissionTrait;
 
     private Security $security;
+    private StaffPermissionManager $staffPermissionManager;
 
-    public function __construct(Security $security)
+    public function __construct(Security $security, StaffPermissionManager $staffPermissionManager)
     {
-        $this->security = $security;
+        $this->security               = $security;
+        $this->staffPermissionManager = $staffPermissionManager;
     }
 
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null)
