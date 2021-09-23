@@ -62,7 +62,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         )
  *     }
  * )
- * @UniqueEntity(fields={"reportingTemplate", "field"}, message="CreditGuaranty.Program.reportingTemplateField.name.unique")
+ * @UniqueEntity(fields={"reportingTemplate", "field"}, message="CreditGuaranty.Program.reportingTemplateField.field.unique")
  */
 class ReportingTemplateField
 {
@@ -70,8 +70,10 @@ class ReportingTemplateField
     use TimestampableTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReportingTemplate", inversedBy="reportingTemplateField")
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReportingTemplate", inversedBy="reportingTemplateFields")
      * @ORM\JoinColumn(name="id_reporting_template", nullable=false)
+     *
+     * @Gedmo\SortableGroup
      *
      * @Groups({"creditGuaranty:reportingTemplateField:read", "creditGuaranty:reportingTemplateField:write"})
      *

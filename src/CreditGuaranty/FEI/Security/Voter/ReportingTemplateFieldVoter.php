@@ -28,6 +28,6 @@ class ReportingTemplateFieldVoter extends AbstractEntityVoter
     {
         return $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $subject->getReportingTemplate()->getProgram())
             && $this->staffPermissionManager->hasPermissions($user->getCurrentStaff(), StaffPermission::PERMISSION_READ_PROGRAM)
-            && $this->staffPermissionManager->hasPermissions($user->getCurrentStaff(), StaffPermission::PERMISSION_REPORTING_FIELD);
+            && $this->staffPermissionManager->hasPermissions($user->getCurrentStaff(), StaffPermission::PERMISSION_REPORTING);
     }
 }
