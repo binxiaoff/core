@@ -34,6 +34,6 @@ class Download
         $writer = WriterFactory::createFromType(Type::XLSX);
         $row    = WriterEntityFactory::createRowFromArray(ReportingTemplate::IMPORT_FILE_COLUMNS, $style);
 
-        return $this->fileDownloadManager->downloadWriter($writer, [$row], self::FILE_NAME);
+        return $this->fileDownloadManager->downloadNewFile($writer, [$row], self::FILE_NAME);
     }
 }

@@ -42,7 +42,7 @@ class FileDownloadManager
         return $response;
     }
 
-    public function downloadWriter($writer, array $rows, string $fileName): StreamedResponse
+    public function downloadNewFile($writer, array $rows, string $fileName): StreamedResponse
     {
         $response = new StreamedResponse(static function () use ($writer, $rows) {
             $writer->openToFile('php://output');

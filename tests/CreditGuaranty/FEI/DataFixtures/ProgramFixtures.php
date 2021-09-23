@@ -53,7 +53,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         yield self::REFERENCE_COMMERCIALIZED => [
             'name'                 => 'Programme commercialisée',
-            'addedBy'              => 'staff_company:foo_user-a',
+            'addedBy'              => 'staff_company:bar_user-a',
             'companyGroupTag'      => 'companyGroup:foo_tag:agriculture',
             'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
             'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,

@@ -34,10 +34,7 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
         foreach ($company->getStaff() as $staff) {
             $staffPermission = new StaffPermission(
                 $staff,
-                new Bitmask(StaffPermission::PERMISSION_READ_PROGRAM
-                    | StaffPermission::PERMISSION_EDIT_PROGRAM
-                    | StaffPermission::PERMISSION_CREATE_PROGRAM
-                | StaffPermission::PERMISSION_READ_RESERVATION)
+                new Bitmask(StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS)
             );
 
             $manager->persist($staffPermission);
@@ -50,10 +47,7 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
         foreach ($company->getStaff() as $staff) {
             $staffPermission = new StaffPermission(
                 $staff,
-                new Bitmask(StaffPermission::PERMISSION_READ_RESERVATION
-                    | StaffPermission::PERMISSION_EDIT_RESERVATION
-                    | StaffPermission::PERMISSION_CREATE_RESERVATION
-                | StaffPermission::PERMISSION_READ_PROGRAM)
+                new Bitmask(StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS)
             );
 
             $manager->persist($staffPermission);

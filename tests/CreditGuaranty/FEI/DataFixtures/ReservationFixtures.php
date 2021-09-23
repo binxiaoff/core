@@ -89,7 +89,6 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         /** @var Staff $addedBy */
         $addedBy = $participation->getParticipant()->getStaff()->current();
 
-        $this->createCompanyGroup($program, $addedBy);
         $this->loginStaff($addedBy);
 
         yield self::RESERVATION_DRAFT_1 => [
@@ -350,19 +349,5 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
 
         return $programChoiceOption;
-    }
-
-    private function createCompanyGroup(Program $program, Staff $addedBy): void
-    {
-        $company = $addedBy->getCompany();
-
-        foreach ($company->getStaff() as $staff) {
-            if (false === $staff->isManager()) {
-                continue;
-            }
-
-            $staff->addCompanyGroupTag($program->getCompanyGroupTag());
-            $this->entityManager->persist($staff);
-        }
     }
 }
