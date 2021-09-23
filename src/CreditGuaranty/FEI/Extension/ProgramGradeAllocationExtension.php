@@ -6,9 +6,11 @@ namespace KLS\CreditGuaranty\FEI\Extension;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
+use KLS\CreditGuaranty\FEI\Entity\Participation;
 use KLS\CreditGuaranty\FEI\Entity\ProgramGradeAllocation;
 use KLS\CreditGuaranty\FEI\Extension\Traits\ProgramPermissionTrait;
 use KLS\CreditGuaranty\FEI\Service\StaffPermissionManager;
@@ -34,9 +36,14 @@ class ProgramGradeAllocationExtension implements QueryCollectionExtensionInterfa
 
         $token = $this->security->getToken();
         /** @var Staff|null $staff */
-        $staff        = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
-        $programAlias = 'p';
-        $queryBuilder->innerJoin("{$queryBuilder->getRootAliases()[0]}.program", $programAlias);
-        $this->applyProgramManagerFilter($staff, $queryBuilder, $programAlias);
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        $programAlias       = 'p';
+        $participationAlias = 'pa';
+        $queryBuilder
+            ->innerJoin("{$queryBuilder->getRootAliases()[0]}.program", $programAlias)
+            ->leftJoin(Participation::class, $participationAlias, Join::WITH, "{$participationAlias}.program = {$programAlias}.id")
+        ;
+        $this->applyProgramManagerOrParticipantFilter($staff, $queryBuilder, $programAlias, $participationAlias);
     }
 }
