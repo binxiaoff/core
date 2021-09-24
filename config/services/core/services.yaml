@@ -40,10 +40,11 @@ services:
 
   KLS\Core\:
     resource: '%kernel.project_dir%/src/Core/*'
-    exclude: '%kernel.project_dir%/src/Core/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
+    exclude: '%kernel.project_dir%/src/Core/{Console,Entity,Controller,Tests,Traits,Listener/Doctrine}'
 
-  KLS\Core\ApiPlatform\Metadata\Metadata\Resource\Factory\ShortNameResourceMetadataFactory:
+  KLS\Core\ApiPlatform\Metadata\Resource\Factory\ShortNameResourceMetadataFactory:
     decorates: 'api_platform.metadata.resource.metadata_factory'
+    arguments: ['@.inner']
 
   KLS\Core\Controller\:
     resource: '%kernel.project_dir%/src/Core/Controller'
@@ -78,6 +79,10 @@ services:
 
   # Security
 
+  KLS\Core\Security\Voter\FileDownloadVoter:
+    arguments:
+      $permissionCheckers: !tagged kls.file.download.permission.checker
+
   KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator:
     $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
     $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
@@ -87,27 +92,35 @@ services:
 
   KLS\Core\Serializer\ContextBuilder\CircularReferenceHandler:
     decorates: 'api_platform.serializer.context_builder'
-    autoconfigure: false
+    arguments:
+      $decorated: '@.inner'
+      $iriConverter: '@ApiPlatform\Core\Api\IriConverterInterface'
 
   KLS\Core\Serializer\ContextBuilder\CurrentUser:
     decorates: 'api_platform.serializer.context_builder'
-    autoconfigure: false
+    arguments:
+      $decorated: '@.inner'
+      $security: '@Symfony\Component\Security\Core\Security'
+      $userRepository: '@KLS\Core\Repository\UserRepository'
 
   KLS\Core\Serializer\ContextBuilder\DeepObjectToPopulate:
     decorates: 'api_platform.serializer.context_builder'
-    autoconfigure: false
+    arguments: ['@.inner']
 
   KLS\Core\Serializer\ContextBuilder\MaxDepth:
     decorates: 'api_platform.serializer.context_builder'
-    autoconfigure: false
+    arguments: ['@.inner']
 
   KLS\Core\Serializer\ContextBuilder\SkipNullValue:
     decorates: 'api_platform.serializer.context_builder'
-    autoconfigure: false
+    arguments: ['@.inner']
 
   KLS\Core\Serializer\ContextBuilder\Staff\CurrentStaff:
     decorates: 'api_platform.serializer.context_builder'
-    autoconfigure: false
+    arguments:
+      $decorated: '@.inner'
+      $security: '@Symfony\Component\Security\Core\Security'
+      $userRepository: '@KLS\Core\Repository\UserRepository'
 
   # Service
 
@@ -142,8 +155,15 @@ services:
   KLS\Core\Service\WebServiceClient\InseeManager:
     $client: '@eight_points_guzzle.client.insee'
 
+  # Swagger
+
+  KLS\Core\Swagger\OpenApiFactory:
+    decorates: 'api_platform.openapi.factory'
+    arguments: ['@.inner']
+
   KLS\Core\Swagger\SwaggerDecorator:
     decorates: 'api_platform.openapi.normalizer.api_gateway'
+    arguments: ['@.inner']
 
   KLS\Core\SwiftMailer\TemplateErrorReportingPlugin:
     tags:

@@ -12,7 +12,13 @@ use KLS\Core\Entity\File;
 use KLS\Core\Service\File\FileUploadManager;
 use KLS\Syndication\Agency\Security\Voter\TermVoter;
 use KLS\Syndication\Agency\Service\FileInput\FileInputTermUploader;
-use KLS\Test\Core\Unit\Traits\FileInputEntitiesTrait;
+use KLS\Test\Core\Unit\Traits\FileInputTrait;
+use KLS\Test\Core\Unit\Traits\MessageTrait;
+use KLS\Test\Core\Unit\Traits\TokenTrait;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
+use KLS\Test\Syndication\Agency\Unit\Traits\AgencyProjectTrait;
+use KLS\Test\Syndication\Agency\Unit\Traits\TermTrait;
+use KLS\Test\Syndication\Arrangement\Unit\Traits\ArrangementProjectSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -26,7 +32,13 @@ use Symfony\Component\Security\Core\Security;
  */
 class FileInputTermUploaderTest extends TestCase
 {
-    use FileInputEntitiesTrait;
+    use UserStaffTrait;
+    use TokenTrait;
+    use FileInputTrait;
+    use MessageTrait;
+    use TermTrait;
+    use AgencyProjectTrait;
+    use ArrangementProjectSetTrait;
 
     /** @var Security|ObjectProphecy */
     private $security;

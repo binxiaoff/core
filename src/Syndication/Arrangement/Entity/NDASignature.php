@@ -20,22 +20,38 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"ndaSignature:read", "timestampable:read", "blameable:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "ndaSignature:read",
+ *             "timestampable:read",
+ *             "blameable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *         }
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
+ *         },
  *     },
  *     collectionOperations={
  *         "get",
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"ndaSignature:create"}}
- *         }
- *     }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "ndaSignature:create"
+ *                 },
+ *                 "openapi_definition_name": "collection-post-create",
+ *             },
+ *         },
+ *     },
  * )
+ *
  * @ORM\Table(
  *     name="syndication_nda_signature",
  *     uniqueConstraints={@ORM\UniqueConstraint(columns={"added_by", "id_project_participation"}, name="uniq_added_by_project_participation")}

@@ -32,28 +32,34 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {
- *         "creditGuaranty:reservation:read",
- *         "creditGuaranty:reservationStatus:read",
- *         "creditGuaranty:borrower:read",
- *         "creditGuaranty:project:read",
- *         "money:read",
- *         "nullableMoney:read"
- *     }},
- *     denormalizationContext={"groups": {
- *         "creditGuaranty:reservation:write",
- *         "money:write",
- *         "nullableMoney:write"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:reservation:read",
+ *             "creditGuaranty:reservationStatus:read",
+ *             "creditGuaranty:borrower:read",
+ *             "creditGuaranty:project:read",
+ *             "money:read",
+ *             "nullableMoney:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:reservation:write",
+ *             "money:write",
+ *             "nullableMoney:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object)"
+ *             "security": "is_granted('delete', object)",
  *         },
  *         "get_reservation_dataroom": {
  *             "method": "GET",
@@ -61,14 +67,20 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('view', object)",
  *             "controller": Get::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
- *                 "path": "/"
+ *                 "path": "/",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get_reservation_dataroom-read",
+ *             },
  *         },
  *         "post_reservation_dataroom": {
  *             "method": "POST",
@@ -77,14 +89,20 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "deserialize": false,
  *             "controller": Post::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
- *                 "path": "/"
+ *                 "path": "/",
  *             },
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
- *             }
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-post_reservation_dataroom-read",
+ *             },
  *         },
  *         "delete_reservation_dataroom": {
  *             "method": "DELETE",
@@ -92,27 +110,28 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('edit', object)",
  *             "controller": Delete::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
- *                 "path": "/"
- *             }
- *         }
+ *                 "path": "/",
+ *             },
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
- *             "security_post_denormalize": "is_granted('create', object)"
+ *             "security_post_denormalize": "is_granted('create', object)",
  *         },
  *         "get",
  *         "api_credit_guaranty_programs_reservations_get_subresource": {
  *             "method": "GET",
- *             "pagination_client_items_per_page": true
- *         }
- *     }
+ *             "pagination_client_items_per_page": true,
+ *         },
+ *     },
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
- * @ApiFilter(OrderFilter::class, properties={"currentStatus.added"}, arguments={"orderParameterName": "order"})
+ * @ApiFilter(OrderFilter::class, properties={"added"})
+ * @ApiFilter("KLS\CreditGuaranty\FEI\Filter\ReservationSentDateOrderFilter")
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_reservation")
@@ -147,18 +166,20 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     private Company $managingCompany;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Borrower", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Borrower", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\JoinColumn(name="id_borrower", nullable=false)
      *
      * @Groups({"creditGuaranty:reservation:read"})
      */
-    private ?Borrower $borrower = null;
+    private Borrower $borrower;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Project", mappedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Project", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\JoinColumn(name="id_project", nullable=false)
      *
      * @Groups({"creditGuaranty:reservation:read"})
      */
-    private ?Project $project = null;
+    private Project $project;
 
     /**
      * @var Collection|FinancingObject[]
@@ -212,6 +233,8 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     {
         $this->program          = $program;
         $this->managingCompany  = $addedBy->getCompany();
+        $this->borrower         = new Borrower($this);
+        $this->project          = new Project($this);
         $this->financingObjects = new ArrayCollection();
         $this->drive            = new Drive();
         $this->added            = new DateTimeImmutable();
@@ -249,28 +272,14 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return $this->managingCompany;
     }
 
-    public function getBorrower(): ?Borrower
+    public function getBorrower(): Borrower
     {
         return $this->borrower;
     }
 
-    public function setBorrower(Borrower $borrower): Reservation
-    {
-        $this->borrower = $borrower;
-
-        return $this;
-    }
-
-    public function getProject(): ?Project
+    public function getProject(): Project
     {
         return $this->project;
-    }
-
-    public function setProject(?Project $project): Reservation
-    {
-        $this->project = $project;
-
-        return $this;
     }
 
     public function getFinancingObjects()
@@ -396,21 +405,14 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      */
     public function isGrossSubsidyEquivalentEligible(): bool
     {
-        $project = $this->getProject();
-
-        if (false === ($project instanceof Project)) {
-            return false;
-        }
-
         $financingObjects = $this->getFinancingObjects();
 
         if ($financingObjects->count() < 1) {
             return false;
         }
 
-        $grossSubsidyEquivalents = $financingObjects->map(static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent())->toArray();
-        $esbTotal                = MoneyCalculator::sum($grossSubsidyEquivalents);
-        $maxFeiCredit            = $project->getMaxFeiCredit();
+        $esbTotal     = $this->project->getTotalGrossSubsidyEquivalent();
+        $maxFeiCredit = $this->project->getMaxFeiCredit();
 
         $comparison = MoneyCalculator::compare($esbTotal, $maxFeiCredit);
 

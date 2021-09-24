@@ -25,27 +25,52 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 /**
  * @ApiResource(
  *     attributes={
- *         "pagination_client_enabled": true
+ *         "pagination_client_enabled": true,
  *     },
- *     normalizationContext={"groups": {"staff:read", "user:read", "user_status:read", "staffStatus:read", "timestampable:read", "traceableStatus:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "staff:read",
+ *             "user:read",
+ *             "user_status:read",
+ *             "staffStatus:read",
+ *             "timestampable:read",
+ *             "traceableStatus:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"staff:update", "staffStatus:create"}}
- *         }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "staff:update",
+ *                     "staffStatus:create",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-write",
+ *             },
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"staff:create", "user:create"}}
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "staff:create",
+ *                     "user:create",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-create",
+ *             },
  *         },
- *         "get"
- *     }
+ *         "get",
+ *     },
  * )
  *
  * @ORM\Entity
@@ -273,7 +298,11 @@ class Staff implements TraceableStatusAwareInterface
             return $this;
         }
 
-        if (false === $this->companyGroupTags->contains($tag)) {
+        $callback = function (int $key, CompanyGroupTag $cgt) use ($tag): bool {
+            return $tag->getCompanyGroup() === $cgt->getCompanyGroup() && $tag->getCode() === $cgt->getCode();
+        };
+
+        if (false === $this->companyGroupTags->exists($callback)) {
             $this->companyGroupTags[] = $tag;
         }
 

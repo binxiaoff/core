@@ -15,7 +15,6 @@ use KLS\Syndication\Arrangement\Security\Voter\ProjectParticipationMemberVoter;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectParticipationVoter;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectVoter;
 use KLS\Syndication\Arrangement\Service\Project\ProjectManager;
-use KLS\Syndication\Arrangement\Service\ProjectParticipation\ProjectParticipationManager;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -32,14 +31,10 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
     private const ALREADY_CALLED = 'PROJECT_PARTICIPATION_ATTRIBUTE_DENORMALIZER_ALREADY_CALLED';
 
     private Security $security;
-
     private IriConverterInterface $iriConverter;
-
-    private ProjectParticipationManager $projectParticipationManager;
-
     private ProjectManager $projectManager;
 
-    public function __construct(Security $security, IriConverterInterface $iriConverter, ProjectManager $projectManager, ProjectParticipationManager $projectParticipationManager)
+    public function __construct(Security $security, IriConverterInterface $iriConverter, ProjectManager $projectManager)
     {
         $this->security       = $security;
         $this->iriConverter   = $iriConverter;
@@ -87,12 +82,14 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
             /** @var ProjectParticipationTranche $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationTranche, ProjectParticipationTranche::class, 'array', [
-                AbstractNormalizer::OBJECT_TO_POPULATE => isset($projectParticipationTranche['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationTranche['@id']) : null,
+                AbstractNormalizer::OBJECT_TO_POPULATE => isset($projectParticipationTranche['@id'])
+                    ? $this->iriConverter->getItemFromIri($projectParticipationTranche['@id'])
+                    : null,
                 // @todo set group according to project status ?
                 // These group should be analog to ProjectParticipationTranche::post operation and ProjectParticipationTranche:patch operation
-                AbstractNormalizer::GROUPS => isset($projectParticipationTranche['@id']) ?
-                    ['offer:write', 'nullableMoney:write'] : // PATCH
-                    ['projectParticipationTranche:create'], // POST
+                AbstractNormalizer::GROUPS => isset($projectParticipationTranche['@id'])
+                    ? ['offer:write', 'nullableMoney:write'] // PATCH
+                    : ['projectParticipationTranche:create'], // POST
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipationTranche::class => [
                         'projectParticipation' => $projectParticipation,
@@ -118,11 +115,13 @@ class ProjectParticipationDenormalizer implements ContextAwareDenormalizerInterf
 
             /** @var ProjectParticipationMember $denormalized */
             $denormalized = $this->denormalizer->denormalize($projectParticipationMember, ProjectParticipationMember::class, 'array', [
-                AbstractNormalizer::OBJECT_TO_POPULATE => isset($projectParticipationMember['@id']) ? $this->iriConverter->getItemFromIri($projectParticipationMember['@id']) : null,
-                AbstractNormalizer::GROUPS             => // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation and Staff::post operation
-                    isset($projectParticipationMember['@id'])
-                        ? ['archivable:write', 'permission:write'] // PATCH
-                        : ['projectParticipationMember:create', 'projectParticipationMember:write', 'permission:write'], // POST
+                AbstractNormalizer::OBJECT_TO_POPULATE => isset($projectParticipationMember['@id'])
+                    ? $this->iriConverter->getItemFromIri($projectParticipationMember['@id'])
+                    : null,
+                // These group should be analog to ProjectParticipationMember::post operation and ProjectParticipationMember:patch operation and Staff::post operation
+                AbstractNormalizer::GROUPS => isset($projectParticipationMember['@id'])
+                    ? ['archivable:write', 'permission:write'] // PATCH
+                    : ['projectParticipationMember:create', 'projectParticipationMember:write', 'permission:write'], // POST
                 AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS => [
                     ProjectParticipationMember::class => [
                         'projectParticipation' => $projectParticipation,

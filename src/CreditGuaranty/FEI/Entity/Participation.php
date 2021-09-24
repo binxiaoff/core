@@ -21,33 +21,52 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:participation:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:participation:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:participation:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:participation:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "patch": {"security": "is_granted('edit', object)"},
- *         "delete": {"security": "is_granted('delete', object)"}
+ *         "delete": {"security": "is_granted('delete', object)"},
  *     },
  *     collectionOperations={
  *         "post": {
  *             "post": {"security_post_denormalize": "is_granted('create', object)"},
- *             "denormalization_context": {"groups": {
- *                 "creditGuaranty:participation:write",
- *                 "creditGuaranty:participation:create"
- *             }}
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:participation:write",
+ *                     "creditGuaranty:participation:create",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
+ *             },
  *         },
  *         "get": {
- *             "normalization_context": {"groups": {
- *                 "creditGuaranty:participation:list",
- *                 "creditGuaranty:programStatus:read",
- *                 "money:read"
- *             }}
- *         }
- *     }
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:participation:list",
+ *                     "creditGuaranty:programStatus:read",
+ *                     "money:read",
+ *                 },
+ *                 "openapi_definition_name": "collection-get-read",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @ApiFilter(

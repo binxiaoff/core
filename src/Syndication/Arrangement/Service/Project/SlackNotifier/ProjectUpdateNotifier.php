@@ -16,7 +16,7 @@ use Nexy\Slack\MessageInterface;
 use NumberFormatter;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class ProjectUpdateNotifier implements ProjectNotifierInterface
+class ProjectUpdateNotifier
 {
     private const PROJECT_STATUS_UPDATED = [
         ProjectStatus::STATUS_INTEREST_EXPRESSION,

@@ -23,8 +23,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
- *             "agency:agentMember:read"
- *         }
+ *             "agency:agentMember:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     collectionOperations={
  *         "post": {
@@ -34,29 +35,34 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:agentMember:create",
  *                     "agency:agentMember:write",
  *                     "user:create",
- *                     "user:write"
- *                 }
- *             }
- *         }
+ *                     "user:write",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
  *             "controller": NotFoundAction::class,
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {
- *                     "agency:agentMember:write"
- *                 }
- *             }
+ *                     "agency:agentMember:write",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-write",
+ *             },
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object)"
- *         }
- *     }
+ *             "security": "is_granted('delete', object)",
+ *         },
+ *     },
  * )
  * @ORM\Table(name="agency_agent_member", uniqueConstraints={
  *     @ORM\UniqueConstraint(columns={"id_agent", "id_user"})

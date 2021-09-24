@@ -9,6 +9,8 @@ use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 
 class ProgramEligibilityVoter extends AbstractEntityVoter
 {
+    public const ATTRIBUTE_MANAGER = 'manager';
+
     protected function canCreate(ProgramEligibility $programEligibility): bool
     {
         return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_EDIT, $programEligibility->getProgram());
@@ -22,5 +24,10 @@ class ProgramEligibilityVoter extends AbstractEntityVoter
     protected function canDelete(ProgramEligibility $programEligibility): bool
     {
         return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_EDIT, $programEligibility->getProgram());
+    }
+
+    protected function canManager(ProgramEligibility $programEligibility): bool
+    {
+        return $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $programEligibility->getProgram());
     }
 }

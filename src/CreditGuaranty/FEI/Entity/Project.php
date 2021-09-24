@@ -25,30 +25,31 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {
- *         "creditGuaranty:project:read",
- *         "money:read",
- *         "nullableMoney:read"
- *     }},
- *     denormalizationContext={"groups": {
- *         "creditGuaranty:project:write",
- *         "money:write",
- *         "nullableMoney:write"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:project:read",
+ *             "money:read",
+ *             "nullableMoney:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:project:write",
+ *             "money:write",
+ *             "nullableMoney:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)"
- *         }
- *     },
- *     collectionOperations={
- *         "post": {
- *             "security_post_denormalize": "is_granted('create', object)"
  *         }
  *     }
  * )
@@ -64,8 +65,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     use TimestampableTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Reservation", inversedBy="project")
-     * @ORM\JoinColumn(name="id_reservation", nullable=false)
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Reservation", mappedBy="project")
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
@@ -98,18 +98,13 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
-    private ?string $detail;
+    private ?string $detail = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
      * @ORM\JoinColumn(name="id_aid_intensity", nullable=true)
      *
-     * @Assert\Expression("value.getProgram() === this.getProgram()")
-     * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && null === value")
-     * }, message="CreditGuaranty.Reservation.project.aidIntensity.requiredForEsb", includeInternalMessages=false)
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
      * @Groups({"creditGuaranty:project:write"})
      */
@@ -136,11 +131,11 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private ?ProgramChoiceOption $agriculturalBranch = null;
 
     /**
-     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
-    private Money $fundingMoney;
+    private NullableMoney $fundingMoney;
 
     /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
@@ -158,12 +153,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
 
     /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
-     *
-     * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && false === value.isNull()")
-     * }, message="CreditGuaranty.Reservation.project.totalFeiCredit.requiredForEsb", includeInternalMessages=false)
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
@@ -193,12 +182,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
-     * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && false === value.isNull()")
-     * }, message="CreditGuaranty.Reservation.project.grant.requiredForEsb", includeInternalMessages=false)
-     *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
     private NullableMoney $grant;
@@ -210,10 +193,10 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      */
     private NullableMoney $landValue;
 
-    public function __construct(Reservation $reservation, Money $fundingMoney)
+    public function __construct(Reservation $reservation)
     {
         $this->reservation         = $reservation;
-        $this->fundingMoney        = $fundingMoney;
+        $this->fundingMoney        = new NullableMoney();
         $this->contribution        = new NullableMoney();
         $this->eligibleFeiCredit   = new NullableMoney();
         $this->totalFeiCredit      = new NullableMoney();
@@ -377,12 +360,12 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return null;
     }
 
-    public function getFundingMoney(): Money
+    public function getFundingMoney(): NullableMoney
     {
         return $this->fundingMoney;
     }
 
-    public function setFundingMoney(Money $fundingMoney): Project
+    public function setFundingMoney(NullableMoney $fundingMoney): Project
     {
         $this->fundingMoney = $fundingMoney;
 
@@ -506,9 +489,16 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this->updated;
     }
 
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
     public function getMaxFeiCredit(): MoneyInterface
     {
         $programMaxFeiCredit = $this->getProgram()->getMaxFeiCredit();
+
+        if (false === ($this->getAidIntensity() instanceof ProgramChoiceOption)) {
+            return new NullableMoney();
+        }
 
         $publicAidLimit      = MoneyCalculator::multiply($this->getTotalFeiCredit(), (float) $this->getAidIntensity()->getDescription());
         $remainingGrantLimit = MoneyCalculator::subtract($publicAidLimit, $this->getGrant());
@@ -517,6 +507,22 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $maxFeiCredit        = MoneyCalculator::multiply($maxFeiCredit, (float) $duration);
 
         return MoneyCalculator::max($programMaxFeiCredit, $maxFeiCredit);
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getTotalGrossSubsidyEquivalent(): MoneyInterface
+    {
+        $financingObjects = $this->getReservation()->getFinancingObjects();
+
+        if ($financingObjects->count() < 1) {
+            return new NullableMoney();
+        }
+
+        $grossSubsidyEquivalents = $financingObjects->map(static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent())->toArray();
+
+        return MoneyCalculator::sum($grossSubsidyEquivalents);
     }
 
     public function checkBalance(): bool
@@ -551,8 +557,13 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $grade      = $this->reservation->getBorrower()->getGrade();
         $gradeFunds = $this->getTotalFunds($program, ['grade' => $grade]);
         $ratio      = MoneyCalculator::ratio($gradeFunds, $program->getFunds());
-        /** @var ProgramGradeAllocation $programGradeAllocation */
+
+        /** @var ProgramGradeAllocation|null $programGradeAllocation */
         $programGradeAllocation = $program->getProgramGradeAllocations()->get($grade);
+
+        if (false === ($programGradeAllocation instanceof ProgramGradeAllocation)) {
+            return false;
+        }
 
         return \bccomp((string) $ratio, $programGradeAllocation->getMaxAllocationRate(), 4) <= 0;
     }

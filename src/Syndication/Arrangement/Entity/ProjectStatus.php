@@ -21,20 +21,34 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectStatus:read", "timestampable:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "projectStatus:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"projectStatus:create"}}
- *         }
- *     }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "projectStatus:create",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-create",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @ORM\Table(

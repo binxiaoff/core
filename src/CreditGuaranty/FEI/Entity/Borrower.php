@@ -23,29 +23,30 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {
- *         "creditGuaranty:borrower:read",
- *         "nullableMoney:read"
- *     }},
- *     denormalizationContext={"groups": {
- *         "creditGuaranty:borrower:write",
- *         "creditGuaranty:programChoiceOption:write",
- *         "nullableMoney:write"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:borrower:read",
+ *             "nullableMoney:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:borrower:write",
+ *             "creditGuaranty:programChoiceOption:write",
+ *             "nullableMoney:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)"
- *         }
- *     },
- *     collectionOperations={
- *         "post": {
- *             "security_post_denormalize": "is_granted('create', object)"
  *         }
  *     }
  * )
@@ -61,8 +62,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     use TimestampableTrait;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Reservation", inversedBy="borrower")
-     * @ORM\JoinColumn(name="id_reservation", nullable=false)
+     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Reservation", mappedBy="borrower")
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
@@ -111,13 +111,11 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?bool $subsidiary = null;
 
     /**
-     * @ORM\Column(length=100)
-     *
-     * @Assert\NotBlank
+     * @ORM\Column(length=100, nullable=true)
      *
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
-    private string $companyName;
+    private ?string $companyName = null;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
@@ -202,7 +200,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private NullableMoney $totalAssets;
 
     /**
-     * @ORM\Column(length=10)
+     * @ORM\Column(length=10, nullable=true)
      *
      * @Assert\Expression(
      *     "this.isGradeValid()",
@@ -211,15 +209,13 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
-    private string $grade;
+    private ?string $grade = null;
 
-    public function __construct(Reservation $reservation, string $companyName, string $grade)
+    public function __construct(Reservation $reservation)
     {
         $this->reservation = $reservation;
-        $this->companyName = $companyName;
         $this->turnover    = new NullableMoney();
         $this->totalAssets = new NullableMoney();
-        $this->grade       = $grade;
         $this->added       = new DateTimeImmutable();
     }
 
@@ -307,9 +303,16 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         return $this;
     }
 
-    public function getCompanyName(): string
+    public function getCompanyName(): ?string
     {
         return $this->companyName;
+    }
+
+    public function setCompanyName(?string $companyName): Borrower
+    {
+        $this->companyName = $companyName;
+
+        return $this;
     }
 
     /**
@@ -508,13 +511,24 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         return $this;
     }
 
-    public function getGrade(): string
+    public function getGrade(): ?string
     {
         return $this->grade;
     }
 
+    public function setGrade(?string $grade): Borrower
+    {
+        $this->grade = $grade;
+
+        return $this;
+    }
+
     public function isGradeValid(): bool
     {
+        if (null === $this->grade) {
+            return false;
+        }
+
         switch ($this->reservation->getProgram()->getRatingType()) {
             case CARatingType::CA_INTERNAL_RETAIL_RATING:
                 return \in_array($this->grade, CAInternalRetailRating::getConstList(), true);

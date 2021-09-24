@@ -17,16 +17,22 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ApiResource(
  *     normalizationContext={
- *         "groups": {"agency:borrowerTrancheShare:read"}
+ *         "groups": {
+ *             "agency:borrowerTrancheShare:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     itemOperations={
  *         "get": {
  *             "controller": NotFoundAction::class,
  *             "read": false,
  *             "output": false,
- *         }
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
+ *         },
  *     },
- *     collectionOperations={}
+ *     collectionOperations={},
  * )
  *
  * @ORM\Entity

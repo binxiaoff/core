@@ -16,25 +16,43 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"team:read"}},
+ *     normalizationContext={
+ *         "groups": {"
+ *             team:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "patch": {
  *             "security_post_denormalize": "is_granted('edit', object)",
- *             "denormalization_context": {"groups": {"team:update"}}
- *         }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "team:update",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-update",
+ *             },
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"team:create"}},
- *             "input": "KLS\Core\DTO\Team\CreateTeam"
- *         }
- *     }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "team:create",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-create",
+ *             },
+ *             "input": "KLS\Core\DTO\Team\CreateTeam",
+ *         },
+ *     },
  * )
  * @ORM\Table(name="core_team")
  * @ORM\Entity
@@ -204,7 +222,11 @@ class Team
 
     public function addStaff(Staff $staff)
     {
-        if (false === $this->staff->exists(fn (int $key, Staff $s) => $staff->getUser() === $s->getUser())) {
+        $callback = function (int $key, Staff $s) use ($staff): bool {
+            return $staff->getUser() === $s->getUser() && $staff->getTeam() === $s->getTeam();
+        };
+
+        if (false === $this->staff->exists($callback)) {
             $this->staff->add($staff);
         }
 

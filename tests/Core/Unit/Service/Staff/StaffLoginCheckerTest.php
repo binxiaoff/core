@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace KLS\Test\Core\Unit\Service\Staff;
 
-use KLS\Core\Entity\Company;
-use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\StaffStatus;
-use KLS\Core\Entity\Team;
-use KLS\Core\Entity\User;
 use KLS\Core\Service\Staff\StaffLoginChecker;
 use KLS\Core\Service\Staff\StaffLoginInterface;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 
@@ -21,6 +18,8 @@ use Prophecy\Prophecy\ObjectProphecy;
  */
 class StaffLoginCheckerTest extends TestCase
 {
+    use UserStaffTrait;
+
     /**
      * @covers ::isGrantedLogin
      */
@@ -77,13 +76,5 @@ class StaffLoginCheckerTest extends TestCase
 
         $checker = new StaffLoginChecker([$checker1->reveal()]);
         static::assertFalse($checker->isGrantedLogin($staff));
-    }
-
-    private function createStaff(): Staff
-    {
-        $teamRoot = Team::createRootTeam(new Company('Company', 'Company', ''));
-        $team     = Team::createTeam('Team', $teamRoot);
-
-        return new Staff(new User('user@mail.com'), $team);
     }
 }

@@ -19,23 +19,44 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 /**
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
- *     normalizationContext={"groups": {"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:field:read", "timestampable:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:programEligibilityCondition:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programEligibilityCondition:read",
+ *             "creditGuaranty:field:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programEligibilityCondition:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "patch": {"security": "is_granted('edit', object)"},
- *         "delete": {"security": "is_granted('delete', object)"}
+ *         "delete": {"security": "is_granted('delete', object)"},
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "denormalization_context": {"groups": {"creditGuaranty:programEligibilityCondition:write", "creditGuaranty:programEligibilityCondition:create"}}
- *         }
- *     }
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:programEligibilityCondition:write",
+ *                     "creditGuaranty:programEligibilityCondition:create",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @ORM\Entity
@@ -102,7 +123,7 @@ class ProgramEligibilityCondition
      * @ORM\Column(type="decimal", precision=15, scale=2)
      *
      * @Assert\Expression(
-     *     "(value <= 1 && value >= 0) || constant('KLS\\CreditGuaranty\FEI\\Entity\\ProgramEligibilityCondition::VALUE_TYPE_VALUE') === this.getValueType()",
+     *     "(value <= 1 && value >= 0) || constant('KLS\\CreditGuaranty\\FEI\\Entity\\ProgramEligibilityCondition::VALUE_TYPE_VALUE') === this.getValueType()",
      *     message="CreditGuaranty.ProgramEligibilityCondition.value.outOfRange"
      * )
      *

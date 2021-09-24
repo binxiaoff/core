@@ -25,32 +25,38 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {
- *         "creditGuaranty:financingObject:read",
- *         "money:read",
- *         "nullableMoney:read"
- *     }},
- *     denormalizationContext={"groups": {
- *         "creditGuaranty:financingObject:write",
- *         "money:write",
- *         "nullableMoney:write"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:financingObject:read",
+ *             "money:read",
+ *             "nullableMoney:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:financingObject:write",
+ *             "money:write",
+ *             "nullableMoney:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
  *         },
  *         "delete": {
- *             "security": "is_granted('delete', object)"
- *         }
+ *             "security": "is_granted('delete', object)",
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
- *             "security_post_denormalize": "is_granted('create', object)"
- *         }
- *     }
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *         },
+ *     },
  * )
  *
  * @ORM\Entity
@@ -150,11 +156,6 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      * @ORM\Column(type="smallint", nullable=true)
      *
      * @Assert\GreaterThanOrEqual(1)
-     * @Assert\AtLeastOneOf({
-     *     @Assert\Expression("null === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("false === this.getProgram().isEsbCalculationActivated()"),
-     *     @Assert\Expression("true === this.getProgram().isEsbCalculationActivated() && null !== value")
-     * }, message="CreditGuaranty.Reservation.financingObject.loanDuration.requiredForEsb", includeInternalMessages=false)
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */

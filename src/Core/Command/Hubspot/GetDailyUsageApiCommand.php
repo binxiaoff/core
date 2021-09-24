@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace KLS\Core\Command\Hubspot;
 
-use KLS\Core\Service\Hubspot\HubspotManager;
+use KLS\Core\Service\Hubspot\HubspotContactManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,9 +15,9 @@ class GetDailyUsageApiCommand extends Command
 {
     protected static $defaultName = 'kls:core:hubspot:api-usage:show';
 
-    private HubspotManager $hubspotManager;
+    private HubspotContactManager $hubspotManager;
 
-    public function __construct(HubspotManager $hubspotManager)
+    public function __construct(HubspotContactManager $hubspotManager)
     {
         parent::__construct();
 

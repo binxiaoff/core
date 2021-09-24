@@ -8,7 +8,7 @@ services:
 
   KLS\Syndication\:
     resource: '%kernel.project_dir%/src/Syndication/*'
-    exclude: '%kernel.project_dir%/src/Syndication/{Agency,Arrangement}/{Console,Entity,Migrations,Controller,Tests,Traits,Listener/Doctrine}'
+    exclude: '%kernel.project_dir%/src/Syndication/{Agency,Arrangement}/{Console,Entity,Controller,Tests,Traits,Listener/Doctrine}'
 
   #
   # Arrangement
@@ -16,7 +16,10 @@ services:
 
   KLS\Syndication\Arrangement\Serializer\ContextBuilder\ProjectAddedByContextBuilder:
     decorates: 'api_platform.serializer.context_builder'
-    autoconfigure: false
+    arguments:
+      $decorated: '@.inner'
+      $security: '@Symfony\Component\Security\Core\Security'
+      $userRepository: '@KLS\Core\Repository\UserRepository'
 
   #
   # Agency
@@ -29,13 +32,20 @@ services:
 
   KLS\Syndication\Agency\DataPersister\ParticipationMemberDataPersister:
     decorates: 'api_platform.doctrine.orm.data_persister'
+    arguments:
+      $decorated: '@.inner'
+      $staffRepository: '@KLS\Core\Repository\StaffRepository'
 
   KLS\Syndication\Agency\Serializer\ContextBuilder\ProjectContextBuilder:
     decorates: 'api_platform.serializer.context_builder'
-    autoconfigure: false
+    arguments:
+      $decorated: '@.inner'
+      $security: '@Symfony\Component\Security\Core\Security'
+      $arrangementProjectRepository: '@KLS\Syndication\Arrangement\Repository\ProjectRepository'
 
   KLS\Syndication\Agency\Swagger\ProjectDecorator:
     decorates: 'api_platform.swagger.normalizer.api_gateway'
+    arguments: ['@.inner']
 
   KLS\Syndication\Arrangement\Service\Project\SlackNotifier\ProjectCreateNotifier:
     $formatter: '@currency_formatter_no_decimal'

@@ -24,9 +24,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *         }
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
+ *         },
  *     },
- *     collectionOperations={}
+ *     collectionOperations={},
  * )
  */
 class MarginRule

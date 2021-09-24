@@ -11,7 +11,13 @@ use KLS\Core\Repository\MessageRepository;
 use KLS\Core\Security\Voter\MessageVoter;
 use KLS\Core\Service\File\FileUploadManager;
 use KLS\Core\Service\FileInput\FileInputMessageUploader;
-use KLS\Test\Core\Unit\Traits\FileInputEntitiesTrait;
+use KLS\Test\Core\Unit\Traits\FileInputTrait;
+use KLS\Test\Core\Unit\Traits\MessageTrait;
+use KLS\Test\Core\Unit\Traits\TokenTrait;
+use KLS\Test\Core\Unit\Traits\UserStaffTrait;
+use KLS\Test\Syndication\Agency\Unit\Traits\AgencyProjectTrait;
+use KLS\Test\Syndication\Agency\Unit\Traits\TermTrait;
+use KLS\Test\Syndication\Arrangement\Unit\Traits\ArrangementProjectSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -25,7 +31,13 @@ use Symfony\Component\Security\Core\Security;
  */
 class FileInputMessageUploaderTest extends TestCase
 {
-    use FileInputEntitiesTrait;
+    use UserStaffTrait;
+    use TokenTrait;
+    use FileInputTrait;
+    use MessageTrait;
+    use TermTrait;
+    use AgencyProjectTrait;
+    use ArrangementProjectSetTrait;
 
     /** @var Security|ObjectProphecy */
     private $security;
@@ -92,7 +104,7 @@ class FileInputMessageUploaderTest extends TestCase
     {
         $staff                = $this->createStaff();
         $targetEntity         = ($this->createMessage($staff))->setBroadcast('test');
-        $token                = $this->createToken($staff, ['company' => $staff->getCompany()]);
+        $token                = $this->createToken($staff->getUser(), ['company' => $staff->getCompany()]);
         $fileInput            = $this->createFileInput($targetEntity);
         $user                 = $staff->getUser();
         $file                 = new File();
@@ -142,7 +154,7 @@ class FileInputMessageUploaderTest extends TestCase
     {
         $staff        = $this->createStaff();
         $targetEntity = $this->createMessage($staff);
-        $token        = $this->createToken($staff, ['company' => $staff->getCompany()]);
+        $token        = $this->createToken($staff->getUser(), ['company' => $staff->getCompany()]);
         $fileInput    = $this->createFileInput($targetEntity);
         $user         = $staff->getUser();
 

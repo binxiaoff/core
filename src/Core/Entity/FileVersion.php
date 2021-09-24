@@ -25,13 +25,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "download": {
  *             "method": "GET",
  *             "controller": "KLS\Core\Controller\File\Download",
- *             "path": "/core/file_versions/{publicId}/download/{type}"
- *         }
- *     }
+ *             "path": "/core/file_versions/{publicId}/download/{type}",
+ *         },
+ *     },
  * )
  */
 class FileVersion

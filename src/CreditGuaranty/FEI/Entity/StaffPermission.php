@@ -19,17 +19,28 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:staffPermission:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:staffPermission:write", "permission:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:staffPermission:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:staffPermission:write",
+ *             "permission:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     itemOperations={
  *         "get": {"security": "is_granted('view', object)"},
  *         "patch": {"security_post_denormalize": "is_granted('edit', object)"},
- *         "delete": {"security": "is_granted('delete', object)"}
+ *         "delete": {"security": "is_granted('delete', object)"},
  *     },
  *     collectionOperations={
  *         "post": {"security_post_denormalize": "is_granted('create', object)"},
- *         "get"
- *     }
+ *         "get",
+ *     },
  * )
  *
  * @ApiFilter(

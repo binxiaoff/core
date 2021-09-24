@@ -1,6 +1,6 @@
 doctrine_migrations:
     migrations_paths:
-        'DoctrineMigrations': '%kernel.project_dir%/src/Core/Migrations'
+        'DoctrineMigrations': '%kernel.project_dir%/migrations'
     em: migration
     organize_migrations: false
     all_or_nothing: true

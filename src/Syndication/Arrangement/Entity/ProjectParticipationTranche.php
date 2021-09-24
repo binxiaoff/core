@@ -25,30 +25,44 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {
- *         "projectParticipationTranche:read",
- *         "offer:read",
- *         "nullableMoney:read",
- *         "invitationReplyVersion:read"
- *     }},
- *     denormalizationContext={"groups": {
- *         "offer:write",
- *         "nullableMoney:write"
- *     }},
+ *     normalizationContext={
+ *         "groups": {
+ *             "projectParticipationTranche:read",
+ *             "offer:read",
+ *             "nullableMoney:read",
+ *             "invitationReplyVersion:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "offer:write",
+ *             "nullableMoney:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     collectionOperations={
  *         "post": {
- *             "denormalization_context": {"groups": {"projectParticipationTranche:create"}},
- *             "security_post_denormalize": "is_granted('create', object)"
- *         }
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "projectParticipationTranche:create",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-create",
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
- *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"}
- *     }
+ *         "patch": {"security_post_denormalize": "is_granted('edit', previous_object)"},
+ *     },
  * )
  *
  * @Gedmo\Loggable(logEntryClass="KLS\Syndication\Arrangement\Entity\Versioned\VersionedProjectParticipationTranche")

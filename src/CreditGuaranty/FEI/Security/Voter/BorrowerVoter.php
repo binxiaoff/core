@@ -9,11 +9,6 @@ use KLS\CreditGuaranty\FEI\Entity\Borrower;
 
 class BorrowerVoter extends AbstractEntityVoter
 {
-    protected function canCreate(Borrower $borrower): bool
-    {
-        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $borrower->getReservation());
-    }
-
     protected function canView(Borrower $borrower): bool
     {
         return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_VIEW, $borrower->getReservation());

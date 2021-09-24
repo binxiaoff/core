@@ -10,10 +10,10 @@ use ApiPlatform\Core\Annotation\ApiResource;
  * @ApiResource(
  *     messenger=true,
  *     collectionOperations={
- *         "post": {"status": 202}
+ *         "post": {"status": 202},
  *     },
  *     itemOperations={},
- *     output=false
+ *     output=false,
  * )
  */
 class ResetPassword

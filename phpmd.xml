@@ -8,7 +8,7 @@
         CALS rule set.
     </description>
 
-    <exclude-pattern>src/Core/Migrations</exclude-pattern>
+    <exclude-pattern>migrations</exclude-pattern>
     <exclude-pattern>tests</exclude-pattern>
 
     <!-- Clean code. -->

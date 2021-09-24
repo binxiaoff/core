@@ -33,17 +33,18 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "agency:participationPool:read",
  *             "money:read",
  *             "nullableMoney:read",
- *             "lendingRate:read"
- *         }
+ *             "lendingRate:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     collectionOperations={},
  *     itemOperations={
  *         "get": {
- *             "security": "is_granted('view', object)"
+ *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
- *             "validation_groups": {ParticipationPool::class, "getCurrentValidationGroups"}
+ *             "validation_groups": {ParticipationPool::class, "getCurrentValidationGroups"},
  *         },
  *         "get_dataroom": {
  *             "method": "GET",
@@ -51,14 +52,20 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('view', object)",
  *             "controller": Get::class,
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get_dataroom-read",
  *             },
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "sharedDrive"
+ *                 "drive": "sharedDrive",
  *             },
  *         },
  *         "post_dataroom": {
@@ -68,14 +75,20 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('edit', object)",
  *             "controller": Post::class,
  *             "normalization_context": {
- *                 "groups": {"core:folder:read", "core:drive:read", "core:abstractFolder:read", "file:read"}
+ *                 "groups": {
+ *                     "core:folder:read",
+ *                     "core:drive:read",
+ *                     "core:abstractFolder:read",
+ *                     "file:read",
+ *                 },
+ *                 "openapi_definition_name": "item-post_dataroom-read",
  *             },
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "sharedDrive"
+ *                 "drive": "sharedDrive",
  *             },
  *         },
  *         "delete_dataroom": {
@@ -84,14 +97,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('edit', object)",
  *             "controller": Delete::class,
  *             "requirements": {
- *                 "path": ".+"
+ *                 "path": ".+",
  *             },
  *             "defaults": {
  *                 "path": "/",
- *                 "drive": "sharedDrive"
+ *                 "drive": "sharedDrive",
  *             },
- *         }
- *     }
+ *         },
+ *     },
  * )
  *
  * @ORM\Table(name="agency_participation_pool", uniqueConstraints={

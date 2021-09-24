@@ -19,15 +19,23 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * )
  *
  * @ApiResource(
- *     normalizationContext={"groups": {"companyGroupTag:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "companyGroupTag:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *         }
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
+ *         },
  *     },
- *     collectionOperations={}
+ *     collectionOperations={},
  * )
  */
 class CompanyGroupTag

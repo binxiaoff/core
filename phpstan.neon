@@ -5,13 +5,13 @@ includes:
     - vendor/phpstan/phpstan-phpunit/rules.neon
 
 parameters:
-    level: 0
+    level: 1
     paths:
         - src
         - tests
     bootstrapFiles:
         - tests/bootstrapPHPUnit.php
     excludes_analyse:
-        - src/Core/Migrations
+        - migrations
     symfony:
         container_xml_path: %rootDir%/../../../var/cache/dev/KLS_KernelDevDebugContainer.xml

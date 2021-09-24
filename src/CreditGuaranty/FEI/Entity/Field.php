@@ -13,7 +13,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  * @ApiResource(
  *     attributes={"pagination_enabled": false},
  *     itemOperations={"get"},
- *     collectionOperations={"get"}
+ *     collectionOperations={"get"},
  * )
  *
  * @ORM\Entity
@@ -56,13 +56,24 @@ class Field
 
     /**
      * @ORM\Column(length=255)
+     *
+     * @Groups({"creditGuaranty:field:read"})
      */
     private string $reservationPropertyName;
 
     /**
      * @ORM\Column(length=255)
+     *
+     * @Groups({"creditGuaranty:field:read"})
      */
     private string $propertyPath;
+
+    /**
+     * @ORM\Column(length=255)
+     *
+     * @Groups({"creditGuaranty:field:read"})
+     */
+    private string $propertyType;
 
     /**
      * @ORM\Column(length=255)
@@ -101,6 +112,7 @@ class Field
         string $type,
         string $reservationPropertyName,
         string $propertyPath,
+        string $propertyType,
         string $objectClass,
         bool $comparable,
         ?string $unit,
@@ -111,6 +123,7 @@ class Field
         $this->type                    = $type;
         $this->reservationPropertyName = $reservationPropertyName;
         $this->propertyPath            = $propertyPath;
+        $this->propertyType            = $propertyType;
         $this->objectClass             = $objectClass;
         $this->comparable              = $comparable;
         $this->unit                    = $unit;
@@ -140,6 +153,11 @@ class Field
     public function getPropertyPath(): string
     {
         return $this->propertyPath;
+    }
+
+    public function getPropertyType(): string
+    {
+        return $this->propertyType;
     }
 
     public function getObjectClass(): string

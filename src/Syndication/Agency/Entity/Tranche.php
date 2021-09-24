@@ -33,8 +33,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "agency:tranche:read",
  *             "money:read",
  *             "nullableMoney:read",
- *             "lendingRate:read"
- *         }
+ *             "lendingRate:read",
+ *         },
+ *         "openapi_definition_name": "read",
  *     },
  *     collectionOperations={
  *         "post": {
@@ -45,17 +46,21 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "money:write",
  *                     "nullableMoney:write",
  *                     "lendingRate:write",
- *                     "agency:borrowerTrancheShare:write"
- *                 }
+ *                     "agency:borrowerTrancheShare:write",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-write",
  *             },
  *             "security_post_denormalize": "is_granted('create', object)",
- *         }
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
  *             "controller": NotFoundAction::class,
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "patch": {
  *             "denormalization_context": {
@@ -64,15 +69,16 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "agency:tranche:write",
  *                     "money:write", "nullableMoney:write",
  *                     "lendingRate:write",
- *                     "agency:borrowerTrancheShare:write"
- *                 }
+ *                     "agency:borrowerTrancheShare:write",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-write",
  *             },
  *             "security": "is_granted('edit', object)",
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)",
- *         }
- *     }
+ *         },
+ *     },
  * )
  *
  * @ORM\Entity
@@ -112,17 +118,6 @@ class Tranche
      * @Groups({"agency:tranche:read", "agency:tranche:write"})
      */
     private string $name;
-
-    /**
-     * Kept for historical reasons.
-     *
-     * @ORM\Column(length=255, nullable=true)
-     *
-     * @Assert\Length(max="255")
-     *
-     * @Groups({"agency:tranche:read", "agency:tranche:write"})
-     */
-    private ?string $thirdPartySyndicate;
 
     /**
      * @ORM\Column(length=30, nullable=true)
@@ -271,22 +266,21 @@ class Tranche
         Money $money,
         LendingRate $rate
     ) {
-        $this->project             = $project;
-        $this->name                = $name;
-        $this->thirdPartySyndicate = null;
-        $this->color               = $color;
-        $this->loanType            = $loanType;
-        $this->repaymentType       = $repaymentType;
-        $this->duration            = $duration;
-        $this->money               = $money;
-        $this->rate                = $rate;
-        $this->commissionType      = null;
-        $this->commissionRate      = null;
-        $this->comment             = null;
-        $this->draw                = new NullableMoney();
-        $this->borrowerShares      = new ArrayCollection();
-        $this->validityDate        = null;
-        $this->allocations         = new ArrayCollection();
+        $this->project        = $project;
+        $this->name           = $name;
+        $this->color          = $color;
+        $this->loanType       = $loanType;
+        $this->repaymentType  = $repaymentType;
+        $this->duration       = $duration;
+        $this->money          = $money;
+        $this->rate           = $rate;
+        $this->commissionType = null;
+        $this->commissionRate = null;
+        $this->comment        = null;
+        $this->draw           = new NullableMoney();
+        $this->borrowerShares = new ArrayCollection();
+        $this->validityDate   = null;
+        $this->allocations    = new ArrayCollection();
     }
 
     public function getProject(): Project
@@ -366,18 +360,6 @@ class Tranche
 
         return null !== $this->getSoleParticipant()
             && $agentCompany === $this->getSoleParticipant();
-    }
-
-    public function getThirdPartySyndicate(): ?string
-    {
-        return $this->thirdPartySyndicate;
-    }
-
-    public function setThirdPartySyndicate(?string $thirdPartySyndicate): Tranche
-    {
-        $this->thirdPartySyndicate = $thirdPartySyndicate;
-
-        return $this;
     }
 
     public function getColor(): string

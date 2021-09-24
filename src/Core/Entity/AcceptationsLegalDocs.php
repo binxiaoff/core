@@ -18,20 +18,34 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"acceptationsLegalDocs:read", "timestampable:read"}},
- *     denormalizationContext={"groups": {"acceptationsLegalDocs:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "acceptationsLegalDocs:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "acceptationsLegalDocs:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     collectionOperations={
  *         "post": {
- *             "security_post_denormalize": "is_granted('create', object)"
- *         }
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
- *     }
+ *     },
  * )
  *
  * @ApiFilter(CountFilter::class)

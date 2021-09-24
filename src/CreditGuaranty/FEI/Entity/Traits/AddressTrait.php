@@ -15,28 +15,28 @@ trait AddressTrait
      *
      * @Assert\NotBlank(allowNull=true)
      */
-    protected ?string $addressStreet;
+    protected ?string $addressStreet = null;
 
     /**
      * @ORM\Column(type="string", length=10, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
      */
-    protected ?string $addressPostCode;
+    protected ?string $addressPostCode = null;
 
     /**
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
      */
-    protected ?string $addressCity;
+    protected ?string $addressCity = null;
 
     /**
      * @ORM\Column(type="string", length=30, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
      */
-    protected ?string $addressDepartment;
+    protected ?string $addressDepartment = null;
 
     /**
      * @ORM\ManyToOne(targetEntity=ProgramChoiceOption::class)

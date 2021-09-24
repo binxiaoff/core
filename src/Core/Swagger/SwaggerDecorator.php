@@ -37,44 +37,20 @@ class SwaggerDecorator implements NormalizerInterface
         /** @var array $docs */
         $docs = $this->decorated->normalize($object, $format, $context);
 
-        // Definitions
-        $docs['definitions']['Folder'] = [
-            'properties' => [
-                'name' => ['type' => 'string'],
-            ],
-        ];
-
         // Paths
         $authenticationPaths = [
             $this->router->generate('authentication_token')       => $this->generateAuthenticationTokenPath(),
             $this->router->generate('gesdinet_jwt_refresh_token') => $this->generateRefreshTokenPath(),
         ];
-        // put authentication paths at top of the list
-        $docs['paths'] = \array_merge($authenticationPaths, $docs['paths']);
+        $docs['paths'] = \array_merge($authenticationPaths, $docs['paths']); // put authentication paths at top of the list
 
-        // @todo to refactorize in CALS-4262
-        // remove unused routes (ItemOperations are necessary for APIPlatform but we don't expose those endpoints)
-        $removedGetRoutes = [
-            '/acceptations_legal_docs/{id}',
-            '/company_modules/{id}',
-            '/files/{id}',
-            '/file_versions/{id}',
-            '/legal_documents/{id}',
-            '/project_files/{id}',
-            '/project_organizers/{id}',
-            '/project_statuses/{id}',
-            '/project_participation_collections/{id}',
-            '/project_participation_members/{id}',
-            '/project_participation_statuses/{id}',
-            '/project_participation_tranches/{id}',
-            '/staff_statuses/{id}',
+        // Schemas
+        $docs['components']['schemas']['Folder'] = [
+            'properties' => [
+                'name' => ['type' => 'string'],
+            ],
         ];
-
-        foreach ($removedGetRoutes as $route) {
-            if (isset($docs['paths'][$route]['get'])) {
-                unset($docs['paths'][$route]['get']);
-            }
-        }
+        \ksort($docs['components']['schemas']);
 
         return $docs;
     }

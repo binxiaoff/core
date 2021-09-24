@@ -21,18 +21,31 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:reservationStatus:read"}},
- *     denormalizationContext={"groups": {"creditGuaranty:reservationStatus:write"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:reservationStatus:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
+ *     denormalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:reservationStatus:write",
+ *         },
+ *         "openapi_definition_name": "write",
+ *     },
  *     collectionOperations={
- *         "post": {"security_post_denormalize": "is_granted('create', object)"}
+ *         "post": {"security_post_denormalize": "is_granted('create', object)"},
  *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
- *     }
+ *     },
  * )
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_reservation_status")
@@ -173,26 +186,20 @@ class ReservationStatus implements StatusInterface
 
         $project = $this->getReservation()->getProject();
 
-        if (false === $project instanceof Project) {
-            $context->buildViolation('CreditGuaranty.Reservation.project.required')->atPath('project')->addViolation();
-
-            return;
-        }
-
         if (false === $project->checkBalance()) {
-            $context->buildViolation('CreditGuaranty.project.fundingMoney.balanceExceeded')->atPath('project.fundingMoney')->addViolation();
+            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.balanceExceeded')->atPath('project.fundingMoney')->addViolation();
         }
 
         if (false === $project->checkQuota()) {
-            $context->buildViolation('CreditGuaranty.project.fundingMoney.quotaExceeded')->atPath('project.fundingMoney')->addViolation();
+            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.quotaExceeded')->atPath('project.fundingMoney')->addViolation();
         }
 
         if (false === $project->checkGradeAllocation()) {
-            $context->buildViolation('CreditGuaranty.project.fundingMoney.gradeAllocationExceeded')->atPath('project.fundingMoney')->addViolation();
+            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.gradeAllocationExceeded')->atPath('project.fundingMoney')->addViolation();
         }
 
         if (false === $project->checkBorrowerTypeAllocation()) {
-            $context->buildViolation('CreditGuaranty.project.fundingMoney.borrowerTypeAllocationExceeded')->atPath('project.fundingMoney')->addViolation();
+            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.borrowerTypeAllocationExceeded')->atPath('project.fundingMoney')->addViolation();
         }
     }
 }

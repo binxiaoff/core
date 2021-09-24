@@ -240,9 +240,13 @@ CreditGuaranty:
         borrower:
             required: La réservation ne peut être envoyée, les informations du bénéficiaire n'ont pas été remplies.
         project:
-            required: La réservation ne peut être envoyée, les informations du projet n'ont pas été remplies.
             aidIntensity:
                 requiredForEsb: L'intensité d'aide du projet doit être renseigné pour calculer l'équivalent subvention brute.
+            fundingMoney:
+                balanceExceeded: Le montant disponible dans le programme est inférieur au montant de votre réservation.
+                quotaExceeded: Le montant disponible dans le programme pour votre entité est inférieur au montant de votre réservation.
+                gradeAllocationExceeded: Le montant disponible dans le programme pour la notation de votre réservation est inférieur au montant de votre réservation.
+                borrowerTypeAllocationExceeded: Le montant disponible dans le programme pour votre type d'emprunteur est inférieur au montant de votre réservation.
             grant:
                 requiredForEsb: Les subventions liés au projet du projet doivent être renseignées pour calculer l'équivalent subvention brute.
             totalFeiCredit:

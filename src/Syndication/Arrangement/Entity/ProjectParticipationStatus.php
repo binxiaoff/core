@@ -20,20 +20,34 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"projectParticipationStatus:read", "timestampable:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "projectParticipationStatus:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     collectionOperations={
  *         "post": {
- *             "denormalization_context": {"groups": {"projectParticipationStatus:create"}},
- *             "security_post_denormalize": "is_granted('create', object)"
- *         }
+ *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "projectParticipationStatus:create",
+ *                 },
+ *                 "openapi_definition_name": "collection-post-create",
+ *             },
+ *         },
  *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
- *         }
- *     }
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
+ *         },
+ *     },
  * )
  *
  * @ORM\Entity

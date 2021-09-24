@@ -18,26 +18,35 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     normalizationContext={"groups": {"creditGuaranty:programBorrowerTypeAllocation:read", "timestampable:read"}},
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:programBorrowerTypeAllocation:read",
+ *             "timestampable:read",
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     itemOperations={
  *         "get": {
  *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
  *             "read": false,
  *             "output": false,
+ *             "openapi_context": {
+ *                 "x-visibility": "hide",
+ *             },
  *         },
  *         "patch": {
  *             "input": ProgramBorrowerTypeAllocationInput::class,
- *             "security": "is_granted('edit', object)"
+ *             "security": "is_granted('edit', object)",
  *         },
- *         "delete": {"security": "is_granted('delete', object)"}
+ *         "delete": {"security": "is_granted('delete', object)"},
  *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "input": ProgramBorrowerTypeAllocationInput::class,
- *             "validation_groups": {"creditGuaranty:programBorrowerTypeAllocation:createValidation"}
- *         }
- *     }
+ *             "validation_groups": {"creditGuaranty:programBorrowerTypeAllocation:createValidation"},
+ *         },
+ *     },
  * )
  *
  * @ORM\Entity
