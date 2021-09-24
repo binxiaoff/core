@@ -1,7 +1,6 @@
 ###
 # Global configuration
 ###
-# This image is private, credentials are given through DOCKER_AUTH_CONFIG
 image: klstech/php-ci:7.4.16
 
 variables:
@@ -25,12 +24,10 @@ cache:
       - .composer-cache/
 
 .deploy-api:
-  image: python:3.9-slim-buster
+  # This image is private, credentials are given through DOCKER_AUTH_CONFIG
+  image: klstech/ansible-ci:4.6
   cache: []
   before_script:
-    - apt-get update
-    - apt-get install --yes openssh-client git
-    - pip install ansible==4.*
     - ansible --version
     - eval $(ssh-agent -s)
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
