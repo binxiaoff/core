@@ -52,7 +52,7 @@ cache:
     - git clone -b "${ANSIBLE_BRANCH:-master}" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/ca-lending-services/infra.git
     - echo "$ANSIBLE_VAULT_PASS" > infra/.vault_pass
     - cd infra/provisioning || exit 1
-    - export USER="${GITLAB_USER_NAME}"
+    - export DEPLOY_USER="${GITLAB_USER_NAME}"
   script:
     - ansible-playbook -i "inventory/private/${CI_ENVIRONMENT_NAME}.yml" deploy-api.yml --extra-vars="gitBranch=${CI_COMMIT_REF_NAME}"
   when: manual
