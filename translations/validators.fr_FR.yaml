@@ -202,6 +202,9 @@ CreditGuaranty:
         reportingTemplate:
             name:
                 unique: Le nom d'un template de reporting doit être unique.
+        reportingTemplateField:
+            field:
+                unique: Un champ ne peut être associé qu'à un seul template de reporting
     ProgramChoiceOption:
         invalid: La description du nouveau programChoiceOption doit exister dans les éléments prédéfinis.
     ProgramEligibilityConfiguration:

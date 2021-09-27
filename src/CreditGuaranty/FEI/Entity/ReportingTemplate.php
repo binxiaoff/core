@@ -9,6 +9,8 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use KLS\Core\Entity\Staff;
@@ -92,12 +94,22 @@ class ReportingTemplate
      */
     private string $name;
 
+    /**
+     * @var Collection|ReportingTemplateField[]
+     *
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReportingTemplateField", mappedBy="reportingTemplate")
+     *
+     * @Groups({"creditGuaranty:reportingTemplate:read"})
+     */
+    private Collection $reportingTemplateFields;
+
     public function __construct(Program $program, string $name, Staff $addedBy)
     {
-        $this->program = $program;
-        $this->name    = $name;
-        $this->addedBy = $addedBy;
-        $this->added   = new DateTimeImmutable();
+        $this->program                 = $program;
+        $this->name                    = $name;
+        $this->addedBy                 = $addedBy;
+        $this->added                   = new DateTimeImmutable();
+        $this->reportingTemplateFields = new ArrayCollection();
     }
 
     public function getProgram(): Program
@@ -115,5 +127,13 @@ class ReportingTemplate
         $this->name = $name;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|ReportingTemplateField[]
+     */
+    public function getReportingTemplateFields(): Collection
+    {
+        return $this->reportingTemplateFields;
     }
 }
