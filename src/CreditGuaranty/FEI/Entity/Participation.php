@@ -7,6 +7,7 @@ namespace KLS\CreditGuaranty\FEI\Entity;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -69,6 +70,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  * )
  *
+ * @ApiFilter(NumericFilter::class, properties={"program.currentStatus.status"})
  * @ApiFilter(
  *     filterClass=GroupFilter::class,
  *     arguments={
