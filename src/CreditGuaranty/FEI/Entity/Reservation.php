@@ -216,7 +216,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *
      * @Assert\Valid
      *
-     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReservationStatus", mappedBy="reservation", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReservationStatus", mappedBy="reservation", cascade={"persist"}, fetch="EAGER")
      *
      * @ORM\OrderBy({"added": "ASC"})
      *
