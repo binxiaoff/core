@@ -198,7 +198,7 @@ class HubspotContactManager
 
     private function formatData(User $user): array
     {
-        $temporaryToken        = $this->temporaryTokenRepository->findOneBy(['user' => $user, 'id' => 'DESC']);
+        $temporaryToken        = $this->temporaryTokenRepository->findOneBy(['user' => $user], ['id' => 'DESC']);
         $lastLogin             = $this->userSuccessfulLoginRepository->findOneBy(['user' => $user], ['id' => 'DESC']); // get by user order by date desc, prendre le premier
         $temporaryTokenExpires = $temporaryToken ? $temporaryToken->getExpires() : null;
         $lastLoginDate         = $lastLogin ? $lastLogin->getAdded() : null;
