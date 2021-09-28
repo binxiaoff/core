@@ -20,6 +20,7 @@ use KLS\Test\CreditGuaranty\FEI\Unit\Traits\ReservationSetTrait;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -30,6 +31,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 class EligibilityConditionCheckerTest extends TestCase
 {
     use ReservationSetTrait;
+    use ProphecyTrait;
 
     /** @var EligibilityHelper|ObjectProphecy */
     private $eligibilityHelper;
@@ -54,6 +56,9 @@ class EligibilityConditionCheckerTest extends TestCase
         $this->reservation                           = null;
     }
 
+    /**
+     * @covers ::checkByConfiguration
+     */
     public function testCheckByEligibilityConfigurationWithoutConditions(): void
     {
         $field                           = new Field('alias_1', Field::TAG_ELIGIBILITY, 'test', 'other', 'entity', 'field', 'type', 'Name\\Class\\Entity', false, null, null);
@@ -72,13 +77,64 @@ class EligibilityConditionCheckerTest extends TestCase
         static::assertTrue($result);
     }
 
+    /**
+     * @covers ::checkByConfiguration
+     */
     public function testCheckByEligibilityConfigurationWithConditionsEligible(): void
     {
-        $entity                          = $this->reservation->getBorrower();
-        $field                           = new Field('alias_1', Field::TAG_ELIGIBILITY, 'test', 'other', 'borrower', 'siret', 'string', Borrower::class, false, null, null);
-        $leftField1                      = new Field('left_alias_1', Field::TAG_ELIGIBILITY, 'test', 'other', 'borrower', 'employeesNumber', 'int', Borrower::class, true, 'person', null);
-        $leftField2                      = new Field('left_alias_2', Field::TAG_ELIGIBILITY, 'test', 'other', 'borrower', 'turnover', 'MoneyInterface', Borrower::class, true, 'money', null);
-        $rightField2                     = new Field('right_alias_2', Field::TAG_ELIGIBILITY, 'test', 'other', 'borrower', 'totalAssets', 'MoneyInterface', Borrower::class, true, 'money', null);
+        $entity = $this->reservation->getBorrower();
+        $field  = new Field(
+            'alias_1',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'other',
+            'borrower',
+            'siret',
+            'string',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
+        $leftField1 = new Field(
+            'left_alias_1',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'other',
+            'borrower',
+            'employeesNumber',
+            'int',
+            Borrower::class,
+            true,
+            'person',
+            null
+        );
+        $leftField2 = new Field(
+            'left_alias_2',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'other',
+            'borrower',
+            'turnover',
+            'MoneyInterface',
+            Borrower::class,
+            true,
+            'money',
+            null
+        );
+        $rightField2 = new Field(
+            'right_alias_2',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'other',
+            'borrower',
+            'totalAssets',
+            'MoneyInterface',
+            Borrower::class,
+            true,
+            'money',
+            null
+        );
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = new ProgramEligibilityCondition($programEligibilityConfiguration, $leftField1, null, 'eq', 'value', '42');
@@ -105,11 +161,38 @@ class EligibilityConditionCheckerTest extends TestCase
         static::assertTrue($result);
     }
 
+    /**
+     * @covers ::checkByConfiguration
+     */
     public function testCheckByEligibilityConfigurationWithValueTypeConditionIneligible(): void
     {
-        $entity                          = $this->reservation->getBorrower();
-        $field                           = new Field('alias_1', Field::TAG_ELIGIBILITY, 'test', 'other', 'borrower', 'siret', 'string', Borrower::class, false, null, null);
-        $leftField1                      = new Field('left_alias_1', Field::TAG_ELIGIBILITY, 'test', 'other', 'borrower', 'totalAssets', 'MoneyInterface', Borrower::class, true, 'money', null);
+        $entity = $this->reservation->getBorrower();
+        $field  = new Field(
+            'alias_1',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'other',
+            'borrower',
+            'siret',
+            'string',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
+        $leftField1 = new Field(
+            'left_alias_1',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'other',
+            'borrower',
+            'totalAssets',
+            'MoneyInterface',
+            Borrower::class,
+            true,
+            'money',
+            null
+        );
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = new ProgramEligibilityCondition($programEligibilityConfiguration, $leftField1, null, 'gt', 'value', '2048');
@@ -128,12 +211,39 @@ class EligibilityConditionCheckerTest extends TestCase
         static::assertFalse($result);
     }
 
+    /**
+     * @covers ::checkByConfiguration
+     */
     public function testCheckByEligibilityConfigurationWithRateTypeConditionIneligible(): void
     {
-        $entity                          = $this->reservation->getProject();
-        $financingObject                 = $this->createFinancingObject($this->reservation, true);
-        $field                           = new Field('alias_1', Field::TAG_ELIGIBILITY, 'test', 'other', 'financingObjects', 'loanMoney', 'MoneyInterface', FinancingObject::class, true, 'money', null);
-        $rightField1                     = new Field('right_alias_1', Field::TAG_ELIGIBILITY, 'test', 'other', 'project', 'fundingMoney', 'MoneyInterface', Project::class, true, 'money', null);
+        $entity          = $this->reservation->getProject();
+        $financingObject = $this->createFinancingObject($this->reservation, true);
+        $field           = new Field(
+            'alias_1',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'other',
+            'financingObjects',
+            'loanMoney',
+            'MoneyInterface',
+            FinancingObject::class,
+            true,
+            'money',
+            null
+        );
+        $rightField1 = new Field(
+            'right_alias_1',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'other',
+            'project',
+            'fundingMoney',
+            'MoneyInterface',
+            Project::class,
+            true,
+            'money',
+            null
+        );
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = new ProgramEligibilityCondition($programEligibilityConfiguration, $field, $rightField1, 'gte', 'rate', '42');
@@ -154,13 +264,35 @@ class EligibilityConditionCheckerTest extends TestCase
         static::assertFalse($result);
     }
 
+    /**
+     * @covers ::checkByConfiguration
+     */
     public function testCheckByEligibilityConfigurationWithoutRightOperandFieldInRateTypeCondition(): void
     {
-        $field                           = new Field('alias_1', Field::TAG_ELIGIBILITY, 'test', 'other', 'project', 'fundingMoney', 'MoneyInterface', Project::class, true, 'money', null);
+        $field = new Field(
+            'alias_1',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'other',
+            'project',
+            'fundingMoney',
+            'MoneyInterface',
+            Project::class,
+            true,
+            'money',
+            null
+        );
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
-        $programEligibilityCondition1    = new ProgramEligibilityCondition($programEligibilityConfiguration, $field, null, 'lte', 'rate', '42');
-        $programEligibilityConditions    = new ArrayCollection([$programEligibilityCondition1]);
+        $programEligibilityCondition1    = new ProgramEligibilityCondition(
+            $programEligibilityConfiguration,
+            $field,
+            null,
+            'lte',
+            'rate',
+            '42'
+        );
+        $programEligibilityConditions = new ArrayCollection([$programEligibilityCondition1]);
 
         $this->programEligibilityConditionRepository->findBy([
             'programEligibilityConfiguration' => $programEligibilityConfiguration,
@@ -175,11 +307,26 @@ class EligibilityConditionCheckerTest extends TestCase
         $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
     }
 
+    /**
+     * @covers ::checkByConfiguration
+     */
     public function testCheckByEligibilityConfigurationWithCollectionRightOperandFieldInRateTypeCondition(): void
     {
         $financingObject = $this->createFinancingObject($this->reservation, true);
-        $field           = new Field('alias_1', Field::TAG_ELIGIBILITY, 'test', 'other', 'project', 'fundingMoney', 'MoneyInterface', Project::class, true, 'money', null);
-        $rightField1     = new Field(
+        $field           = new Field(
+            'alias_1',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'other',
+            'project',
+            'fundingMoney',
+            'MoneyInterface',
+            Project::class,
+            true,
+            'money',
+            null
+        );
+        $rightField1 = new Field(
             'right_alias_1',
             Field::TAG_ELIGIBILITY,
             'test',

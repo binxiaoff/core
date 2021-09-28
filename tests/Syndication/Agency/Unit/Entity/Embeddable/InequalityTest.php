@@ -25,7 +25,7 @@ class InequalityTest extends TestCase
      * @dataProvider providerSuperiorEqualOperator
      * @dataProvider providerBetweenOperator
      */
-    public function testIsConform(Inequality $inequality, string $evaluatedValue, bool $expected)
+    public function testIsConform(Inequality $inequality, string $evaluatedValue, bool $expected): void
     {
         static::assertSame($expected, $inequality->isConform($evaluatedValue));
     }

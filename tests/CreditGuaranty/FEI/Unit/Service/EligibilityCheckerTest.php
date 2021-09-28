@@ -23,6 +23,7 @@ use KLS\Test\CreditGuaranty\FEI\Unit\Traits\ReservationSetTrait;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -33,6 +34,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 class EligibilityCheckerTest extends TestCase
 {
     use ReservationSetTrait;
+    use ProphecyTrait;
 
     /** @var FieldRepository|ObjectProphecy */
     private $fieldRepository;
@@ -84,9 +86,45 @@ class EligibilityCheckerTest extends TestCase
         $program        = $this->reservation->getProgram();
         $entity         = $this->reservation->getBorrower();
 
-        $field1                           = new Field('company_name', Field::TAG_ELIGIBILITY, $category, 'other', 'borrower', 'companyName', 'string', Borrower::class, false, null, null);
-        $field2                           = new Field('creation_in_progress', Field::TAG_ELIGIBILITY, $category, 'bool', 'borrower', 'creationInProgress', 'bool', Borrower::class, false, null, null);
-        $field3                           = new Field('legal_form', Field::TAG_ELIGIBILITY, $category, 'list', 'borrower', 'legalForm', 'ProgramChoiceOption', Borrower::class, false, null, null);
+        $field1 = new Field(
+            'company_name',
+            Field::TAG_ELIGIBILITY,
+            $category,
+            'other',
+            'borrower',
+            'companyName',
+            'string',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
+        $field2 = new Field(
+            'creation_in_progress',
+            Field::TAG_ELIGIBILITY,
+            $category,
+            'bool',
+            'borrower',
+            'creationInProgress',
+            'bool',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
+        $field3 = new Field(
+            'legal_form',
+            Field::TAG_ELIGIBILITY,
+            $category,
+            'list',
+            'borrower',
+            'legalForm',
+            'ProgramChoiceOption',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
         $fields                           = [$field1, $field2, $field3];
         $legalFormOption                  = new ProgramChoiceOption($program, 'legal form', $field3);
         $programEligibility1              = new ProgramEligibility($program, $field1);
@@ -148,7 +186,19 @@ class EligibilityCheckerTest extends TestCase
         $program        = $this->reservation->getProgram();
         $entity         = $this->reservation->getFinancingObjects();
 
-        $field1 = new Field('loan_duration', Field::TAG_ELIGIBILITY, $category, 'other', 'financingObjects', 'loanDuration', 'int', FinancingObject::class, false, null, null);
+        $field1 = new Field(
+            'loan_duration',
+            Field::TAG_ELIGIBILITY,
+            $category,
+            'other',
+            'financingObjects',
+            'loanDuration',
+            'int',
+            FinancingObject::class,
+            false,
+            null,
+            null
+        );
         $field2 = new Field(
             'supporting_generations_renewal',
             Field::TAG_ELIGIBILITY,
@@ -210,9 +260,45 @@ class EligibilityCheckerTest extends TestCase
         $withConditions = false;
         $program        = $this->reservation->getProgram();
 
-        $field1 = new Field('activity_post_code', Field::TAG_ELIGIBILITY, 'profile', 'other', 'borrower', 'addressPostCode', 'string', Borrower::class, false, null, null);
-        $field2 = new Field('receiving_grant', Field::TAG_ELIGIBILITY, 'project', 'bool', 'project', 'receivingGrant', 'bool', Project::class, false, null, null);
-        $field3 = new Field('financing_object_type', Field::TAG_ELIGIBILITY, 'loan', 'list', 'financingObjects', 'financingObjectType', 'ProgramChoiceOption', FinancingObject::class, false, null, null);
+        $field1 = new Field(
+            'activity_post_code',
+            Field::TAG_ELIGIBILITY,
+            'profile',
+            'other',
+            'borrower',
+            'addressPostCode',
+            'string',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
+        $field2 = new Field(
+            'receiving_grant',
+            Field::TAG_ELIGIBILITY,
+            'project',
+            'bool',
+            'project',
+            'receivingGrant',
+            'bool',
+            Project::class,
+            false,
+            null,
+            null
+        );
+        $field3 = new Field(
+            'financing_object_type',
+            Field::TAG_ELIGIBILITY,
+            'loan',
+            'list',
+            'financingObjects',
+            'financingObjectType',
+            'ProgramChoiceOption',
+            FinancingObject::class,
+            false,
+            null,
+            null
+        );
         $fields = [$field1, $field2, $field3];
 
         $financingObjectTypeOption        = new ProgramChoiceOption($program, 'Object type', $field3);
@@ -274,9 +360,45 @@ class EligibilityCheckerTest extends TestCase
         $withConditions = true;
         $program        = $this->reservation->getProgram();
 
-        $field1                           = new Field('loan_deferral', Field::TAG_ELIGIBILITY, 'loan', 'other', 'financingObjects', 'loanDeferral', 'int', FinancingObject::class, false, null, null);
-        $field2                           = new Field('borrower_type', Field::TAG_ELIGIBILITY, 'profile', 'list', 'borrower', 'borrowerType', 'ProgramChoiceOption', Borrower::class, false, null, null);
-        $field3                           = new Field('receiving_grant', Field::TAG_ELIGIBILITY, 'project', 'bool', 'project', 'receivingGrant', 'bool', Project::class, false, null, null);
+        $field1 = new Field(
+            'loan_deferral',
+            Field::TAG_ELIGIBILITY,
+            'loan',
+            'other',
+            'financingObjects',
+            'loanDeferral',
+            'int',
+            FinancingObject::class,
+            false,
+            null,
+            null
+        );
+        $field2 = new Field(
+            'borrower_type',
+            Field::TAG_ELIGIBILITY,
+            'profile',
+            'list',
+            'borrower',
+            'borrowerType',
+            'ProgramChoiceOption',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
+        $field3 = new Field(
+            'receiving_grant',
+            Field::TAG_ELIGIBILITY,
+            'project',
+            'bool',
+            'project',
+            'receivingGrant',
+            'bool',
+            Project::class,
+            false,
+            null,
+            null
+        );
         $fields                           = [$field1, $field2, $field3];
         $borrowerTypeOption               = new ProgramChoiceOption($program, 'borrower type', $field2);
         $programEligibility1              = new ProgramEligibility($program, $field1);
@@ -335,7 +457,19 @@ class EligibilityCheckerTest extends TestCase
         $withConditions = false;
         $program        = $this->reservation->getProgram();
 
-        $field1 = new Field('beneficiary_name', Field::TAG_ELIGIBILITY, $category, 'other', 'borrower', 'beneficiaryName', 'string', Borrower::class, false, null, null);
+        $field1 = new Field(
+            'beneficiary_name',
+            Field::TAG_ELIGIBILITY,
+            $category,
+            'other',
+            'borrower',
+            'beneficiaryName',
+            'string',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
         $fields = [$field1];
 
         $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY, 'category' => $category])->shouldBeCalledOnce()->willReturn($fields);
@@ -363,7 +497,19 @@ class EligibilityCheckerTest extends TestCase
             false,
         ];
         yield 'loan - list type' => [
-            new Field('financing_object_type', Field::TAG_ELIGIBILITY, 'loan', 'list', 'project', 'financingObjectType', 'ProgramChoiceOption', FinancingObject::class, false, null, null),
+            new Field(
+                'financing_object_type',
+                Field::TAG_ELIGIBILITY,
+                'loan',
+                'list',
+                'project',
+                'financingObjectType',
+                'ProgramChoiceOption',
+                FinancingObject::class,
+                false,
+                null,
+                null
+            ),
             null,
         ];
     }

@@ -103,7 +103,7 @@ class DriveTest extends TestCase
     }
 
     /**
-     * @coverss ::rmFolder
+     * @covers ::rmFolder
      *
      * @dataProvider providerDeleteFolder
      *

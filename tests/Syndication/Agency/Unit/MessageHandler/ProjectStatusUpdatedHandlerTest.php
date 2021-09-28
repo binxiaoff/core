@@ -17,6 +17,7 @@ use KLS\Syndication\Agency\Repository\ProjectRepository;
 use KLS\Test\Syndication\Agency\Unit\Traits\ProjectMemberSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -27,6 +28,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 class ProjectStatusUpdatedHandlerTest extends TestCase
 {
     use ProjectMemberSetTrait;
+    use ProphecyTrait;
 
     /** @var ProjectRepository|ObjectProphecy */
     private $projectRepository;

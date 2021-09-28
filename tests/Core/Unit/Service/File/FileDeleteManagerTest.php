@@ -12,6 +12,7 @@ use KLS\Core\Service\File\FileDeleteManager;
 use KLS\Syndication\Arrangement\Entity\ProjectFile;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -22,6 +23,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class FileDeleteManagerTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @covers ::delete
      */

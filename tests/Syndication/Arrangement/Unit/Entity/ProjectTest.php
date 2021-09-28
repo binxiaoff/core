@@ -22,7 +22,7 @@ class ProjectTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testPrivilegedContactPersonConstruct()
+    public function testPrivilegedContactPersonConstruct(): void
     {
         // We need a mocked staff since we can't construct Staff by itself
         $mockedStaff = $this->getMockBuilder(Staff::class)->disableOriginalConstructor()->getMock();
@@ -49,7 +49,7 @@ class ProjectTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testProjectParticipationMember()
+    public function testProjectParticipationMember(): void
     {
         $rootStaff = $this->getMockBuilder(Staff::class)->disableOriginalConstructor()->getMock();
         $company   = new Company('Company', 'company', '850890666');

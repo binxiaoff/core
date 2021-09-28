@@ -12,6 +12,7 @@ use KLS\Test\Core\Unit\Traits\TokenTrait;
 use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
@@ -24,6 +25,7 @@ class StaffPayloadManagerTest extends TestCase
 {
     use UserStaffTrait;
     use TokenTrait;
+    use ProphecyTrait;
 
     /** @var IriConverterInterface|ObjectProphecy */
     private $iriConverter;

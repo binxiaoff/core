@@ -16,6 +16,7 @@ use KLS\Syndication\Arrangement\Repository\ProjectRepository as ProjectArrangeme
 use KLS\Test\Core\Unit\Traits\CompanyTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,8 +30,9 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 class HubspotCompanyManagerTest extends TestCase
 {
     use CompanyTrait;
+    use ProphecyTrait;
 
-    /** @var ObjectProphecy|LoggerInterface */
+    /** @var LoggerInterface|ObjectProphecy */
     private $logger;
 
     /** @var HubspotCompanyRepository|ObjectProphecy */

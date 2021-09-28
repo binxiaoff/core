@@ -14,6 +14,7 @@ use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use KLS\Test\Syndication\Agency\Unit\Traits\AgencyProjectTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -26,6 +27,7 @@ class AgencyPublishedHandlerTest extends TestCase
     use AgencyProjectTrait;
     use UserStaffTrait;
     use PropertyValueTrait;
+    use ProphecyTrait;
 
     /** @var ProjectRepository|ObjectProphecy */
     private $projectRepository;

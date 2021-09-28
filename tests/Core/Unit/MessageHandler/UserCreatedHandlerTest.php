@@ -14,6 +14,7 @@ use KLS\Test\Core\Unit\Traits\PropertyValueTrait;
 use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -25,6 +26,7 @@ class UserCreatedHandlerTest extends TestCase
 {
     use UserStaffTrait;
     use PropertyValueTrait;
+    use ProphecyTrait;
 
     /** @var UserCreatedNotifier|ObjectProphecy */
     private $userCreatedNotifier;

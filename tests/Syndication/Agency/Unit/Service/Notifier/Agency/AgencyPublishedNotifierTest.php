@@ -12,6 +12,7 @@ use Nexy\Slack\Client as Slack;
 use Nexy\Slack\MessageInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -23,6 +24,7 @@ class AgencyPublishedNotifierTest extends TestCase
 {
     use AgencyProjectTrait;
     use UserStaffTrait;
+    use ProphecyTrait;
 
     /** @var Slack|ObjectProphecy */
     private $slack;
