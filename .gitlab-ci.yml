@@ -83,7 +83,6 @@ validation:db:
     # need to run messenger:consume to create messenger_messages table
     - php bin/console messenger:consume async --time-limit=1
     # Validate schema
-    - php bin/console doctrine:schema:update --dump-sql
     - php bin/console doctrine:schema:validate
 
 # Testing
