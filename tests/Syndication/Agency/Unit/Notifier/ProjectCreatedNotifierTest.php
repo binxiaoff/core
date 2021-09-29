@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace KLS\Test\Syndication\Agency\Unit\Service\Notifier\Agency;
+namespace KLS\Test\Syndication\Agency\Unit\Notifier;
 
-use KLS\Syndication\Agency\Service\Notifier\Agency\AgencyPublishedNotifier;
+use KLS\Syndication\Agency\Notifier\ProjectCreatedNotifier;
 use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use KLS\Test\Syndication\Agency\Unit\Traits\AgencyProjectTrait;
 use Nexy\Slack\Attachment;
@@ -12,19 +12,17 @@ use Nexy\Slack\Client as Slack;
 use Nexy\Slack\MessageInterface;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
- * @coversDefaultClass \KLS\Syndication\Agency\Service\Notifier\Agency\AgencyPublishedNotifier
+ * @coversDefaultClass \KLS\Syndication\Agency\Notifier\ProjectCreatedNotifier
  *
  * @internal
  */
-class AgencyPublishedNotifierTest extends TestCase
+class ProjectCreatedNotifierTest extends TestCase
 {
     use AgencyProjectTrait;
     use UserStaffTrait;
-    use ProphecyTrait;
 
     /** @var Slack|ObjectProphecy */
     private $slack;
@@ -57,9 +55,9 @@ class AgencyPublishedNotifierTest extends TestCase
         $this->createTestObject()->notify($project);
     }
 
-    private function createTestObject(): AgencyPublishedNotifier
+    private function createTestObject(): ProjectCreatedNotifier
     {
-        return new AgencyPublishedNotifier(
+        return new ProjectCreatedNotifier(
             $this->slack->reveal()
         );
     }

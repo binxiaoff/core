@@ -20,6 +20,9 @@ services:
       - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\ProjectParticipationMember, method: setArchivedBy }
 
   # Message Dispatcher
+  KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher\ProjectCreatedListener:
+    tags:
+      - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Agency\Entity\Project }
 
   KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
     tags:
