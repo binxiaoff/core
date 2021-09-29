@@ -46,7 +46,7 @@
     "gesdinet/jwt-refresh-token-bundle": "^0.10",
     "http-interop/http-factory-guzzle": "^1.0",
     "jbroadway/urlify": "^1.0",
-    "lcobucci/jwt": "^3.2",
+    "lcobucci/jwt": "^4.0",
     "league/flysystem-aws-s3-v3": "2.1.*",
     "lexik/jwt-authentication-bundle": "^2.6",
     "nelmio/cors-bundle": "^2.1",

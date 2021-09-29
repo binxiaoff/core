@@ -15,13 +15,9 @@ class CompanyStatusUpdatedListener
 
     public function preUpdate(Company $company, PreUpdateEventArgs $args): void
     {
-        $hasChangedValue = $args->hasChangedField('currentStatus');
-        $oldValue        = $args->getOldValue('currentStatus');
-        $newValue        = $args->getNewValue('currentStatus');
-
-        if ($hasChangedValue) {
+        if ($args->hasChangedField('currentStatus')) {
             $this->messageBus->dispatch(
-                new CompanyStatusUpdated($company, $oldValue, $newValue)
+                new CompanyStatusUpdated($company, $args->getOldValue('currentStatus'), $args->getNewValue('currentStatus'))
             );
         }
     }
