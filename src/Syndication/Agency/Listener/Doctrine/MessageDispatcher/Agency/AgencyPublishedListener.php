@@ -15,12 +15,9 @@ class AgencyPublishedListener
 
     public function preUpdate(Project $project, PreUpdateEventArgs $args): void
     {
-        $hasChangedValue = $args->hasChangedField('currentStatus');
-        $newValue        = $args->getNewValue('currentStatus');
-
-        if ($hasChangedValue) {
+        if ($args->hasChangedField('currentStatus')) {
             $this->messageBus->dispatch(
-                new AgencyPublished($project, $newValue)
+                new AgencyPublished($project, $args->getNewValue('currentStatus'))
             );
         }
     }
