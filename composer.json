@@ -112,6 +112,7 @@
     "phpmd/phpmd": "^2.6",
     "phpro/grumphp": "^1.2.0",
     "phpspec/prophecy": "^1.8",
+    "phpspec/prophecy-phpunit": "^2.0",
     "phpstan/phpstan": "^0.12",
     "phpstan/phpstan-doctrine": "^0.12",
     "phpstan/phpstan-phpunit": "^0.12",

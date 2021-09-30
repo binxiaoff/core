@@ -17,6 +17,7 @@ use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use KLS\Test\Syndication\Arrangement\Unit\Traits\ArrangementProjectSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -31,6 +32,7 @@ class FileDeleteManagerTest extends TestCase
 {
     use UserStaffTrait;
     use ArrangementProjectSetTrait;
+    use ProphecyTrait;
 
     /** @var Security|ObjectProphecy */
     private $security;

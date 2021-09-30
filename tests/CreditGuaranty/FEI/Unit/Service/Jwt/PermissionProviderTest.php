@@ -12,6 +12,7 @@ use KLS\CreditGuaranty\FEI\Repository\StaffPermissionRepository;
 use KLS\CreditGuaranty\FEI\Service\Jwt\PermissionProvider;
 use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -22,6 +23,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 class PermissionProviderTest extends TestCase
 {
     use UserStaffTrait;
+    use ProphecyTrait;
 
     /** @var StaffPermissionRepository|ObjectProphecy */
     private $staffPermissionRepository;

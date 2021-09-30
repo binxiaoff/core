@@ -11,6 +11,7 @@ use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Service\EligibilityHelper;
 use KLS\Test\CreditGuaranty\FEI\Unit\Traits\ReservationSetTrait;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
@@ -23,6 +24,7 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 class EligibilityHelperTest extends TestCase
 {
     use ReservationSetTrait;
+    use ProphecyTrait;
 
     /** @var PropertyAccessorInterface|ObjectProphecy */
     private $propertyAccessor;
@@ -49,7 +51,19 @@ class EligibilityHelperTest extends TestCase
     {
         $this->withBorrower($this->reservation);
 
-        $field = new Field('company_name', Field::TAG_ELIGIBILITY, 'category', 'type', 'borrower', 'companyName', 'string', Borrower::class, false, null, null);
+        $field = new Field(
+            'company_name',
+            Field::TAG_ELIGIBILITY,
+            'category',
+            'type',
+            'borrower',
+            'companyName',
+            'string',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
 
         $this->propertyAccessor->getValue($this->reservation, 'borrower')->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
 
@@ -64,7 +78,19 @@ class EligibilityHelperTest extends TestCase
      */
     public function testGetEntityExceptionWithUnexistedPath(): void
     {
-        $field = new Field('company_name', Field::TAG_ELIGIBILITY, 'category', 'type', 'borrow', 'companyName', 'string', 'Name\\Class\\Borrow', false, null, null);
+        $field = new Field(
+            'company_name',
+            Field::TAG_ELIGIBILITY,
+            'category',
+            'type',
+            'borrow',
+            'companyName',
+            'string',
+            'Name\\Class\\Borrow',
+            false,
+            null,
+            null
+        );
 
         $this->propertyAccessor->getValue($this->reservation, 'borrow')->shouldBeCalledOnce()->willThrow(AccessException::class);
 
@@ -117,8 +143,20 @@ class EligibilityHelperTest extends TestCase
     {
         $this->withBorrower($this->reservation);
 
-        $entity              = $this->reservation->getBorrower();
-        $field               = new Field('borrower_type', Field::TAG_ELIGIBILITY, 'profile', 'list', 'borrower', 'borrowerType', 'ProgramChoiceOption', Borrower::class, false, null, null);
+        $entity = $this->reservation->getBorrower();
+        $field  = new Field(
+            'borrower_type',
+            Field::TAG_ELIGIBILITY,
+            'profile',
+            'list',
+            'borrower',
+            'borrowerType',
+            'ProgramChoiceOption',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
         $programChoiceOption = new ProgramChoiceOption($this->reservation->getProgram(), 'borrower type', $field);
 
         $this->propertyAccessor->getValue($entity, 'borrowerType')->shouldBeCalledOnce()->willReturn($programChoiceOption);

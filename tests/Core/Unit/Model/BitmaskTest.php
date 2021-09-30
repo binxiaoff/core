@@ -22,11 +22,11 @@ class BitmaskTest extends TestCase
      *
      * @dataProvider providerAdd
      */
-    public function testAdd(Bitmask $initial, $addendum, Bitmask $expected)
+    public function testAdd(Bitmask $initial, $addendum, Bitmask $expected): void
     {
         $result = $initial->add($addendum);
 
-        static::assertEquals($result, $expected);
+        static::assertSame($expected->get(), $result->get());
     }
 
     /**
@@ -59,11 +59,11 @@ class BitmaskTest extends TestCase
      *
      * @dataProvider providerRemove
      */
-    public function testRemove(Bitmask $initial, $subtract, Bitmask $expected)
+    public function testRemove(Bitmask $initial, $subtract, Bitmask $expected): void
     {
         $result = $initial->remove($subtract);
 
-        static::assertEquals($result, $expected);
+        static::assertSame($expected->get(), $result->get());
     }
 
     public function providerRemove(): array
@@ -89,7 +89,7 @@ class BitmaskTest extends TestCase
     /**
      * @covers ::get
      */
-    public function testGet()
+    public function testGet(): void
     {
         $value  = 3;
         $tested = new Bitmask($value);
@@ -102,11 +102,11 @@ class BitmaskTest extends TestCase
     /**
      * @covers ::__construct
      */
-    public function testConstructor()
+    public function testConstructor(): void
     {
-        $value = 4;
+        $value = new Bitmask(4);
 
-        static::assertEquals(new Bitmask(4), new Bitmask($value));
+        static::assertSame(4, $value->get());
     }
 
     /**
@@ -116,7 +116,7 @@ class BitmaskTest extends TestCase
      *
      * @param $query
      */
-    public function testHas(Bitmask $tested, $query, bool $expected)
+    public function testHas(Bitmask $tested, $query, bool $expected): void
     {
         static::assertSame($tested->has($query), $expected);
     }
@@ -151,12 +151,16 @@ class BitmaskTest extends TestCase
     }
 
     /**
+     * @covers ::add
+     * @covers ::has
+     * @covers ::remove
+     *
      * @param $method
      * @param $argument
      *
      * @dataProvider providerInvalidTypes
      */
-    public function testException($method, $argument)
+    public function testException($method, $argument): void
     {
         $this->expectException(InvalidArgumentException::class);
 

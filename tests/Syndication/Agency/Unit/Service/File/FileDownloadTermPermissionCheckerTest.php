@@ -20,6 +20,7 @@ use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use KLS\Test\Syndication\Agency\Unit\Traits\TermTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
@@ -33,6 +34,7 @@ class FileDownloadTermPermissionCheckerTest extends TestCase
     use PropertyValueTrait;
     use UserStaffTrait;
     use TermTrait;
+    use ProphecyTrait;
 
     /** @var AuthorizationCheckerInterface|ObjectProphecy */
     private $authorizationChecker;

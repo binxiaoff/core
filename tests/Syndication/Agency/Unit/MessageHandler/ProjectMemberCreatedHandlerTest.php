@@ -18,6 +18,7 @@ use KLS\Syndication\Agency\Notifier\ProjectMemberNotifier;
 use KLS\Test\Syndication\Agency\Unit\Traits\ProjectMemberSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -28,6 +29,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 class ProjectMemberCreatedHandlerTest extends TestCase
 {
     use ProjectMemberSetTrait;
+    use ProphecyTrait;
 
     /** @var ManagerRegistry|ObjectProphecy */
     private $managerRegistry;

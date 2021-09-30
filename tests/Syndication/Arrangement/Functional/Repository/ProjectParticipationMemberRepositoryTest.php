@@ -101,6 +101,8 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
     /**
      * @dataProvider providerFindByProjectParticipationAndManagerAndPermissionEnabled
      *
+     * @covers ::findActiveByProjectParticipationAndManagerAndPermissionEnabled
+     *
      * @throws NoResultException
      * @throws NonUniqueResultException
      */

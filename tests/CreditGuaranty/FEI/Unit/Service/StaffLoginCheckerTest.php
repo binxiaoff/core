@@ -10,6 +10,7 @@ use KLS\CreditGuaranty\FEI\Repository\StaffPermissionRepository;
 use KLS\CreditGuaranty\FEI\Service\StaffLoginChecker;
 use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -20,6 +21,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 class StaffLoginCheckerTest extends TestCase
 {
     use UserStaffTrait;
+    use ProphecyTrait;
 
     /** @var StaffPermissionRepository|ObjectProphecy */
     private $staffPermissionRepository;

@@ -9,6 +9,7 @@ use KLS\Core\Service\Staff\StaffLoginChecker;
 use KLS\Core\Service\Staff\StaffLoginInterface;
 use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -19,6 +20,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 class StaffLoginCheckerTest extends TestCase
 {
     use UserStaffTrait;
+    use ProphecyTrait;
 
     /**
      * @covers ::isGrantedLogin

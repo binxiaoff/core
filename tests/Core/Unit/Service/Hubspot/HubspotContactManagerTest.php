@@ -18,6 +18,7 @@ use KLS\Core\Service\Hubspot\Client\HubspotClient;
 use KLS\Core\Service\Hubspot\HubspotContactManager;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,6 +31,8 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
  */
 class HubspotContactManagerTest extends TestCase
 {
+    use ProphecyTrait;
+
     /** @var ObjectProphecy|HubspotClient */
     private $hubspotClient;
 
