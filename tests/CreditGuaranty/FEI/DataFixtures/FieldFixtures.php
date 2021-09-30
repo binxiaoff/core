@@ -628,6 +628,19 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => ['term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment'],
         ];
+        yield 'field-loan_money' => [
+            'fieldAlias'              => 'loan_money',
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'loan',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'loanMoney',
+            'propertyType'            => 'Money',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
         yield 'field-loan_duration' => [
             'fieldAlias'              => 'loan_duration',
             'tag'                     => Field::TAG_ELIGIBILITY,
@@ -855,7 +868,7 @@ class FieldFixtures extends AbstractFixtures
             'category'                => 'project',
             'type'                    => 'other',
             'reservationPropertyName' => 'project',
-            'propertyPath'            => 'name',
+            'propertyPath'            => 'detail',
             'propertyType'            => 'string',
             'objectClass'             => Project::class,
             'comparable'              => false,
@@ -875,37 +888,11 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_money' => [
-            'fieldAlias'              => 'loan_money',
-            'tag'                     => Field::TAG_INFO,
-            'category'                => 'loan',
-            'type'                    => 'other',
-            'reservationPropertyName' => 'financingObjects',
-            'propertyPath'            => 'loanMoney',
-            'propertyType'            => 'Money',
-            'objectClass'             => FinancingObject::class,
-            'comparable'              => false,
-            'unit'                    => null,
-            'predefinedItems'         => null,
-        ];
         yield 'field-main_loan' => [
             'fieldAlias'              => 'main_loan',
             'tag'                     => Field::TAG_INFO,
             'category'                => 'loan',
             'type'                    => 'bool',
-            'reservationPropertyName' => 'financingObjects',
-            'propertyPath'            => 'mainLoan',
-            'propertyType'            => 'bool',
-            'objectClass'             => FinancingObject::class,
-            'comparable'              => false,
-            'unit'                    => null,
-            'predefinedItems'         => null,
-        ];
-        yield 'field-loan_name' => [
-            'fieldAlias'              => 'loan_name',
-            'tag'                     => Field::TAG_INFO,
-            'category'                => 'loan',
-            'type'                    => 'other',
             'reservationPropertyName' => 'financingObjects',
             'propertyPath'            => 'mainLoan',
             'propertyType'            => 'bool',

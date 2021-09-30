@@ -242,6 +242,11 @@ class FieldFixtures extends AbstractSQLFixtures
             'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'
         ),
         (
+            'dc41f2c0-0ca6-4ac4-8d92-c9f583b97923', 'eligibility', 'loan', 'other',
+            'loan_money', 'financingObjects', 'loanMoney', 'Money',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
+        ),
+        (
             'e9861e5b-0513-4c7b-9799-2f5a7dc267a4', 'eligibility', 'loan', 'other',
             'loan_duration', 'financingObjects', 'loanDuration', 'int',
             'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, 'month', null
@@ -329,7 +334,7 @@ class FieldFixtures extends AbstractSQLFixtures
         ),
         (
             'e42a92b1-9fd0-48a5-b164-e3a7c191f429', 'info', 'project', 'other',
-            'project_detail', 'project', 'name', 'string',
+            'project_detail', 'project', 'detail', 'string',
             'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, NULL, NULL
         ),
         (
@@ -338,18 +343,8 @@ class FieldFixtures extends AbstractSQLFixtures
             'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
         ),
         (
-            'dc41f2c0-0ca6-4ac4-8d92-c9f583b97923', 'info', 'loan', 'other',
-            'loan_money', 'financingObjects', 'loanMoney', 'Money',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
-        ),
-        (
             '6a5fb99d-60cc-483b-a39f-bb3a7a7825f1', 'info', 'loan', 'bool',
             'main_loan', 'financingObjects', 'mainLoan', 'bool',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
-        ),
-        (
-            'ac666a78-55de-47b2-a7bf-6076661f9385', 'info', 'loan', 'other',
-            'loan_name', 'financingObjects', 'mainLoan', 'bool',
             'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
         ),
         (
