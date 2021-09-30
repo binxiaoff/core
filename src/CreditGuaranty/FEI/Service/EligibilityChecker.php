@@ -20,20 +20,20 @@ class EligibilityChecker
     private FieldRepository $fieldRepository;
     private ProgramEligibilityRepository $programEligibilityRepository;
     private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
-    private EligibilityHelper $eligibilityHelper;
+    private ReservationAccessor $reservationAccessor;
     private EligibilityConditionChecker $eligibilityConditionChecker;
 
     public function __construct(
         FieldRepository $fieldRepository,
         ProgramEligibilityRepository $programEligibilityRepository,
         ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository,
-        EligibilityHelper $eligibilityHelper,
+        ReservationAccessor $reservationAccessor,
         EligibilityConditionChecker $eligibilityConditionChecker
     ) {
         $this->fieldRepository                           = $fieldRepository;
         $this->programEligibilityRepository              = $programEligibilityRepository;
         $this->programEligibilityConfigurationRepository = $programEligibilityConfigurationRepository;
-        $this->eligibilityHelper                         = $eligibilityHelper;
+        $this->reservationAccessor                       = $reservationAccessor;
         $this->eligibilityConditionChecker               = $eligibilityConditionChecker;
     }
 
@@ -72,11 +72,11 @@ class EligibilityChecker
             );
         }
 
-        $entity = $this->eligibilityHelper->getEntity($reservation, $field);
+        $entity = $this->reservationAccessor->getEntity($reservation, $field);
 
         if ($entity instanceof Collection) {
             foreach ($entity as $entityItem) {
-                $value = $this->eligibilityHelper->getValue($entityItem, $field);
+                $value = $this->reservationAccessor->getValue($entityItem, $field);
 
                 if (false === $this->isEligible($reservation, $programEligibility, $withConditions, $value)) {
                     return false;
@@ -86,7 +86,7 @@ class EligibilityChecker
             return true;
         }
 
-        $value = $this->eligibilityHelper->getValue($entity, $field);
+        $value = $this->reservationAccessor->getValue($entity, $field);
 
         return $this->isEligible($reservation, $programEligibility, $withConditions, $value);
     }

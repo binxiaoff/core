@@ -15,7 +15,7 @@ use KLS\CreditGuaranty\FEI\Entity\Project;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConditionRepository;
 use KLS\CreditGuaranty\FEI\Service\EligibilityConditionChecker;
-use KLS\CreditGuaranty\FEI\Service\EligibilityHelper;
+use KLS\CreditGuaranty\FEI\Service\ReservationAccessor;
 use KLS\Test\CreditGuaranty\FEI\Unit\Traits\ReservationSetTrait;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -33,10 +33,10 @@ class EligibilityConditionCheckerTest extends TestCase
     use ReservationSetTrait;
     use ProphecyTrait;
 
-    /** @var EligibilityHelper|ObjectProphecy */
-    private $eligibilityHelper;
+    /** @var ReservationAccessor|ObjectProphecy */
+    private $reservationAccessor;
 
-    /** @var EligibilityHelper|ObjectProphecy */
+    /** @var ReservationAccessor|ObjectProphecy */
     private $programEligibilityConditionRepository;
 
     /** @var Reservation */
@@ -45,14 +45,14 @@ class EligibilityConditionCheckerTest extends TestCase
     protected function setUp(): void
     {
         $this->programEligibilityConditionRepository = $this->prophesize(ProgramEligibilityConditionRepository::class);
-        $this->eligibilityHelper                     = $this->prophesize(EligibilityHelper::class);
+        $this->reservationAccessor                   = $this->prophesize(ReservationAccessor::class);
         $this->reservation                           = $this->createReservation();
     }
 
     protected function tearDown(): void
     {
         $this->programEligibilityConditionRepository = null;
-        $this->eligibilityHelper                     = null;
+        $this->reservationAccessor                   = null;
         $this->reservation                           = null;
     }
 
@@ -68,8 +68,8 @@ class EligibilityConditionCheckerTest extends TestCase
         $this->programEligibilityConditionRepository->findBy([
             'programEligibilityConfiguration' => $programEligibilityConfiguration,
         ])->shouldBeCalledOnce()->willReturn([]);
-        $this->eligibilityHelper->getEntity($this->reservation, Argument::any())->shouldNotBeCalled();
-        $this->eligibilityHelper->getValue(Argument::any(), Argument::any())->shouldNotBeCalled();
+        $this->reservationAccessor->getEntity($this->reservation, Argument::any())->shouldNotBeCalled();
+        $this->reservationAccessor->getValue(Argument::any(), Argument::any())->shouldNotBeCalled();
 
         $eligibilityConditionChecker = $this->createTestObject();
         $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
@@ -146,14 +146,14 @@ class EligibilityConditionCheckerTest extends TestCase
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConditions);
 
         // condition 1 - value
-        $this->eligibilityHelper->getEntity($this->reservation, $leftField1)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entity, $leftField1)->shouldBeCalledOnce()->willReturn(42);
+        $this->reservationAccessor->getEntity($this->reservation, $leftField1)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entity, $leftField1)->shouldBeCalledOnce()->willReturn(42);
 
         // condition 2 - rate
-        $this->eligibilityHelper->getEntity($this->reservation, $rightField2)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entity, $rightField2)->shouldBeCalledOnce()->willReturn('2048');
-        $this->eligibilityHelper->getEntity($this->reservation, $leftField2)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entity, $leftField2)->shouldBeCalledOnce()->willReturn('128');
+        $this->reservationAccessor->getEntity($this->reservation, $rightField2)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entity, $rightField2)->shouldBeCalledOnce()->willReturn('2048');
+        $this->reservationAccessor->getEntity($this->reservation, $leftField2)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entity, $leftField2)->shouldBeCalledOnce()->willReturn('128');
 
         $eligibilityConditionChecker = $this->createTestObject();
         $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
@@ -202,8 +202,8 @@ class EligibilityConditionCheckerTest extends TestCase
             'programEligibilityConfiguration' => $programEligibilityConfiguration,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConditions);
 
-        $this->eligibilityHelper->getEntity($this->reservation, $leftField1)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entity, $leftField1)->shouldBeCalledOnce()->willReturn('2048');
+        $this->reservationAccessor->getEntity($this->reservation, $leftField1)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entity, $leftField1)->shouldBeCalledOnce()->willReturn('2048');
 
         $eligibilityConditionChecker = $this->createTestObject();
         $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
@@ -253,10 +253,10 @@ class EligibilityConditionCheckerTest extends TestCase
             'programEligibilityConfiguration' => $programEligibilityConfiguration,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConditions);
 
-        $this->eligibilityHelper->getEntity($this->reservation, $rightField1)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entity, $rightField1)->shouldBeCalledOnce()->willReturn('42');
-        $this->eligibilityHelper->getEntity($this->reservation, $field)->shouldBeCalledOnce()->willReturn(new ArrayCollection([$financingObject]));
-        $this->eligibilityHelper->getValue($financingObject, $field)->shouldBeCalledOnce()->willReturn('42');
+        $this->reservationAccessor->getEntity($this->reservation, $rightField1)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entity, $rightField1)->shouldBeCalledOnce()->willReturn('42');
+        $this->reservationAccessor->getEntity($this->reservation, $field)->shouldBeCalledOnce()->willReturn(new ArrayCollection([$financingObject]));
+        $this->reservationAccessor->getValue($financingObject, $field)->shouldBeCalledOnce()->willReturn('42');
 
         $eligibilityConditionChecker = $this->createTestObject();
         $result                      = $eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration);
@@ -298,8 +298,8 @@ class EligibilityConditionCheckerTest extends TestCase
             'programEligibilityConfiguration' => $programEligibilityConfiguration,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConditions);
 
-        $this->eligibilityHelper->getEntity($this->reservation, $field)->shouldNotBeCalled();
-        $this->eligibilityHelper->getValue($this->reservation->getProject(), $field)->shouldNotBeCalled();
+        $this->reservationAccessor->getEntity($this->reservation, $field)->shouldNotBeCalled();
+        $this->reservationAccessor->getValue($this->reservation->getProject(), $field)->shouldNotBeCalled();
 
         static::expectException(LogicException::class);
 
@@ -348,10 +348,10 @@ class EligibilityConditionCheckerTest extends TestCase
             'programEligibilityConfiguration' => $programEligibilityConfiguration,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConditions);
 
-        $this->eligibilityHelper->getEntity($this->reservation, $rightField1)->shouldBeCalledOnce()->willReturn(new ArrayCollection([$financingObject]));
-        $this->eligibilityHelper->getValue($financingObject, $rightField1)->shouldNotBeCalled();
-        $this->eligibilityHelper->getEntity($this->reservation, $field)->shouldNotBeCalled();
-        $this->eligibilityHelper->getValue($this->reservation->getProject(), $field)->shouldNotBeCalled();
+        $this->reservationAccessor->getEntity($this->reservation, $rightField1)->shouldBeCalledOnce()->willReturn(new ArrayCollection([$financingObject]));
+        $this->reservationAccessor->getValue($financingObject, $rightField1)->shouldNotBeCalled();
+        $this->reservationAccessor->getEntity($this->reservation, $field)->shouldNotBeCalled();
+        $this->reservationAccessor->getValue($this->reservation->getProject(), $field)->shouldNotBeCalled();
 
         static::expectException(LogicException::class);
 
@@ -363,7 +363,7 @@ class EligibilityConditionCheckerTest extends TestCase
     {
         return new EligibilityConditionChecker(
             $this->programEligibilityConditionRepository->reveal(),
-            $this->eligibilityHelper->reveal()
+            $this->reservationAccessor->reveal()
         );
     }
 }

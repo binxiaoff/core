@@ -18,7 +18,7 @@ use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConfigurationRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityRepository;
 use KLS\CreditGuaranty\FEI\Service\EligibilityChecker;
 use KLS\CreditGuaranty\FEI\Service\EligibilityConditionChecker;
-use KLS\CreditGuaranty\FEI\Service\EligibilityHelper;
+use KLS\CreditGuaranty\FEI\Service\ReservationAccessor;
 use KLS\Test\CreditGuaranty\FEI\Unit\Traits\ReservationSetTrait;
 use LogicException;
 use PHPUnit\Framework\TestCase;
@@ -45,8 +45,8 @@ class EligibilityCheckerTest extends TestCase
     /** @var ProgramEligibilityConfigurationRepository|ObjectProphecy */
     private $programEligibilityConfigurationRepository;
 
-    /** @var EligibilityHelper|ObjectProphecy */
-    private $eligibilityHelper;
+    /** @var ReservationAccessor|ObjectProphecy */
+    private $reservationAccessor;
 
     /** @var EligibilityConditionChecker|ObjectProphecy */
     private $eligibilityConditionChecker;
@@ -59,7 +59,7 @@ class EligibilityCheckerTest extends TestCase
         $this->fieldRepository                           = $this->prophesize(FieldRepository::class);
         $this->programEligibilityRepository              = $this->prophesize(ProgramEligibilityRepository::class);
         $this->programEligibilityConfigurationRepository = $this->prophesize(ProgramEligibilityConfigurationRepository::class);
-        $this->eligibilityHelper                         = $this->prophesize(EligibilityHelper::class);
+        $this->reservationAccessor                       = $this->prophesize(ReservationAccessor::class);
         $this->eligibilityConditionChecker               = $this->prophesize(EligibilityConditionChecker::class);
         $this->reservation                               = $this->createReservation();
     }
@@ -69,7 +69,7 @@ class EligibilityCheckerTest extends TestCase
         $this->fieldRepository                           = null;
         $this->programEligibilityRepository              = null;
         $this->programEligibilityConfigurationRepository = null;
-        $this->eligibilityHelper                         = null;
+        $this->reservationAccessor                       = null;
         $this->eligibilityConditionChecker               = null;
         $this->reservation                               = null;
     }
@@ -139,8 +139,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 1 - other
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entity, $field1)->shouldBeCalledOnce()->willReturn('Borrower Company');
+        $this->reservationAccessor->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entity, $field1)->shouldBeCalledOnce()->willReturn('Borrower Company');
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
@@ -148,8 +148,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 2 - bool
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])->shouldBeCalledOnce()->willReturn($programEligibility2);
-        $this->eligibilityHelper->getEntity($this->reservation, $field2)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entity, $field2)->shouldBeCalledOnce()->willReturn(false);
+        $this->reservationAccessor->getEntity($this->reservation, $field2)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entity, $field2)->shouldBeCalledOnce()->willReturn(false);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility2,
             'value'              => 0,
@@ -158,8 +158,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 3 - list
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field3])->shouldBeCalledOnce()->willReturn($programEligibility3);
-        $this->eligibilityHelper->getEntity($this->reservation, $field3)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entity, $field3)->shouldBeCalledOnce()->willReturn($legalFormOption);
+        $this->reservationAccessor->getEntity($this->reservation, $field3)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entity, $field3)->shouldBeCalledOnce()->willReturn($legalFormOption);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility'  => $programEligibility3,
             'programChoiceOption' => $legalFormOption,
@@ -224,8 +224,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 1 - other
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entity->first(), $field1)->shouldBeCalledOnce()->willReturn(4);
+        $this->reservationAccessor->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entity->first(), $field1)->shouldBeCalledOnce()->willReturn(4);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
@@ -233,8 +233,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 2 - bool
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])->shouldBeCalledOnce()->willReturn($programEligibility2);
-        $this->eligibilityHelper->getEntity($this->reservation, $field2)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entity->first(), $field2)->shouldBeCalledOnce()->willReturn(true);
+        $this->reservationAccessor->getEntity($this->reservation, $field2)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entity->first(), $field2)->shouldBeCalledOnce()->willReturn(true);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility2,
             'value'              => 1,
@@ -314,8 +314,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 1 - other
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
-        $this->eligibilityHelper->getValue($this->reservation->getBorrower(), $field1)->shouldBeCalledOnce()->willReturn('75042');
+        $this->reservationAccessor->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->reservationAccessor->getValue($this->reservation->getBorrower(), $field1)->shouldBeCalledOnce()->willReturn('75042');
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
@@ -323,8 +323,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 2 - bool
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])->shouldBeCalledOnce()->willReturn($programEligibility2);
-        $this->eligibilityHelper->getEntity($this->reservation, $field2)->shouldBeCalledOnce()->willReturn($this->reservation->getProject());
-        $this->eligibilityHelper->getValue($this->reservation->getProject(), $field2)->shouldBeCalledOnce()->willReturn(false);
+        $this->reservationAccessor->getEntity($this->reservation, $field2)->shouldBeCalledOnce()->willReturn($this->reservation->getProject());
+        $this->reservationAccessor->getValue($this->reservation->getProject(), $field2)->shouldBeCalledOnce()->willReturn(false);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility2,
             'value'              => 0,
@@ -333,8 +333,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 3 - list
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field3])->shouldBeCalledOnce()->willReturn($programEligibility3);
-        $this->eligibilityHelper->getEntity($this->reservation, $field3)->shouldBeCalledOnce()->willReturn($this->reservation->getFinancingObjects());
-        $this->eligibilityHelper->getValue($this->reservation->getFinancingObjects()->first(), $field3)->shouldBeCalledOnce()->willReturn($financingObjectTypeOption);
+        $this->reservationAccessor->getEntity($this->reservation, $field3)->shouldBeCalledOnce()->willReturn($this->reservation->getFinancingObjects());
+        $this->reservationAccessor->getValue($this->reservation->getFinancingObjects()->first(), $field3)->shouldBeCalledOnce()->willReturn($financingObjectTypeOption);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility'  => $programEligibility3,
             'programChoiceOption' => $financingObjectTypeOption,
@@ -413,8 +413,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 1 - other
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn($programEligibility1);
-        $this->eligibilityHelper->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getFinancingObjects());
-        $this->eligibilityHelper->getValue($this->reservation->getFinancingObjects()->first(), $field1)->shouldBeCalledOnce()->willReturn(1);
+        $this->reservationAccessor->getEntity($this->reservation, $field1)->shouldBeCalledOnce()->willReturn($this->reservation->getFinancingObjects());
+        $this->reservationAccessor->getValue($this->reservation->getFinancingObjects()->first(), $field1)->shouldBeCalledOnce()->willReturn(1);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility1,
         ])->shouldBeCalledOnce()->willReturn($programEligibilityConfiguration1);
@@ -422,8 +422,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 2 - list
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])->shouldBeCalledOnce()->willReturn($programEligibility2);
-        $this->eligibilityHelper->getEntity($this->reservation, $field2)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
-        $this->eligibilityHelper->getValue($this->reservation->getBorrower(), $field2)->shouldBeCalledOnce()->willReturn($borrowerTypeOption);
+        $this->reservationAccessor->getEntity($this->reservation, $field2)->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->reservationAccessor->getValue($this->reservation->getBorrower(), $field2)->shouldBeCalledOnce()->willReturn($borrowerTypeOption);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility'  => $programEligibility2,
             'programChoiceOption' => $borrowerTypeOption,
@@ -432,8 +432,8 @@ class EligibilityCheckerTest extends TestCase
 
         // configuration 3 - bool
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field3])->shouldBeCalledOnce()->willReturn($programEligibility3);
-        $this->eligibilityHelper->getEntity($this->reservation, $field3)->shouldBeCalledOnce()->willReturn($this->reservation->getProject());
-        $this->eligibilityHelper->getValue($this->reservation->getProject(), $field3)->shouldBeCalledOnce()->willReturn(false);
+        $this->reservationAccessor->getEntity($this->reservation, $field3)->shouldBeCalledOnce()->willReturn($this->reservation->getProject());
+        $this->reservationAccessor->getValue($this->reservation->getProject(), $field3)->shouldBeCalledOnce()->willReturn(false);
         $this->programEligibilityConfigurationRepository->findOneBy([
             'programEligibility' => $programEligibility3,
             'value'              => 0,
@@ -475,8 +475,8 @@ class EligibilityCheckerTest extends TestCase
         $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY, 'category' => $category])->shouldBeCalledOnce()->willReturn($fields);
         $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY])->shouldNotBeCalled();
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])->shouldBeCalledOnce()->willReturn(null);
-        $this->eligibilityHelper->getEntity(Argument::cetera())->shouldNotBeCalled();
-        $this->eligibilityHelper->getValue(Argument::cetera())->shouldNotBeCalled();
+        $this->reservationAccessor->getEntity(Argument::cetera())->shouldNotBeCalled();
+        $this->reservationAccessor->getValue(Argument::cetera())->shouldNotBeCalled();
         $this->programEligibilityConfigurationRepository->findOneBy(Argument::any())->shouldNotBeCalled();
         $this->eligibilityConditionChecker->checkByConfiguration(Argument::cetera())->shouldNotBeCalled();
 
@@ -544,8 +544,8 @@ class EligibilityCheckerTest extends TestCase
         $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY, 'category' => $category])->shouldBeCalledOnce()->willReturn([$field]);
         $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY])->shouldNotBeCalled();
         $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field])->shouldBeCalledOnce()->willReturn($programEligibility);
-        $this->eligibilityHelper->getEntity($this->reservation, $field)->shouldBeCalledOnce()->willReturn($entity);
-        $this->eligibilityHelper->getValue($entityItem, $field)->shouldBeCalledOnce()->willReturn($value);
+        $this->reservationAccessor->getEntity($this->reservation, $field)->shouldBeCalledOnce()->willReturn($entity);
+        $this->reservationAccessor->getValue($entityItem, $field)->shouldBeCalledOnce()->willReturn($value);
         $this->programEligibilityConfigurationRepository->findOneBy($configurationFilters)->shouldBeCalledOnce()->willReturn(null);
         $this->eligibilityConditionChecker->checkByConfiguration(Argument::cetera())->shouldNotBeCalled();
 
@@ -588,7 +588,7 @@ class EligibilityCheckerTest extends TestCase
             $this->fieldRepository->reveal(),
             $this->programEligibilityRepository->reveal(),
             $this->programEligibilityConfigurationRepository->reveal(),
-            $this->eligibilityHelper->reveal(),
+            $this->reservationAccessor->reveal(),
             $this->eligibilityConditionChecker->reveal()
         );
     }

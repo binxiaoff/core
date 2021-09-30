@@ -15,14 +15,14 @@ use LogicException;
 class EligibilityConditionChecker
 {
     private ProgramEligibilityConditionRepository $programEligibilityConditionRepository;
-    private EligibilityHelper $eligibilityHelper;
+    private ReservationAccessor $reservationAccessor;
 
     public function __construct(
         ProgramEligibilityConditionRepository $programEligibilityConditionRepository,
-        EligibilityHelper $eligibilityHelper
+        ReservationAccessor $reservationAccessor
     ) {
         $this->programEligibilityConditionRepository = $programEligibilityConditionRepository;
-        $this->eligibilityHelper                     = $eligibilityHelper;
+        $this->reservationAccessor                   = $reservationAccessor;
     }
 
     public function checkByConfiguration(Reservation $reservation, ProgramEligibilityConfiguration $programEligibilityConfiguration): bool
@@ -55,25 +55,25 @@ class EligibilityConditionChecker
                 throw new LogicException(\sprintf('The ProgramEligibilityCondition #%d of rate type should have an rightOperandField.', $eligibilityCondition->getId()));
             }
 
-            $rightEntity = $this->eligibilityHelper->getEntity($reservation, $rightOperandField);
+            $rightEntity = $this->reservationAccessor->getEntity($reservation, $rightOperandField);
 
             if ($rightEntity instanceof Collection) {
                 throw new LogicException(\sprintf('The rightOperandField of ProgramEligibilityCondition #%d cannot be a collection.', $eligibilityCondition->getId()));
             }
 
             $rightValue = \bcmul(
-                (string) $this->eligibilityHelper->getValue($rightEntity, $rightOperandField),
+                (string) $this->reservationAccessor->getValue($rightEntity, $rightOperandField),
                 $eligibilityCondition->getValue(),
                 4
             );
         }
 
         $leftOperandField = $eligibilityCondition->getLeftOperandField();
-        $leftEntity       = $this->eligibilityHelper->getEntity($reservation, $leftOperandField);
+        $leftEntity       = $this->reservationAccessor->getEntity($reservation, $leftOperandField);
 
         if ($leftEntity instanceof Collection) {
             foreach ($leftEntity as $leftEntityItem) {
-                $leftValue = $this->eligibilityHelper->getValue($leftEntityItem, $leftOperandField);
+                $leftValue = $this->reservationAccessor->getValue($leftEntityItem, $leftOperandField);
 
                 if (false === $this->check($operator, $leftValue, $rightValue)) {
                     return false;
@@ -83,7 +83,7 @@ class EligibilityConditionChecker
             return true;
         }
 
-        $leftValue = $this->eligibilityHelper->getValue($leftEntity, $leftOperandField);
+        $leftValue = $this->reservationAccessor->getValue($leftEntity, $leftOperandField);
 
         return $this->check($operator, $leftValue, $rightValue);
     }

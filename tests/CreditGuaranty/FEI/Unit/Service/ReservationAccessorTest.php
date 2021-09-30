@@ -8,7 +8,7 @@ use KLS\CreditGuaranty\FEI\Entity\Borrower;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
-use KLS\CreditGuaranty\FEI\Service\EligibilityHelper;
+use KLS\CreditGuaranty\FEI\Service\ReservationAccessor;
 use KLS\Test\CreditGuaranty\FEI\Unit\Traits\ReservationSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -17,11 +17,11 @@ use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
 /**
- * @coversDefaultClass \KLS\CreditGuaranty\FEI\Service\EligibilityHelper
+ * @coversDefaultClass \KLS\CreditGuaranty\FEI\Service\ReservationAccessor
  *
  * @internal
  */
-class EligibilityHelperTest extends TestCase
+class ReservationAccessorTest extends TestCase
 {
     use ReservationSetTrait;
     use ProphecyTrait;
@@ -67,8 +67,8 @@ class EligibilityHelperTest extends TestCase
 
         $this->propertyAccessor->getValue($this->reservation, 'borrower')->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
 
-        $eligibilityHelper = $this->createTestObject();
-        $result            = $eligibilityHelper->getEntity($this->reservation, $field);
+        $reservationAccessor = $this->createTestObject();
+        $result              = $reservationAccessor->getEntity($this->reservation, $field);
 
         static::assertInstanceOf(Borrower::class, $result);
     }
@@ -96,8 +96,8 @@ class EligibilityHelperTest extends TestCase
 
         static::expectException(AccessException::class);
 
-        $eligibilityHelper = $this->createTestObject();
-        $eligibilityHelper->getEntity($this->reservation, $field);
+        $reservationAccessor = $this->createTestObject();
+        $reservationAccessor->getEntity($this->reservation, $field);
     }
 
     /**
@@ -112,8 +112,8 @@ class EligibilityHelperTest extends TestCase
 
         $this->propertyAccessor->getValue($entity, 'beneficiaryName')->shouldBeCalledOnce()->willReturn('Borrower Name');
 
-        $eligibilityHelper = $this->createTestObject();
-        $result            = $eligibilityHelper->getValue($this->reservation->getBorrower(), $field);
+        $reservationAccessor = $this->createTestObject();
+        $result              = $reservationAccessor->getValue($this->reservation->getBorrower(), $field);
 
         static::assertSame('Borrower Name', $result);
     }
@@ -130,8 +130,8 @@ class EligibilityHelperTest extends TestCase
 
         $this->propertyAccessor->getValue($entity, 'turnover')->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower()->getTurnover());
 
-        $eligibilityHelper = $this->createTestObject();
-        $result            = $eligibilityHelper->getValue($entity, $field);
+        $reservationAccessor = $this->createTestObject();
+        $result              = $reservationAccessor->getValue($entity, $field);
 
         static::assertSame('128', $result);
     }
@@ -161,16 +161,16 @@ class EligibilityHelperTest extends TestCase
 
         $this->propertyAccessor->getValue($entity, 'borrowerType')->shouldBeCalledOnce()->willReturn($programChoiceOption);
 
-        $eligibilityHelper = $this->createTestObject();
-        $result            = $eligibilityHelper->getValue($this->reservation->getBorrower(), $field);
+        $reservationAccessor = $this->createTestObject();
+        $result              = $reservationAccessor->getValue($this->reservation->getBorrower(), $field);
 
         static::assertInstanceOf(ProgramChoiceOption::class, $result);
         static::assertSame($programChoiceOption, $result);
     }
 
-    private function createTestObject(): EligibilityHelper
+    private function createTestObject(): ReservationAccessor
     {
-        return new EligibilityHelper(
+        return new ReservationAccessor(
             $this->propertyAccessor->reveal()
         );
     }
