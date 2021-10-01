@@ -20,7 +20,6 @@ use KLS\Core\Service\MoneyCalculator;
 use KLS\CreditGuaranty\FEI\Entity\Constant\GrossSubsidyEquivalent;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramAwareInterface;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
-use KLS\CreditGuaranty\FEI\Entity\Traits\ReportingDatesTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -69,7 +68,6 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
-    use ReportingDatesTrait;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Reservation", inversedBy="financingObjects")
@@ -243,7 +241,28 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
-    private ?DateTimeImmutable $firstReleaseDate;
+    private ?DateTimeImmutable $firstReleaseDate = null;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?DateTimeImmutable $reportingFirstDate = null;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?DateTimeImmutable $reportingLastDate = null;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?DateTimeImmutable $reportingValidationDate = null;
 
     /**
      * @var Collection|FinancingObjectRelease[]
@@ -564,6 +583,42 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     public function setFirstReleaseDate(?DateTimeImmutable $firstReleaseDate): FinancingObject
     {
         $this->firstReleaseDate = $firstReleaseDate;
+
+        return $this;
+    }
+
+    public function getReportingFirstDate(): ?DateTimeImmutable
+    {
+        return $this->reportingFirstDate;
+    }
+
+    public function setReportingFirstDate(?DateTimeImmutable $reportingFirstDate): self
+    {
+        $this->reportingFirstDate = $reportingFirstDate;
+
+        return $this;
+    }
+
+    public function getReportingLastDate(): ?DateTimeImmutable
+    {
+        return $this->reportingLastDate;
+    }
+
+    public function setReportingLastDate(?DateTimeImmutable $reportingLastDate): self
+    {
+        $this->reportingLastDate = $reportingLastDate;
+
+        return $this;
+    }
+
+    public function getReportingValidationDate(): ?DateTimeImmutable
+    {
+        return $this->reportingValidationDate;
+    }
+
+    public function setReportingValidationDate(?DateTimeImmutable $reportingValidationDate): self
+    {
+        $this->reportingValidationDate = $reportingValidationDate;
 
         return $this;
     }
