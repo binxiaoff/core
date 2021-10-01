@@ -26,8 +26,12 @@ class ReportingTemplateFieldVoter extends AbstractEntityVoter
      */
     protected function isGrantedAll($subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $subject->getReportingTemplate()->getProgram())
-            && $this->staffPermissionManager->hasPermissions($user->getCurrentStaff(), StaffPermission::PERMISSION_READ_PROGRAM)
-            && $this->staffPermissionManager->hasPermissions($user->getCurrentStaff(), StaffPermission::PERMISSION_REPORTING);
+        $staff   = $user->getCurrentStaff();
+        $program = $subject->getReportingTemplate()->getProgram();
+
+        return $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
+            && $program->isPaused()
+            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)
+            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_REPORTING);
     }
 }
