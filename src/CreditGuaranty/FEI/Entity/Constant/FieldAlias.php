@@ -12,6 +12,10 @@ use KLS\Core\Entity\Constant\AbstractEnum;
  */
 class FieldAlias extends AbstractEnum
 {
+    //
+    // Eligibility field aliases
+    //
+
     // User-defined list
     public const ACTIVITY_COUNTRY      = 'activity_country';
     public const ADDITIONAL_GUARANTY   = 'additional_guaranty';
@@ -52,7 +56,6 @@ class FieldAlias extends AbstractEnum
     public const INVESTMENT_DEPARTMENT = 'investment_department';
     public const SIRET                 = 'siret';
     public const TAX_NUMBER            = 'tax_number';
-
     // number
     public const BFR_VALUE             = 'bfr_value';
     public const EMPLOYEES_NUMBER      = 'employees_number';
@@ -69,7 +72,6 @@ class FieldAlias extends AbstractEnum
     public const TOTAL_ASSETS          = 'total_assets';
     public const TOTAL_FEI_CREDIT      = 'total_fei_credit';
     public const TURNOVER              = 'turnover';
-
     // date
     public const ACTIVITY_START_DATE = 'activity_start_date';
 
@@ -90,5 +92,39 @@ class FieldAlias extends AbstractEnum
         self::LOAN_NAF_CODE,
         self::LOAN_PERIODICITY,
         self::LOAN_TYPE,
+    ];
+
+    //
+    // Reporting field aliases
+    //
+
+    // Calcul
+    public const TOTAL_GROSS_SUBSIDY_EQUIVALENT = 'total_gross_subsidy_equivalent';
+
+    // Date
+    public const FIRST_RELEASE_DATE        = 'first_release_date';
+    public const REPORTING_FIRST_DATE      = 'reporting_first_date';
+    public const REPORTING_LAST_DATE       = 'reporting_last_date';
+    public const REPORTING_VALIDATION_DATE = 'reporting_validation_date';
+    public const RESERVATION_CREATION_DATE = 'reservation_creation_date';
+    public const RESERVATION_REFUSAL_DATE  = 'reservation_refusal_date';
+    public const RESERVATION_SIGNING_DATE  = 'reservation_signing_date';
+
+    // Virtual Fields
+    public const VIRTUAL_FIELDS = [
+        self::RECEIVING_GRANT,
+        self::RESERVATION_REFUSAL_DATE,
+        self::TOTAL_GROSS_SUBSIDY_EQUIVALENT,
+    ];
+
+    // Date Fields
+    public const DATE_FIELDS = [
+        self::REPORTING_FIRST_DATE,
+        self::REPORTING_LAST_DATE,
+        self::REPORTING_VALIDATION_DATE,
+        self::ACTIVITY_START_DATE,
+        self::RESERVATION_CREATION_DATE,
+        self::RESERVATION_SIGNING_DATE,
+        self::FIRST_RELEASE_DATE,
     ];
 }
