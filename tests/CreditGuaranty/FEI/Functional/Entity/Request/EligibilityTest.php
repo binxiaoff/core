@@ -37,7 +37,7 @@ class EligibilityTest extends AbstractApiTest
     public function testGetEligibilitiesNotFoundAction(): void
     {
         /** @var Staff $staff */
-        $staff = static::$container->get(StaffRepository::class)->findOneBy(['publicId' => 'staff_company:bar_user-a']);
+        $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => 'staff_company:bar_user-a']);
 
         $response = $this->createAuthClient($staff)
             ->request(Request::METHOD_GET, self::ENDPOINT_ELIGIBILITY . 'not_an_id')
@@ -57,12 +57,12 @@ class EligibilityTest extends AbstractApiTest
         array $ineligibles
     ): void {
         /** @var IriConverterInterface $iriConverter */
-        $iriConverter = static::$container->get(IriConverterInterface::class);
+        $iriConverter = static::getContainer()->get(IriConverterInterface::class);
 
         /** @var Staff $staff */
-        $staff = static::$container->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
+        $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
         /** @var Reservation $reservation */
-        $reservation    = static::$container->get(ReservationRepository::class)->findOneBy(['publicId' => $reservationPublicId]);
+        $reservation    = static::getContainer()->get(ReservationRepository::class)->findOneBy(['publicId' => $reservationPublicId]);
         $reservationIri = $iriConverter->getIriFromItem($reservation);
 
         $response = $this->createAuthClient($staff)
@@ -247,12 +247,12 @@ class EligibilityTest extends AbstractApiTest
     public function testPostEligibilitiesCheckingForbidden(string $staffPublicId): void
     {
         /** @var IriConverterInterface $iriConverter */
-        $iriConverter = static::$container->get(IriConverterInterface::class);
+        $iriConverter = static::getContainer()->get(IriConverterInterface::class);
 
         /** @var Staff $staff */
-        $staff = static::$container->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
+        $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
         /** @var Reservation $reservation */
-        $reservation    = static::$container->get(ReservationRepository::class)->findOneBy(['publicId' => ReservationFixtures::RESERVATION_DRAFT_1]);
+        $reservation    = static::getContainer()->get(ReservationRepository::class)->findOneBy(['publicId' => ReservationFixtures::RESERVATION_DRAFT_1]);
         $reservationIri = $iriConverter->getIriFromItem($reservation);
 
         $response = $this->createAuthClient($staff)

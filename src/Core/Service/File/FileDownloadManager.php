@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace KLS\Core\Service\File;
 
+use Box\Spout\Writer\XLSX\Writer;
 use Exception;
 use KLS\Core\Entity\FileVersion;
 use KLS\Core\Service\FileSystem\FileSystemHelper;
@@ -42,7 +43,7 @@ class FileDownloadManager
         return $response;
     }
 
-    public function downloadNewFile($writer, array $rows, string $fileName): StreamedResponse
+    public function downloadNewXlsxFile(Writer $writer, array $rows, string $fileName): StreamedResponse
     {
         $response = new StreamedResponse(static function () use ($writer, $rows) {
             $writer->openToFile('php://output');

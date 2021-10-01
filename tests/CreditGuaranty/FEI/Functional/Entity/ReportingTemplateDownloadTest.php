@@ -30,7 +30,7 @@ class ReportingTemplateDownloadTest extends AbstractApiTest
     public function testImportFileDownload(string $staffPublicId): void
     {
         /** @var Staff $staff */
-        $staff = static::$container->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
+        $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
 
         $response = $this->createAuthClient($staff)->request(Request::METHOD_GET, \str_replace('{publicId}', 'reporting-template-1', self::ENDPOINT));
 
@@ -58,7 +58,7 @@ class ReportingTemplateDownloadTest extends AbstractApiTest
     public function testImportFileDownloadForbidden(string $staffPublicId): void
     {
         /** @var Staff $staff */
-        $staff = static::$container->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
+        $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
 
         $response = $this->createAuthClient($staff)->request(Request::METHOD_GET, \str_replace('{publicId}', 'reporting-template-1', self::ENDPOINT));
 
