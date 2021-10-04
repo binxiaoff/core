@@ -5,13 +5,13 @@ image: klstech/php-ci:7.4.16
 
 variables:
   APP_ENV: test
-  ### Uncomment the following if using the mysql service
-  # MYSQL_DATABASE: unilend
-  # MYSQL_USER: tests
-  # MYSQL_ROOT_PASSWORD: rootPassw0rd
-  # MYSQL_PASSWORD: myPassw0rd
-  # DATABASE_URL: 'mysql://tests:myPassw0rd@db:3306/unilend?charset=utf8mb4'
-  # DATABASE_URL_MIGRATION: 'mysql://tests:myPassw0rd@db:3306/unilend?charset=utf8mb4'
+  ### Comment the following if not using the mysql service
+  MYSQL_DATABASE: unilend
+  MYSQL_USER: tests
+  MYSQL_ROOT_PASSWORD: rootPassw0rd
+  MYSQL_PASSWORD: myPassw0rd
+  DATABASE_URL: 'mysql://tests:myPassw0rd@db:3306/unilend?charset=utf8mb4'
+  DATABASE_URL_MIGRATION: 'mysql://tests:myPassw0rd@db:3306/unilend?charset=utf8mb4'
 
 cache:
   - &vendors_cache
@@ -58,8 +58,31 @@ cache:
 # Job configuration
 ###
 stages:
+  - validation
   - test
   - deploy
+
+# Validation
+
+validation:db:
+  stage: validation
+  services:
+    - name: mysql:8.0.20
+      alias: db
+  before_script:
+    - composer config -g cache-dir "$(pwd)/.composer-cache"
+    - composer install
+  script:
+    # Init database
+    - php bin/console doctrine:database:drop --force --connection=migration --if-exists
+    - php bin/console doctrine:database:create -n --connection=migration
+    - php bin/console doctrine:migration:migrate -n
+    # need to run messenger:consume to create messenger_messages table
+    - php bin/console messenger:consume async --time-limit=1
+    # Validate schema
+    - php bin/console doctrine:schema:validate
+
+# Testing
 
 test:application:
   ### Uncomment the following if using a database
@@ -73,9 +96,8 @@ test:application:
   script:
     - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='unit'
 
-###
 # Deployment
-###
+
 deploy:prod:
   stage: deploy
   extends: .deploy-api
