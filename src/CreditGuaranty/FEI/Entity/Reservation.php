@@ -390,6 +390,11 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
         return $this->getDateByStatus(ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY);
     }
 
+    public function getRefusedByManagingCompanyDate(): ?DateTimeImmutable
+    {
+        return $this->getDateByStatus(ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY);
+    }
+
     public function getSigningDate(): ?DateTimeImmutable
     {
         return $this->signingDate;
