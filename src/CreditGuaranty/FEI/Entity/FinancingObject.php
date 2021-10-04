@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Embeddable\Money;
@@ -209,6 +210,13 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
+    private NullableMoney $loanMoneyAfterContractualisation;
+
+    /**
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
     private NullableMoney $bfrValue;
 
     /**
@@ -254,11 +262,14 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         Money $loanMoney,
         bool $mainLoan
     ) {
-        $this->reservation = $reservation;
-        $this->loanMoney   = $loanMoney;
-        $this->bfrValue    = new NullableMoney();
-        $this->mainLoan    = $mainLoan;
-        $this->added       = new DateTimeImmutable();
+        $this->reservation                      = $reservation;
+        $this->mainLoan                         = $mainLoan;
+        $this->loanMoney                        = $loanMoney;
+        $this->loanMoneyAfterContractualisation = new NullableMoney();
+        $this->bfrValue                         = new NullableMoney();
+        $this->remainingCapital                 = new NullableMoney();
+        $this->financingObjectReleases          = new ArrayCollection();
+        $this->added                            = new DateTimeImmutable();
     }
 
     public function getReservation(): Reservation
@@ -491,6 +502,18 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     public function setBfrValue(NullableMoney $bfrValue): FinancingObject
     {
         $this->bfrValue = $bfrValue;
+
+        return $this;
+    }
+
+    public function getLoanMoneyAfterContractualisation(): NullableMoney
+    {
+        return $this->loanMoneyAfterContractualisation;
+    }
+
+    public function setLoanMoneyAfterContractualisation(NullableMoney $loanMoneyAfterContractualisation): FinancingObject
+    {
+        $this->loanMoneyAfterContractualisation = $loanMoneyAfterContractualisation;
 
         return $this;
     }

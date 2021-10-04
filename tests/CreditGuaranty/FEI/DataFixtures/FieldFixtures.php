@@ -888,6 +888,19 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
+        yield 'field-loan_money_after_contractualisation' => [
+            'fieldAlias'              => 'loan_money_after_contractualisation',
+            'tag'                     => Field::TAG_INFO,
+            'category'                => 'loan',
+            'type'                    => 'other',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'loanMoneyAfterContractualisation',
+            'propertyType'            => 'Money',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => false,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
         yield 'field-main_loan' => [
             'fieldAlias'              => 'main_loan',
             'tag'                     => Field::TAG_INFO,
