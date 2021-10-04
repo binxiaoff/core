@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Test\CreditGuaranty\FEI\Functional\Api;
+namespace KLS\Test\CreditGuaranty\FEI\Functional\Entity\Request;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use KLS\Core\Entity\Staff;
@@ -37,13 +37,49 @@ class EligibilityTest extends AbstractApiTest
     public function testGetEligibilitiesNotFoundAction(): void
     {
         /** @var Staff $staff */
-        $staff = static::$container->get(StaffRepository::class)->findOneBy(['publicId' => 'staff_company:bar_user-a']);
+        $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => 'staff_company:bar_user-a']);
 
         $response = $this->createAuthClient($staff)
             ->request(Request::METHOD_GET, self::ENDPOINT_ELIGIBILITY . 'not_an_id')
         ;
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    /**
+     * @dataProvider successfullProvider
+     */
+    public function testPostEligibilitiesChecking(
+        string $staffPublicId,
+        string $reservationPublicId,
+        ?string $category = null,
+        bool $withConditions,
+        array $ineligibles
+    ): void {
+        /** @var IriConverterInterface $iriConverter */
+        $iriConverter = static::getContainer()->get(IriConverterInterface::class);
+
+        /** @var Staff $staff */
+        $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
+        /** @var Reservation $reservation */
+        $reservation    = static::getContainer()->get(ReservationRepository::class)->findOneBy(['publicId' => $reservationPublicId]);
+        $reservationIri = $iriConverter->getIriFromItem($reservation);
+
+        $response = $this->createAuthClient($staff)
+            ->request(Request::METHOD_POST, self::ENDPOINT_ELIGIBILITY_CHECKING, [
+                'json' => [
+                    'reservation'    => $reservationIri,
+                    'category'       => $category,
+                    'withConditions' => $withConditions,
+                ],
+            ])
+        ;
+
+        $this->assertResponseIsSuccessful();
+
+        $this->assertJsonContains(['@type' => 'credit_guaranty_eligibility']);
+        $this->assertJsonContains(['id' => 'not_an_id']);
+        $this->assertJsonContains(['ineligibles' => $ineligibles]);
     }
 
     public function successfullProvider(): iterable
@@ -206,62 +242,17 @@ class EligibilityTest extends AbstractApiTest
     }
 
     /**
-     * @dataProvider successfullProvider
-     */
-    public function testPostEligibilitiesChecking(
-        string $staffPublicId,
-        string $reservationPublicId,
-        ?string $category = null,
-        bool $withConditions,
-        array $ineligibles
-    ): void {
-        /** @var IriConverterInterface $iriConverter */
-        $iriConverter = static::$container->get(IriConverterInterface::class);
-
-        /** @var Staff $staff */
-        $staff = static::$container->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
-        /** @var Reservation $reservation */
-        $reservation    = static::$container->get(ReservationRepository::class)->findOneBy(['publicId' => $reservationPublicId]);
-        $reservationIri = $iriConverter->getIriFromItem($reservation);
-
-        $response = $this->createAuthClient($staff)
-            ->request(Request::METHOD_POST, self::ENDPOINT_ELIGIBILITY_CHECKING, [
-                'json' => [
-                    'reservation'    => $reservationIri,
-                    'category'       => $category,
-                    'withConditions' => $withConditions,
-                ],
-            ])
-        ;
-
-        $this->assertResponseIsSuccessful();
-
-        $this->assertJsonContains(['@type' => 'credit_guaranty_eligibility']);
-        $this->assertJsonContains(['id' => 'not_an_id']);
-        $this->assertJsonContains(['ineligibles' => $ineligibles]);
-    }
-
-    public function forbiddenProvider(): iterable
-    {
-        yield 'user-6' => ['staff_company:basic_user-6'];
-        yield 'user-7' => ['staff_company:basic_user-7'];
-        yield 'user-8' => ['staff_company:basic_user-8'];
-        yield 'user-9' => ['staff_company:basic_user-9'];
-        yield 'user-10' => ['staff_company:basic_user-10'];
-    }
-
-    /**
      * @dataProvider forbiddenProvider
      */
     public function testPostEligibilitiesCheckingForbidden(string $staffPublicId): void
     {
         /** @var IriConverterInterface $iriConverter */
-        $iriConverter = static::$container->get(IriConverterInterface::class);
+        $iriConverter = static::getContainer()->get(IriConverterInterface::class);
 
         /** @var Staff $staff */
-        $staff = static::$container->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
+        $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
         /** @var Reservation $reservation */
-        $reservation    = static::$container->get(ReservationRepository::class)->findOneBy(['publicId' => ReservationFixtures::RESERVATION_DRAFT_1]);
+        $reservation    = static::getContainer()->get(ReservationRepository::class)->findOneBy(['publicId' => ReservationFixtures::RESERVATION_DRAFT_1]);
         $reservationIri = $iriConverter->getIriFromItem($reservation);
 
         $response = $this->createAuthClient($staff)
@@ -274,5 +265,14 @@ class EligibilityTest extends AbstractApiTest
         ;
 
         $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function forbiddenProvider(): iterable
+    {
+        yield 'user-a' => ['staff_company:foo_user-a'];
+        yield 'user-b' => ['staff_company:foo_user-b'];
+        yield 'user-c' => ['staff_company:foo_user-c'];
+        yield 'user-d' => ['staff_company:foo_user-d'];
+        yield 'user-e' => ['staff_company:foo_user-e'];
     }
 }
