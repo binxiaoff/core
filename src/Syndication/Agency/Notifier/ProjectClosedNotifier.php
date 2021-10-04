@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Syndication\Agency\Service\Notifier\Agency;
+namespace KLS\Syndication\Agency\Notifier;
 
 use Http\Client\Exception;
 use KLS\Syndication\Agency\Entity\Project;
@@ -12,7 +12,7 @@ use Nexy\Slack\Client as Slack;
 use Nexy\Slack\Exception\SlackApiException;
 use Nexy\Slack\MessageInterface;
 
-class AgencyPublishedNotifier
+class ProjectClosedNotifier
 {
     private Slack $slack;
 
@@ -33,7 +33,7 @@ class AgencyPublishedNotifier
     private function createSlackMessage(Project $project): MessageInterface
     {
         return $this->slack->createMessage()->enableMarkdown()
-            ->setText('*Agency :* Le dossier "' . $project->getTitle() . '" vient d\'être publié 📤')
+            ->setText('*Agency :* Le dossier "' . $project->getTitle() . '" vient d\'être clôturé :white_check_mark:')
             ->attach(
                 (new Attachment())
                     ->addField(new AttachmentField(
