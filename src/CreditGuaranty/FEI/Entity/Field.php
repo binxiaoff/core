@@ -9,6 +9,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
@@ -22,6 +23,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_field")
+ *
+ * @UniqueEntity({"fieldAlias"})
  */
 class Field
 {
@@ -41,7 +44,7 @@ class Field
     public const VALUE_BOOL_NO  = '0';
 
     /**
-     * @ORM\Column(length=100)
+     * @ORM\Column(length=100, unique=true)
      *
      * @Groups({"creditGuaranty:field:read"})
      */
