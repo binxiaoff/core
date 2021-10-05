@@ -38,3 +38,4 @@ rollbar:
         - authorization
         - http_authorization
         - enqueue_dsn
+        - hapikey
