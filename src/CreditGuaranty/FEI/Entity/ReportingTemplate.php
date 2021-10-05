@@ -69,7 +69,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     }
  * )
  *
- * @UniqueEntity(fields={"program", "name"}, message="CreditGuaranty.Program.reportingTemplate.name.unique")
+ * @UniqueEntity(fields={"name", "program"}, message="CreditGuaranty.Program.reportingTemplate.name.unique")
  *
  * @Gedmo\SoftDeleteable(fieldName="archived")
  */
