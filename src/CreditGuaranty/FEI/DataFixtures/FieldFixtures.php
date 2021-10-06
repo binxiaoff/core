@@ -27,17 +27,17 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             'df8c4d9b-6978-4656-899c-0f083c0f22f2', 'eligibility', 'profile', 'bool',
             'young_farmer', 'borrower', 'youngFarmer', 'bool',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
             '3e2201f1-493f-475d-b84f-ee44e9065ea2', 'eligibility', 'profile', 'bool',
             'creation_in_progress', 'borrower', 'creationInProgress', 'bool',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
             '0393c13d-1511-4d60-975e-ead448ed5d13', 'eligibility', 'profile', 'bool',
             'subsidiary', 'borrower', 'subsidiary', 'bool',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
             '56d4b239-8b5a-41f0-9e65-4ced292b0c0c', 'eligibility', 'profile', 'other',
@@ -118,7 +118,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '386f841e-3771-4a35-a54a-e4169fd80d63', 'eligibility', 'project', 'bool',
             'receiving_grant', 'project', 'receivingGrant', 'bool',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 1, NULL, NULL
         ),
         (
             'be7be094-9b78-4d97-adaa-d08d1edaec67', 'eligibility', 'project', 'other',
@@ -219,7 +219,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             'b7da24f1-4d1c-426e-9e25-ef2773113d2a', 'eligibility', 'loan', 'bool',
             'supporting_generations_renewal', 'financingObjects', 'supportingGenerationsRenewal', 'bool',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, NULL
         ),
         (
             '8cb4b512-fa4c-4638-9a28-11d16b450459', 'eligibility', 'loan', 'list',

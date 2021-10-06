@@ -227,14 +227,25 @@ CreditGuaranty:
             type:
                 onlyList: Vous ne pouvez que créer une configuration du type "list" pour l'éligibilité.
     ProgramEligibilityCondition:
-        value:
-            outOfRange: Merci de mettre un chiffre entre 0 et 1 pour une comparaison de type "rate".
+        leftOperandField:
+            notBool: leftOperandField doit être de type bool pour correspondre au valueType "bool".
         operandField:
-            nonComparable: Le champ choisi n'est pas comparable.
+            notComparable: Le champ choisi n'est pas comparable.
+            notComparableUnit: Les champs choisis n'ont pas le même unit.
+        operation:
+            notEqual: L'operation doit être un égal pour une comparaison de type "bool".
         rightOperandField:
+            notEmpty: rightOperandField doit être vide pour une comparaison de type "value" ou "bool".
+            required: rightOperandField doit être requis pour une comparaison de type "rate".
             selfComparaison: Vous ne pouvez pas comparer un champ à lui-même.
-            empty: rightOperandField est requis pour une comparaison de type "rate".
-            notEmpty: rightOperandField doit être vide pour une comparaison de type "value".
+        value:
+            boolean: Merci de mettre une valeur "1" ou "0" pour une comparaison de type "bool".
+            outOfRange: Merci de mettre un chiffre entre 0 et 1 pour une comparaison de type "rate".
+            notEmpty: value doit être vide si ce n'est pas une comparaison de type "rate", "value" ou "bool".
+            numeric: Merci de mettre une valeur numérique pour une comparaison de type "rate", "value" ou "bool".
+            required: Merci de remplir une valeur numérique pour une comparaison de type "rate", "value" ou "bool".
+        valueType:
+            notBool: valueType doit être de type "bool" pour correspondre au type du leftOperandField.
     Borrower:
         grade:
             invalid: Le grade choisi n'est pas valable.
