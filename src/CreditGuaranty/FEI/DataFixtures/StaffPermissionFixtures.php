@@ -45,13 +45,9 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
                 $staff,
                 new Bitmask(StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS)
             );
+
             if ($staff->getUser() === $referenceUser) {
-                $staffPermission->setGrantPermissions(
-                    StaffPermission::PERMISSION_GRANT_READ_PROGRAM
-                    | StaffPermission::PERMISSION_GRANT_CREATE_PROGRAM
-                    | StaffPermission::PERMISSION_GRANT_EDIT_PROGRAM
-                    | StaffPermission::PERMISSION_GRANT_READ_RESERVATION
-                );
+                $staffPermission->setGrantPermissions(StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS);
             }
 
             $manager->persist($staffPermission);

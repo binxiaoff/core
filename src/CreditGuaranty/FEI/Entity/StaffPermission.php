@@ -6,6 +6,7 @@ namespace KLS\CreditGuaranty\FEI\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -43,6 +44,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  * )
  *
+ * @ApiFilter(SearchFilter::class, properties={"staff.publicId": "exact"})
  * @ApiFilter(
  *     filterClass=GroupFilter::class,
  *     arguments={
