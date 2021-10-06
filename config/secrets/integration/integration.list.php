@@ -1,6 +1,5 @@
 <?php
 
-return array (
-  'AWS_API_SECRET' => NULL,
-  'ENQUEUE_DSN' => NULL,
-);
+return [
+    'AWS_API_SECRET' => null,
+];
