@@ -199,40 +199,6 @@
     "enlightn/security-checker": {
         "version": "v1.4"
     },
-    "enqueue/amqp-tools": {
-        "version": "0.10.0"
-    },
-    "enqueue/dsn": {
-        "version": "0.10.1"
-    },
-    "enqueue/enqueue": {
-        "version": "0.10.1"
-    },
-    "enqueue/enqueue-bundle": {
-        "version": "0.9",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "0.9",
-            "ref": "c6ec89b63f963d10ad0d7a7bea170359c119c8bc"
-        },
-        "files": [
-            "config/packages/enqueue.yaml",
-            "config/packages/test/enqueue.yaml"
-        ]
-    },
-    "enqueue/null": {
-        "version": "0.10.1"
-    },
-    "enqueue/sqs": {
-        "version": "0.7",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "0.7",
-            "ref": "0dbfd58e70c8e3a95d21b947d179350f064ad568"
-        }
-    },
     "escapestudios/symfony2-coding-standard": {
         "version": "3.8.0"
     },
@@ -583,12 +549,6 @@
     "psr/log": {
         "version": "1.1.0"
     },
-    "queue-interop/amqp-interop": {
-        "version": "0.8.1"
-    },
-    "queue-interop/queue-interop": {
-        "version": "0.8.0"
-    },
     "ralouphie/getallheaders": {
         "version": "2.0.5"
     },
@@ -681,15 +641,6 @@
         "files": [
             "phpcs.xml.dist"
         ]
-    },
-    "sroze/messenger-enqueue-transport": {
-        "version": "0.1",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "0.1",
-            "ref": "9a7119f609b576a30dbf03e4fe44212388e96ea1"
-        }
     },
     "stof/doctrine-extensions-bundle": {
         "version": "1.2",
