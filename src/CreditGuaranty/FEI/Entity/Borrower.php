@@ -324,11 +324,31 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
+     * @Groups({"creditGuaranty:borrower:write"})
+     */
+    public function setAddressStreet(?string $street): Borrower
+    {
+        $this->addressStreet = $street;
+
+        return $this;
+    }
+
+    /**
      * @Groups({"creditGuaranty:borrower:read"})
      */
     public function getAddressPostCode(): ?string
     {
         return $this->addressPostCode;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:borrower:write"})
+     */
+    public function setAddressPostCode(?string $postCode): Borrower
+    {
+        $this->addressPostCode = $postCode;
+
+        return $this;
     }
 
     /**
@@ -340,11 +360,31 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
+     * @Groups({"creditGuaranty:borrower:write"})
+     */
+    public function setAddressCity(?string $city): Borrower
+    {
+        $this->addressCity = $city;
+
+        return $this;
+    }
+
+    /**
      * @Groups({"creditGuaranty:borrower:read"})
      */
     public function getAddressDepartment(): ?string
     {
         return $this->addressDepartment;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:borrower:write"})
+     */
+    public function setAddressDepartment(?string $department): Borrower
+    {
+        $this->addressDepartment = $department;
+
+        return $this;
     }
 
     /**
@@ -359,6 +399,16 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         }
 
         return null;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:borrower:write"})
+     */
+    public function setAddressCountry(?ProgramChoiceOption $country): Borrower
+    {
+        $this->addressCountry = $country;
+
+        return $this;
     }
 
     public function getActivityStartDate(): ?DateTimeImmutable
