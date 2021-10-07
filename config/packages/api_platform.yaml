@@ -15,6 +15,7 @@ api_platform:
         json: [ 'application/json' ]
         html: [ 'text/html' ]
         file: [ 'application/octet-stream' ]
+        xlsx : [ 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ]
     mapping:
         paths:
             - '%kernel.project_dir%/src/Core/Entity'

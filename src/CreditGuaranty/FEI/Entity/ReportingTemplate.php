@@ -18,6 +18,8 @@ use KLS\Core\Entity\Traits\ArchivableTrait;
 use KLS\Core\Entity\Traits\BlamableAddedTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\CreditGuaranty\FEI\Controller\Reporting\Download;
+use KLS\CreditGuaranty\FEI\Controller\Reporting\Update;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Reporting;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -49,7 +51,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         },
  *         "download": {
  *             "method": "GET",
- *             "controller": "KLS\CreditGuaranty\FEI\Controller\Reporting\Download",
+ *             "controller": Download::class,
  *             "path": "/credit_guaranty/reporting_templates/{publicId}/import-file/download",
  *             "security": "is_granted('view', object)",
  *         },
@@ -76,6 +78,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     },
  *                 },
  *             },
+ *         },
+ *         "upload": {
+ *             "method": "POST",
+ *             "controller": Update::class,
+ *             "deserialize": false,
+ *             "path": "/credit_guaranty/reporting_templates/{publicId}/import-file/update",
+ *             "input_formats": { "xlsx" },
+ *             "security": "is_granted('create', object)",
  *         },
  *     },
  *     collectionOperations={
@@ -105,7 +115,16 @@ class ReportingTemplate
     use BlamableAddedTrait;
     use ArchivableTrait;
 
-    public const IMPORT_FILE_COLUMNS = ['n° GREEN', 'n° d\'opération', 'CRD', 'Maturité'];
+    public const IMPORT_FILE_COLUMNS = [
+        self::GREEN_COLUMN,
+        self::OPERATION_COLUMN,
+        self::CRD_COLUMN,
+        self::MATURITE_COLUMN,
+    ];
+    public const GREEN_COLUMN     = 'n° GREEN';
+    public const OPERATION_COLUMN = 'n° d\'opération';
+    public const CRD_COLUMN       = 'CRD';
+    public const MATURITE_COLUMN  = 'Maturité';
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Program", inversedBy="reportingTemplates")
