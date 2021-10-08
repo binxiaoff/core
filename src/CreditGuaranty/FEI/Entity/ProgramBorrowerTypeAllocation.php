@@ -83,7 +83,7 @@ class ProgramBorrowerTypeAllocation
     private ProgramChoiceOption $programChoiceOption;
 
     /**
-     * @ORM\Column(type="decimal", precision=3, scale=2)
+     * @ORM\Column(type="decimal", precision=5, scale=4)
      *
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
