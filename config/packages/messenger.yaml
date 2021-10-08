@@ -3,7 +3,7 @@ framework:
         failure_transport: failed
 
         transports:
-            async: '%env(MESSENGER_TRANSPORT_DSN)%'
+            async: '%env(MESSENGER_DSN)%'
             failed: 'doctrine://default?queue_name=failed'
             sync: 'sync://'
 
