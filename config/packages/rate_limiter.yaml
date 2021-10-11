@@ -1,0 +1,16 @@
+framework:
+    rate_limiter:
+        username_ip_login:
+            policy: token_bucket
+            limit: 10
+            rate: { interval: '15 minutes', amount: 3 }
+        ip_login:
+            policy: no_limit
+            limit: 0 # limit is required, but no effect when the policy is defined to no_limit
+
+services:
+    app.login_rate_limiter:
+        class: Symfony\Component\Security\Http\RateLimiter\DefaultLoginRateLimiter
+        arguments:
+            $globalFactory: '@limiter.ip_login'
+            $localFactory: '@limiter.username_ip_login'
