@@ -17,15 +17,24 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt|error)|css|images|js)/
             security: false
+        login:
+            pattern: ^/core/authentication_token$
+            stateless: true
+            guard:
+                authenticators:
+                    - KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator
+            <<: &firewall_shared_configuration
+                user_checker: KLS\Core\Security\UserChecker
+                login_throttling:
+                    limiter: app.login_rate_limiter
         api:
             stateless: true
-            user_checker: KLS\Core\Security\UserChecker
             guard:
                 authenticators:
                     - lexik_jwt_authentication.jwt_token_authenticator
                     - KLS\Core\Security\TemporaryTokenAuthenticator
-                    - KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator
             entry_point: lexik_jwt_authentication.jwt_token_authenticator
+            <<: *firewall_shared_configuration
 
     access_control:
         - { path: '^/captcha_checks', allow_if: "is_anonymous()" }
