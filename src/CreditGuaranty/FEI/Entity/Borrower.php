@@ -370,17 +370,23 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
+     * @SerializedName("addressDepartment")
+     *
      * @Groups({"creditGuaranty:borrower:read"})
      */
-    public function getAddressDepartment(): ?string
+    public function getAddressDepartmentDescription(): ?string
     {
-        return $this->addressDepartment;
+        if ($this->addressDepartment instanceof ProgramChoiceOption) {
+            return $this->addressDepartment->getDescription();
+        }
+
+        return null;
     }
 
     /**
      * @Groups({"creditGuaranty:borrower:write"})
      */
-    public function setAddressDepartment(?string $department): Borrower
+    public function setAddressDepartment(?ProgramChoiceOption $department): Borrower
     {
         $this->addressDepartment = $department;
 
@@ -392,7 +398,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Groups({"creditGuaranty:borrower:read"})
      */
-    public function getActivityCountry(): ?string
+    public function getAddressCountryDescription(): ?string
     {
         if ($this->addressCountry instanceof ProgramChoiceOption) {
             return $this->addressCountry->getDescription();

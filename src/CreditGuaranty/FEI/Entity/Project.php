@@ -337,17 +337,23 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     }
 
     /**
+     * @SerializedName("addressDepartment")
+     *
      * @Groups({"creditGuaranty:project:read"})
      */
-    public function getAddressDepartment(): ?string
+    public function getAddressDepartmentDescription(): ?string
     {
-        return $this->addressDepartment;
+        if ($this->addressDepartment instanceof ProgramChoiceOption) {
+            return $this->addressDepartment->getDescription();
+        }
+
+        return null;
     }
 
     /**
      * @Groups({"creditGuaranty:project:write"})
      */
-    public function setAddressDepartment(?string $department): Project
+    public function setAddressDepartment(?ProgramChoiceOption $department): Project
     {
         $this->addressDepartment = $department;
 
@@ -359,7 +365,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      *
      * @Groups({"creditGuaranty:project:read"})
      */
-    public function getActivityCountry(): ?string
+    public function getAddressCountryDescription(): ?string
     {
         if ($this->addressCountry instanceof ProgramChoiceOption) {
             return $this->addressCountry->getDescription();

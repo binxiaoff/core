@@ -60,8 +60,8 @@ class FieldFixtures extends AbstractSQLFixtures
             'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
         ),
         (
-            'c4876798-0ed5-4808-9ef9-c1810b158c4f', 'eligibility', 'profile', 'other',
-            'activity_department', 'borrower', 'addressDepartment', 'string',
+            'c4876798-0ed5-4808-9ef9-c1810b158c4f', 'eligibility', 'profile', 'list',
+            'activity_department', 'borrower', 'addressDepartment', 'ProgramChoiceOption',
             'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
         ),
         (
@@ -136,8 +136,8 @@ class FieldFixtures extends AbstractSQLFixtures
             'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, NULL, NULL
         ),
         (
-            'c904c2fb-6940-49ef-b9c3-9961c38ef70e', 'eligibility', 'project', 'other',
-            'investment_department', 'project', 'addressDepartment', 'string',
+            'c904c2fb-6940-49ef-b9c3-9961c38ef70e', 'eligibility', 'project', 'list',
+            'investment_department', 'project', 'addressDepartment', 'ProgramChoiceOption',
             'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, NULL, NULL
         ),
         (
