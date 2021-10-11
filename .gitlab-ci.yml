@@ -109,7 +109,7 @@ deploy:prod:
     - prod-deployment
   only:
     refs:
-      - /^[1-9][0-9]*\.[0-9]+\.[0-9]+(-rc[1-9][0-9]*)?$/
+      - /^[1-9][0-9]*\.[0-9]+\.[0-9]+$/
 
 deploy:preprod:
   stage: deploy
@@ -121,7 +121,7 @@ deploy:preprod:
     refs:
       - /^release/.*/
       - /^hotfix/.*/
-      - /^[1-9][0-9]*\.[0-9]+\.[0-9]+(-rc[1-9][0-9]*)?$/
+      - /^[1-9][0-9]*\.[0-9]+\.[0-9]+$/
 
 deploy:demo:
   stage: deploy
