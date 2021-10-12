@@ -16,7 +16,6 @@ rollbar:
         - access_token
         # customised values
         - google_recaptcha_secret
-        - aws_api_key
         - maxmind_license_key
         - app_secret
         - mailjet_api_key
@@ -24,7 +23,6 @@ rollbar:
         - jwt_secret_key
         - cloudfront_distribution
         - file_encryption_kek_passphrase
-        - aws_api_secret
         - database_url_migration
         - google_recaptcha_key
         - docusign_user_id
