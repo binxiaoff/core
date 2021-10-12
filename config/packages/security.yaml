@@ -20,9 +20,10 @@ security:
         login:
             pattern: ^/core/authentication_token$
             stateless: true
-            guard:
-                authenticators:
-                    - KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator
+            json_login:
+                check_path: /core/authentication_token
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
             <<: &firewall_shared_configuration
                 user_checker: KLS\Core\Security\UserChecker
                 login_throttling:
