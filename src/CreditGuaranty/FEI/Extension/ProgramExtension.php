@@ -35,6 +35,10 @@ class ProgramExtension implements QueryCollectionExtensionInterface
         /** @var Staff|null $staff */
         $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
-        $this->applyProgramManagerFilter($staff, $queryBuilder, $queryBuilder->getRootAliases()[0]);
+        $programAlias       = $queryBuilder->getRootAliases()[0];
+        $participationAlias = $queryNameGenerator->generateJoinAlias('participations');
+        $queryBuilder->leftJoin("{$programAlias}.participations", $participationAlias);
+
+        $this->applyProgramManagerOrParticipantFilter($staff, $queryBuilder, $programAlias, $participationAlias);
     }
 }
