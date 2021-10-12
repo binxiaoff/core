@@ -65,7 +65,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'borrowerType',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Borrower::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -169,7 +169,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'addressDepartment',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Borrower::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -182,7 +182,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'addressCountry',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Borrower::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -234,7 +234,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'legalForm',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Borrower::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => ['SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS'],
         ];
@@ -364,7 +364,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'addressDepartment',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Project::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -377,7 +377,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'addressCountry',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Project::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -390,7 +390,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'investmentThematic',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Project::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -403,7 +403,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'investmentType',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Project::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -416,7 +416,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'aidIntensity',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Project::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => 'percentage',
             'predefinedItems'         => null,
         ];
@@ -429,7 +429,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'additionalGuaranty',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Project::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -442,7 +442,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'agriculturalBranch',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Project::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -585,7 +585,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'financingObjectType',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => FinancingObject::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -598,7 +598,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'loanNafCode',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => FinancingObject::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -624,7 +624,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'loanType',
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => FinancingObject::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => ['term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment'],
         ];

@@ -74,6 +74,7 @@ class ProgramEligibilityCondition
     public const VALUE_TYPE_RATE  = 'rate';
     public const VALUE_TYPE_VALUE = 'value';
     public const VALUE_TYPE_BOOL  = 'bool';
+    public const VALUE_TYPE_LIST  = 'list';
 
     public const ALLOWED_VALUE_TYPES_FOR_VALUE = [
         self::VALUE_TYPE_RATE,
@@ -137,6 +138,16 @@ class ProgramEligibilityCondition
      * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:write"})
      */
     private ?string $value = null;
+
+    /**
+     * The option to compare in case of type "list".
+     *
+     * @ORM\ManyToOne(targetEntity=ProgramChoiceOption::class)
+     * @ORM\JoinColumn(name="id_program_choice_option")
+     *
+     * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:write"})
+     */
+    private ?ProgramChoiceOption $programChoiceOption;
 
     public function __construct(
         ProgramEligibilityConfiguration $programEligibilityConfiguration,
@@ -226,6 +237,18 @@ class ProgramEligibilityCondition
         return $this;
     }
 
+    public function getProgramChoiceOption(): ?ProgramChoiceOption
+    {
+        return $this->programChoiceOption;
+    }
+
+    public function setProgramChoiceOption(?ProgramChoiceOption $programChoiceOption): ProgramEligibilityCondition
+    {
+        $this->programChoiceOption = $programChoiceOption;
+
+        return $this;
+    }
+
     public static function getAvailableOperations(): array
     {
         $operations = MathOperator::getConstList();
@@ -305,6 +328,20 @@ class ProgramEligibilityCondition
                 ->addViolation()
             ;
         }
+
+        if (self::VALUE_TYPE_LIST === $this->getValueType() && Field::TYPE_LIST !== $leftOperandField->getType()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.leftOperandField.notList')
+                ->atPath('leftOperandField')
+                ->addViolation()
+            ;
+        }
+
+        if (self::VALUE_TYPE_LIST !== $this->getValueType() && Field::TYPE_LIST === $leftOperandField->getType()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.valueType.notList')
+                ->atPath('valueType')
+                ->addViolation()
+            ;
+        }
     }
 
     /**
@@ -359,6 +396,40 @@ class ProgramEligibilityCondition
                     ->addViolation()
                 ;
             }
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateProgramChoiceOption(ExecutionContextInterface $context): void
+    {
+        $valueType           = $this->getValueType();
+        $programChoiceOption = $this->getProgramChoiceOption();
+
+        if (\in_array($valueType, self::ALLOWED_VALUE_TYPES_FOR_VALUE)) {
+            if (null !== $programChoiceOption) {
+                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.programChoiceOption.notEmpty')
+                    ->atPath('programChoiceOption')
+                    ->addViolation()
+                ;
+            }
+
+            return;
+        }
+
+        if (false === ($programChoiceOption instanceof ProgramChoiceOption)) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.programChoiceOption.required')
+                ->atPath('programChoiceOption')
+                ->addViolation()
+            ;
+        }
+
+        if (MathOperator::EQUAL !== $this->getOperation()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.operation.notEqual')
+                ->atPath('operation')
+                ->addViolation()
+            ;
         }
     }
 }

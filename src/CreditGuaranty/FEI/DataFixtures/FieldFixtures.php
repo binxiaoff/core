@@ -22,7 +22,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '46c2d1b3-61fa-4d2f-a3f3-0336feecd2e2', 'eligibility', 'profile', 'list',
             'borrower_type', 'borrower', 'borrowerType', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
             'df8c4d9b-6978-4656-899c-0f083c0f22f2', 'eligibility', 'profile', 'bool',
@@ -67,7 +67,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '932afe50-582a-462c-b5cc-16cdd3f09c07', 'eligibility', 'profile', 'list',
             'activity_country', 'borrower', 'addressCountry', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
             'd61a4e71-4438-46f1-b1a5-376f98566c06', 'eligibility', 'profile', 'other',
@@ -87,12 +87,12 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             'eef6e5ac-8de6-4084-a06b-dd2974141d94', 'eligibility', 'profile', 'list',
             'legal_form', 'borrower', 'legalForm', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, '["SARL","SAS","SASU","EURL","SA","SELAS"]'
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, '["SARL","SAS","SASU","EURL","SA","SELAS"]'
         ),
         (
             '7cccbd98-6b99-4425-8f29-83a04027740c', 'eligibility', 'profile', 'list',
             'company_naf_code', 'borrower', 'companyNafCode', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
             '6c067265-5ff5-49f4-84f0-e511a4a7d42e', 'eligibility', 'profile', 'other',
@@ -102,7 +102,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '406628f8-26a4-44a9-9742-074f86b313e2', 'eligibility', 'profile', 'list',
             'exploitation_size', 'borrower', 'exploitationSize', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
             'fd5af2b2-81e7-44f4-a349-51d00e8e104b', 'eligibility', 'profile', 'other',
@@ -148,27 +148,27 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '23892bef-00b0-4df5-981e-32913e708a2b', 'eligibility', 'project', 'list',
             'investment_thematic', 'project', 'investmentThematic', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 1, NULL, NULL
         ),
         (
             'ee365095-5e4e-4c02-bb45-b71506cbc42b', 'eligibility', 'project', 'list',
             'investment_type', 'project', 'investmentType', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 1, NULL, NULL
         ),
         (
             '5b621a54-17a8-4226-8251-ef8bc35c0aae', 'eligibility', 'project', 'list',
             'aid_intensity', 'project', 'aidIntensity', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, 'percentage', NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 1, 'percentage', NULL
         ),
         (
             'c7b28186-59e6-4032-8abc-144f8c89e6db', 'eligibility', 'project', 'list',
             'additional_guaranty', 'project', 'additionalGuaranty', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 1, NULL, NULL
         ),
         (
             'd2b8441d-c2ef-4b11-b01e-ed145232995b', 'eligibility', 'project', 'list',
             'agricultural_branch', 'project', 'agriculturalBranch', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 1, NULL, NULL
         ),
         (
             '3dbe7d2c-2b78-4f72-ab52-ca3703e39f5b', 'eligibility', 'project', 'other',
@@ -224,12 +224,12 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '8cb4b512-fa4c-4638-9a28-11d16b450459', 'eligibility', 'loan', 'list',
             'financing_object_type', 'financingObjects', 'financingObjectType', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, NULL
         ),
         (
             '58acfc84-3d39-4a9d-98bd-acd884a0e74b', 'eligibility', 'loan', 'list',
             'loan_naf_code', 'financingObjects', 'loanNafCode', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, NULL
         ),
         (
             '55a1b77f-1b2d-40a8-8f77-a4fa2ae5f292', 'eligibility', 'loan', 'other',
@@ -239,7 +239,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '675056b4-49bb-40a7-bafe-9bcc86ad7b99', 'eligibility', 'loan', 'list',
             'loan_type', 'financingObjects', 'loanType', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'
         ),
         (
             'dc41f2c0-0ca6-4ac4-8d92-c9f583b97923', 'eligibility', 'loan', 'other',
@@ -259,12 +259,12 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '93319782-8cfd-474f-bfe8-ab5aae88456b', 'eligibility', 'loan', 'list',
             'loan_periodicity', 'financingObjects', 'loanPeriodicity', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, '["monthly","quarterly","semi_annually","annually"]'
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, '["monthly","quarterly","semi_annually","annually"]'
         ),
         (
             '61ad5da2-1ae1-4c0b-b3bd-ce42fc0bea3b', 'eligibility', 'loan', 'list',
             'investment_location', 'financingObjects', 'investmentLocation', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, NULL
         ),
 
         (
