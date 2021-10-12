@@ -637,8 +637,8 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'loanMoney',
             'propertyType'            => 'Money',
             'objectClass'             => FinancingObject::class,
-            'comparable'              => false,
-            'unit'                    => null,
+            'comparable'              => true,
+            'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
         yield 'field-loan_duration' => [

@@ -244,7 +244,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             'dc41f2c0-0ca6-4ac4-8d92-c9f583b97923', 'eligibility', 'loan', 'other',
             'loan_money', 'financingObjects', 'loanMoney', 'Money',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, 'money', NULL
         ),
         (
             'e9861e5b-0513-4c7b-9799-2f5a7dc267a4', 'eligibility', 'loan', 'other',
