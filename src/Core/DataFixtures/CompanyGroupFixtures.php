@@ -8,7 +8,7 @@ use Doctrine\Persistence\ObjectManager;
 use KLS\Core\Entity\CompanyGroup;
 use KLS\Core\Entity\CompanyGroupTag;
 
-class CompanyGroupFixture extends AbstractFixtures
+class CompanyGroupFixtures extends AbstractFixtures
 {
     public const CORPORATE               = 'company_group_tag_corporate';
     public const PUBLIC_COLLECTIVITY     = 'company_group_tag_public_collectivity';

@@ -170,7 +170,7 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         return [
             UserFixtures::class,
-            CompanyGroupFixture::class,
+            CompanyGroupFixtures::class,
         ];
     }
 
