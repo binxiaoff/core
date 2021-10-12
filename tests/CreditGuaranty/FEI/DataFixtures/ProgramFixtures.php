@@ -70,7 +70,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
             ],
             'guarantyDuration'        => 240,
             'guarantyCoverage'        => '0.07',
-            'guarantyCost'            => ['currency' => 'EUR', 'amount' => '1000'],
+            'guarantyCost'            => '0.10',
             'maxFeiCredit'            => ['currency' => 'EUR', 'amount' => '20000'],
             'reservationDuration'     => 2,
             'esbCalculationActivated' => true,
@@ -112,7 +112,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
         }
 
         if (false === empty($programData['guarantyCost'])) {
-            $program->setGuarantyCost(new NullableMoney($programData['guarantyCost']['currency'], $programData['guarantyCost']['amount']));
+            $program->setGuarantyCost($programData['guarantyCost']);
         }
 
         if (false === empty($programData['maxFeiCredit'])) {

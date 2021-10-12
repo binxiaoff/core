@@ -174,7 +174,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private ?string $description;
+    private ?string $description = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
@@ -217,7 +217,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private ?string $cappedAt;
+    private ?string $cappedAt = null;
 
     /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\Money")
@@ -252,7 +252,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private ?array $distributionProcess;
+    private ?array $distributionProcess = null;
 
     /**
      * Duration in month.
@@ -264,7 +264,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private ?int $guarantyDuration;
+    private ?int $guarantyDuration = null;
 
     /**
      * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
@@ -275,16 +275,18 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private ?string $guarantyCoverage;
+    private ?string $guarantyCoverage = null;
 
     /**
-     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
-     * @Assert\Valid
+     * @Assert\Type("numeric")
+     * @Assert\PositiveOrZero
+     * @Assert\Range(min="0", max="1")
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private NullableMoney $guarantyCost;
+    private ?string $guarantyCost = null;
 
     /**
      * @ORM\Column(type="smallint", nullable=true)
@@ -295,7 +297,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private ?int $reservationDuration;
+    private ?int $reservationDuration = null;
 
     /**
      * @ORM\Column(length=60, nullable=true)
@@ -334,7 +336,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
-    private ?string $requestedDocumentsDescription;
+    private ?string $requestedDocumentsDescription = null;
 
     /**
      * @ORM\Column(length=16, nullable=false)
@@ -467,7 +469,6 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         $this->managingCompany                = $addedBy->getCompany();
         $this->companyGroupTag                = $companyGroupTag;
         $this->funds                          = $funds;
-        $this->guarantyCost                   = new NullableMoney();
         $this->maxFeiCredit                   = new NullableMoney();
         $this->ratingModel                    = self::RATING_MODEL_DEFAULT;
         $this->drive                          = new Drive();
@@ -589,12 +590,12 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         return $this;
     }
 
-    public function getGuarantyCost(): NullableMoney
+    public function getGuarantyCost(): ?string
     {
         return $this->guarantyCost;
     }
 
-    public function setGuarantyCost(NullableMoney $guarantyCost): Program
+    public function setGuarantyCost(?string $guarantyCost): Program
     {
         $this->guarantyCost = $guarantyCost;
 
