@@ -26,7 +26,7 @@ class ReportingTemplateFixtures extends AbstractFixtures implements DependentFix
     public function load(ObjectManager $manager): void
     {
         /** @var Program $program */
-        $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
+        $program = $this->getReference(ProgramFixtures::REFERENCE_PAUSED);
         /** @var Staff $addedBy */
         $addedBy = $program->getManagingCompany()->getStaff()->current();
 
