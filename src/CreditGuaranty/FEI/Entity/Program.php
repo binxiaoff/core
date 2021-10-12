@@ -267,11 +267,11 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private ?int $guarantyDuration;
 
     /**
-     * @ORM\Column(type="decimal", precision=4, scale=4, nullable=true)
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
-     * @Assert\Range(min="0", max="0.9999")
+     * @Assert\Range(min="0", max="1")
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
