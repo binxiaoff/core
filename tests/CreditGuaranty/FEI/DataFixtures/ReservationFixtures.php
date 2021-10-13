@@ -235,7 +235,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $project = $reservation->getProject();
 
         $project
-            ->setInvestmentThematic($this->findProgramChoiceOption($program, 'field-investment_thematic', 'Project : ' . $this->faker->sentence))
+            ->addInvestmentThematic($this->findProgramChoiceOption($program, 'field-investment_thematic', 'Thématique : ' . $this->faker->sentence))
+            ->addInvestmentThematic($this->findProgramChoiceOption($program, 'field-investment_thematic', 'Thématique : ' . $this->faker->sentence))
             ->setInvestmentType($this->findProgramChoiceOption($program, 'field-investment_type', 'Type : ' . $this->faker->sentence))
             ->setDetail($this->faker->sentence)
             ->setAidIntensity($this->findProgramChoiceOption($program, 'field-aid_intensity', '0.40'))

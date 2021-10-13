@@ -17,6 +17,20 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
+    public const INVESTMENT_THEMATIC_LIST = [
+        'Renouvellement des générations et installation des nouveaux entrants dans le cadre '
+            . 'd\'un projet agro-écologique ou d\'un projet générateur de valeur ajoutée et/ou d\'emplois',
+        'Mieux répondre aux attentes des consommateurs / renforcer les filières de qualité, '
+            . 'la contractualisation amont-aval et en encourageant '
+            . 'l\'ancrage territorial et les circuits de proximité.',
+        'Transformation des modèles agricoles pour une meilleure performance '
+            . 'économique, sociale, environnementale et sanitaire et également à améliorer '
+            . 'l\'innovation au sein des exploitations',
+        'Accompagner la diversification des activités et des revenus des exploitations',
+        'Mettre à niveau des actifs ne répondant plus aux meilleures pratiques internationales, '
+            . 'afin de promouvoir l’utilisation efficace des ressources telles que l’énergie, la chaleur et l’eau',
+    ];
+
     // user-defined list type fields
     private const FIELDS = [
         FieldAlias::AID_INTENSITY => [
@@ -30,6 +44,7 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'Apiculteur', 'Exploitant céréalier', 'Ostréiculteur',
             'Producteur de lait', 'Vignoble',
         ],
+        FieldAlias::INVESTMENT_THEMATIC => self::INVESTMENT_THEMATIC_LIST,
         FieldAlias::ACTIVITY_DEPARTMENT => [
             'Paris',
             'Seine-et-Marne',
