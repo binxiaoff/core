@@ -1,7 +1,7 @@
 rollbar:
     enabled: false
     access_token: 2aae46c5bee64e9fa47d706a0ee56aac
-    environment: '%kernel.environment%'
+    environment: '%kls.environment%'
     autodetect_branch: true
     local_vars_dump: false
     scrub_fields:

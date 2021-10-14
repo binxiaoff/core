@@ -72,3 +72,32 @@ syntax and need to be setup for a php-fpm pool:
  env[VAR1_NAME]="Var1 value"
  ;comment
  env[VAR2_NAME]="Var2 value"
+
+Defining an environment
+=======================
+
+Symfony offers an environment mechanism that allows for good configuration options using env files
+and configuration files in specific directories. However, we realized that most of our environments
+were extremely similar and that all different values could be overriden by environment variables.
+
+That is why we introduced ``KLS_ENV`` as a new variable to name environments. This allows for a more
+dynamic setup of new environments, especially with very similar configurations.
+
+KLS environments are an instance of Symfony environments. For example, we can have a Symfony environment
+named ``staging`` that will have many instances like ``preprod``, ``integration`` and ``demo``. This
+will be translated as:
+
+.. code-block:: bash
+
+  APP_ENV=staging
+  KLS_ENV=preprod
+
+.. code-block:: bash
+
+  APP_ENV=staging
+  KLS_ENV=integration
+
+.. code-block:: bash
+
+  APP_ENV=staging
+  KLS_ENV=demo

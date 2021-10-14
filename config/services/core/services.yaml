@@ -10,6 +10,7 @@ parameters:
   hubspot.api.key: '%env(HUBSPOT_API_KEY)%'
   hubspot.base_crm_uri: '%env(HUBSPOT_BASE_CRM_URI)%'
   hubspot.base_integration_uri: '%env(HUBSPOT_BASE_INTEGRATION_URI)%'
+  kls.environment: '%env(KLS_ENV)%'
   locale: fr_FR
   mailer.error_reporting_email: tech@kls-platform.com
   mailer.sender_address: support@kls-platform.com
@@ -30,7 +31,6 @@ services:
       $consoleLogger: '@monolog.logger.console'
       $debug: '%kernel.debug%'
       $defaultLocale: '%locale%'
-      $environment: '%kernel.environment%'
       $generatedDocumentFilesystem: '@generated_document_filesystem'
       $projectDirectory: '%kernel.project_dir%'
       $securityRecipients: '%security.recipients%'
@@ -147,6 +147,9 @@ services:
   KLS\Core\Service\GoogleRecaptchaManager:
     $client: '@eight_points_guzzle.client.google_recaptcha'
     $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
+
+  KLS\Core\Service\Monolog\Processor\EnvironmentProcessor:
+    $environment: '%kls.environment%'
 
   KLS\Core\Service\Staff\StaffLoginChecker:
     arguments:
