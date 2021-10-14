@@ -888,7 +888,7 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_money_after_contractualisation' => [
+        yield 'field-loan_money_after_contract' => [ // need the reference to be shorter because reference is set as publicId and publicId has limit
             'fieldAlias'              => 'loan_money_after_contractualisation',
             'tag'                     => Field::TAG_INFO,
             'category'                => 'loan',

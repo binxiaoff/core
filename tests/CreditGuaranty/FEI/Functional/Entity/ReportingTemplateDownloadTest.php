@@ -9,6 +9,10 @@ use KLS\Core\Repository\StaffRepository;
 use KLS\Test\Core\Functional\Api\AbstractApiTest;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 /**
  * @coversNothing
@@ -25,16 +29,25 @@ class ReportingTemplateDownloadTest extends AbstractApiTest
     }
 
     /**
-     * @dataProvider successfullProvider
+     * @dataProvider successfulProvider
+     *
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
      */
     public function testImportFileDownload(string $staffPublicId): void
     {
         /** @var Staff $staff */
         $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
 
+        // Avoid displaying the file content in the console (capture console output)
+        \ob_start();
+
         $response = $this->createAuthClient($staff)->request(Request::METHOD_GET, \str_replace('{publicId}', 'reporting-template-1', self::ENDPOINT));
 
-        $this->assertResponseIsSuccessful();
+        \ob_end_clean();
+        static::assertResponseIsSuccessful();
 
         $headers = $response->getHeaders();
         static::assertArrayHasKey('content-disposition', $headers);
@@ -43,7 +56,7 @@ class ReportingTemplateDownloadTest extends AbstractApiTest
         static::assertSame('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $headers['content-type'][0]);
     }
 
-    public function successfullProvider(): iterable
+    public function successfulProvider(): iterable
     {
         yield 'staff_company:bar_user-a' => ['staff_company:bar_user-a'];
         yield 'staff_company:bar_user-b' => ['staff_company:bar_user-b'];
@@ -60,9 +73,9 @@ class ReportingTemplateDownloadTest extends AbstractApiTest
         /** @var Staff $staff */
         $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
 
-        $response = $this->createAuthClient($staff)->request(Request::METHOD_GET, \str_replace('{publicId}', 'reporting-template-1', self::ENDPOINT));
+        $this->createAuthClient($staff)->request(Request::METHOD_GET, \str_replace('{publicId}', 'reporting-template-1', self::ENDPOINT));
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        static::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
 
     public function forbiddenProvider(): iterable
