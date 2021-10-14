@@ -35,4 +35,16 @@ class TermRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    public function findSharedByProject(Project $project): iterable
+    {
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.covenant', 'c')
+            ->where('c.project = :project')
+            ->andWhere('t.sharingDate IS NOT NULL')
+            ->setParameter('project', $project)
+            ->getQuery()
+            ->getResult()
+            ;
+    }
 }
