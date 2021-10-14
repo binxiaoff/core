@@ -106,7 +106,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
             ],
             'guarantyDuration'        => 240,
             'guarantyCoverage'        => '0.07',
-            'guarantyCost'            => ['currency' => 'EUR', 'amount' => '1000'],
+            'guarantyCost'            => '0.10',
             'maxFeiCredit'            => ['currency' => 'EUR', 'amount' => '20000'],
             'reservationDuration'     => 2,
             'esbCalculationActivated' => $this->faker->boolean,
