@@ -417,7 +417,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyType'            => 'ProgramChoiceOption',
             'objectClass'             => Project::class,
             'comparable'              => false,
-            'unit'                    => null,
+            'unit'                    => 'percentage',
             'predefinedItems'         => null,
         ];
         yield 'field-additional_guaranty' => [
