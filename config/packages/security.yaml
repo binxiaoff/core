@@ -1,4 +1,6 @@
 security:
+    enable_authenticator_manager: true
+
     encoders:
         KLS\Core\Entity\User:
             algorithm: 'auto'
@@ -15,16 +17,26 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt|error)|css|images|js)/
             security: false
+        login:
+            pattern: ^/core/authentication_token$
+            stateless: true
+            json_login:
+                check_path: /core/authentication_token
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            <<: &firewall_shared_configuration
+                user_checker: KLS\Core\Security\UserChecker
+                login_throttling:
+                    limiter: app.login_rate_limiter
         api:
             stateless: true
-            anonymous: true
-            user_checker: KLS\Core\Security\UserChecker
             guard:
                 authenticators:
+                    # the login attempts limiting doesn't work for the jwt, as the jwt decoder throws an exception for an invalid jwt before the authentication process.
                     - lexik_jwt_authentication.jwt_token_authenticator
                     - KLS\Core\Security\TemporaryTokenAuthenticator
-                    - KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator
-                entry_point: lexik_jwt_authentication.jwt_token_authenticator
+            entry_point: lexik_jwt_authentication.jwt_token_authenticator
+            <<: *firewall_shared_configuration
 
     access_control:
         - { path: '^/captcha_checks', allow_if: "is_anonymous()" }
