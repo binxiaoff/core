@@ -282,6 +282,102 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this;
     }
 
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAddressStreet(): ?string
+    {
+        return $this->addressStreet;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    public function setAddressStreet(?string $street): Project
+    {
+        $this->addressStreet = $street;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAddressPostCode(): ?string
+    {
+        return $this->addressPostCode;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    public function setAddressPostCode(?string $postCode): Project
+    {
+        $this->addressPostCode = $postCode;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAddressCity(): ?string
+    {
+        return $this->addressCity;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    public function setAddressCity(?string $city): Project
+    {
+        $this->addressCity = $city;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAddressDepartment(): ?string
+    {
+        return $this->addressDepartment;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    public function setAddressDepartment(?string $department): Project
+    {
+        $this->addressDepartment = $department;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("addressCountry")
+     *
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getActivityCountry(): ?string
+    {
+        if ($this->addressCountry instanceof ProgramChoiceOption) {
+            return $this->addressCountry->getDescription();
+        }
+
+        return null;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    public function setAddressCountry(?ProgramChoiceOption $country): Project
+    {
+        $this->addressCountry = $country;
+
+        return $this;
+    }
+
     public function getAidIntensity(): ?ProgramChoiceOption
     {
         return $this->aidIntensity;
