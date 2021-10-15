@@ -40,10 +40,46 @@ trait ReservationSetTrait
 
     protected function withBorrower(Reservation $reservation): void
     {
-        $program              = $reservation->getProgram();
-        $borrowerTypeField    = new Field('borrower_type', Field::TAG_ELIGIBILITY, 'test', 'list', 'borrower', 'borrowerType', 'ProgramChoiceOption', Borrower::class, false, null, null);
-        $legalFormField       = new Field('legal_form', Field::TAG_ELIGIBILITY, 'test', 'list', 'borrower', 'legalForm', 'ProgramChoiceOption', Borrower::class, false, null, null);
-        $activityCountryField = new Field('activity_country', Field::TAG_ELIGIBILITY, 'test', 'list', 'borrower', 'addressCountry', 'ProgramChoiceOption', Borrower::class, false, null, ['FR']);
+        $program           = $reservation->getProgram();
+        $borrowerTypeField = new Field(
+            'borrower_type',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'list',
+            'borrower',
+            'borrowerType',
+            'ProgramChoiceOption',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
+        $legalFormField = new Field(
+            'legal_form',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'list',
+            'borrower',
+            'legalForm',
+            'ProgramChoiceOption',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
+        $activityCountryField = new Field(
+            'activity_country',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'list',
+            'borrower',
+            'addressCountry',
+            'ProgramChoiceOption',
+            Borrower::class,
+            false,
+            null,
+            ['FR']
+        );
 
         $reservation->getBorrower()
             ->setBeneficiaryName('Borrower Name')
@@ -70,11 +106,71 @@ trait ReservationSetTrait
     protected function withProject(Reservation $reservation): void
     {
         $program                 = $reservation->getProgram();
-        $investmentThematicField = new Field('investment_thematic', Field::TAG_ELIGIBILITY, 'test', 'list', 'project', 'investmentThematic', 'ProgramChoiceOption', Project::class, false, null, null);
-        $investmentTypeField     = new Field('investment_type', Field::TAG_ELIGIBILITY, 'test', 'list', 'project', 'investmentType', 'ProgramChoiceOption', Project::class, false, null, null);
-        $aidIntensityField       = new Field('aid_intensity', Field::TAG_ELIGIBILITY, 'test', 'list', 'project', 'aidIntensity', 'ProgramChoiceOption', Project::class, false, null, null);
-        $additionalGuaranty      = new Field('additional_guaranty', Field::TAG_ELIGIBILITY, 'test', 'list', 'project', 'additionalGuaranty', 'ProgramChoiceOption', Project::class, false, null, null);
-        $agriculturalBranch      = new Field('agricultural_branch', Field::TAG_ELIGIBILITY, 'test', 'list', 'project', 'agriculturalBranch', 'ProgramChoiceOption', Project::class, false, null, null);
+        $investmentThematicField = new Field(
+            'investment_thematic',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'list',
+            'project',
+            'investmentThematic',
+            'ProgramChoiceOption',
+            Project::class,
+            false,
+            null,
+            null
+        );
+        $investmentTypeField = new Field(
+            'investment_type',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'list',
+            'project',
+            'investmentType',
+            'ProgramChoiceOption',
+            Project::class,
+            false,
+            null,
+            null
+        );
+        $aidIntensityField = new Field(
+            'aid_intensity',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'list',
+            'project',
+            'aidIntensity',
+            'ProgramChoiceOption',
+            Project::class,
+            false,
+            null,
+            null
+        );
+        $additionalGuaranty = new Field(
+            'additional_guaranty',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'list',
+            'project',
+            'additionalGuaranty',
+            'ProgramChoiceOption',
+            Project::class,
+            false,
+            null,
+            null
+        );
+        $agriculturalBranch = new Field(
+            'agricultural_branch',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'list',
+            'project',
+            'agriculturalBranch',
+            'ProgramChoiceOption',
+            Project::class,
+            false,
+            null,
+            null
+        );
 
         $reservation->getProject()
             ->setInvestmentThematic(new ProgramChoiceOption($program, 'investment thematic', $investmentThematicField))
@@ -117,12 +213,18 @@ trait ReservationSetTrait
             ['loan type 1', 'loan type 2']
         );
 
-        return (new FinancingObject($reservation, new Money('EUR', '42'), false))
-            ->setSupportingGenerationsRenewal($supportingGenerationsRenewal)
-            ->setFinancingObjectType(new ProgramChoiceOption($program, 'financing object test', $financingObjectTypeField))
-            ->setLoanType(new ProgramChoiceOption($program, 'loan type 2', $loanTypeField))
-            ->setLoanDuration(4)
-            ->setLoanDeferral(1)
+        return (
+            new FinancingObject(
+                $reservation,
+                new Money('EUR', '42'),
+                false,
+                'financing object name'
+            ))
+                ->setSupportingGenerationsRenewal($supportingGenerationsRenewal)
+                ->setFinancingObjectType(new ProgramChoiceOption($program, 'financing object test', $financingObjectTypeField))
+                ->setLoanType(new ProgramChoiceOption($program, 'loan type 2', $loanTypeField))
+                ->setLoanDuration(4)
+                ->setLoanDeferral(1)
         ;
     }
 }

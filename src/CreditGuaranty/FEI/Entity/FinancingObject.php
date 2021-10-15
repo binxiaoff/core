@@ -94,11 +94,11 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?bool $supportingGenerationsRenewal = null;
 
     /**
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string")
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
-    private ?string $name;
+    private string $name;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
@@ -279,11 +279,13 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     public function __construct(
         Reservation $reservation,
         Money $loanMoney,
-        bool $mainLoan
+        bool $mainLoan,
+        string $name
     ) {
         $this->reservation                      = $reservation;
         $this->mainLoan                         = $mainLoan;
         $this->loanMoney                        = $loanMoney;
+        $this->name                             = $name;
         $this->loanMoneyAfterContractualisation = new NullableMoney();
         $this->bfrValue                         = new NullableMoney();
         $this->remainingCapital                 = new NullableMoney();
@@ -325,12 +327,12 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function setName(?string $name): FinancingObject
+    public function setName(string $name): FinancingObject
     {
         $this->name = $name;
 
