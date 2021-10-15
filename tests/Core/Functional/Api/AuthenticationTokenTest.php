@@ -120,22 +120,4 @@ class AuthenticationTokenTest extends ApiTestCase
 
         static::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
-
-    public function testAuthenticationTokenWithoutCaptchaValue(): void
-    {
-        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user-1']);
-
-        $response = static::createClient()->request(
-            Request::METHOD_POST,
-            self::ENDPOINT_AUTH_TOKEN,
-            [
-                'json' => [
-                    'username' => $user->getEmail(),
-                    'password' => UserFixtures::DEFAULT_PASSWORD,
-                ],
-            ]
-        );
-
-        static::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
-    }
 }
