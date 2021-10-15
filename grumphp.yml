@@ -13,6 +13,7 @@ grumphp:
             allow_risky: true
             config: .php_cs
         phpcs:
+            report_width: 120
             exclude:
                 - "PHPCS_SecurityAudit.BadFunctions.CallbackFunctions"
                 - "PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions"
