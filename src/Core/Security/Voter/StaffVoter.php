@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace KLS\Core\Security\Voter;
 
-use KLS\Core\Entity\User;
 use KLS\Core\Entity\Staff;
+use KLS\Core\Entity\User;
 use KLS\Core\Repository\CompanyAdminRepository;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
@@ -103,6 +103,10 @@ class StaffVoter extends AbstractEntityVoter
             return false;
         }
 
-        return \in_array($superior->getTeam(), $subordinate->getTeam()->getAncestors(), true) || $superior->getTeam() === $subordinate->getTeam();
+        return \in_array(
+            $superior->getTeam(),
+            $subordinate->getTeam()->getAncestors(),
+            true
+        ) || $superior->getTeam() === $subordinate->getTeam();
     }
 }

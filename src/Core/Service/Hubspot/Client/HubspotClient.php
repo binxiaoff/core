@@ -12,8 +12,8 @@ class HubspotClient
 {
     public const RESULT_PER_PAGE       = 100; // Maximum authorised
     private const GET_DAILY_USAGE_PATH = 'v1/limit/daily?';
-    private const CONTACTS_PATH       = 'contact';
-    private const COMPANY_PATH        = 'companies';
+    private const CONTACTS_PATH        = 'contact';
+    private const COMPANY_PATH         = 'companies';
 
     public HttpClientInterface $hubspotIntegrationClient;
     public HttpClientInterface $hubspotCrmClient;
