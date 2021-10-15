@@ -18,8 +18,6 @@ use KLS\Core\Entity\Traits\ArchivableTrait;
 use KLS\Core\Entity\Traits\BlamableAddedTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
-use KLS\CreditGuaranty\FEI\Controller\Reporting\Download;
-use KLS\CreditGuaranty\FEI\Controller\Reporting\Update;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Reporting;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -49,12 +47,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "delete": {
  *             "security": "is_granted('delete', object)",
  *         },
- *         "download": {
- *             "method": "GET",
- *             "controller": Download::class,
- *             "path": "/credit_guaranty/reporting_templates/{publicId}/import-file/download",
- *             "security": "is_granted('view', object)",
- *         },
  *         "reporting": {
  *             "method": "GET",
  *             "path": "/credit_guaranty/reporting_templates/{publicId}/reporting",
@@ -78,14 +70,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     },
  *                 },
  *             },
- *         },
- *         "upload": {
- *             "method": "POST",
- *             "controller": Update::class,
- *             "deserialize": false,
- *             "path": "/credit_guaranty/reporting_templates/{publicId}/import-file/update",
- *             "input_formats": { "xlsx" },
- *             "security": "is_granted('create', object)",
  *         },
  *     },
  *     collectionOperations={

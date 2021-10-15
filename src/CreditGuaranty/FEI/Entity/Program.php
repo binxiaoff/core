@@ -33,6 +33,8 @@ use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
 use KLS\Core\Validator\Constraints\PreviousValue;
+use KLS\CreditGuaranty\FEI\Controller\Reporting\Download;
+use KLS\CreditGuaranty\FEI\Controller\Reporting\Update;
 use LogicException;
 use RuntimeException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -118,6 +120,21 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "defaults": {
  *                 "path": "/",
  *             },
+ *         },
+ *         "reporting_import_file_download": {
+ *             "method": "GET",
+ *             "controller": Download::class,
+ *             "path": "/credit_guaranty/programs/{publicId}/reporting/import-file/download",
+ *             "security": "is_granted('reporting', object)",
+ *             "output_formats": { "xlsx" },
+ *         },
+ *         "reporting_import_file_upload": {
+ *             "method": "POST",
+ *             "controller": Update::class,
+ *             "path": "/credit_guaranty/programs/{publicId}/reporting/import-file/upload",
+ *             "security": "is_granted('reporting', object)",
+ *             "input_formats": { "xlsx" },
+ *             "deserialize": false,
  *         },
  *     },
  *     collectionOperations={
@@ -363,7 +380,10 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @Assert\Valid
      *
-     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramStatus", mappedBy="program", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramStatus", mappedBy="program",
+     *     orphanRemoval=true, cascade={"persist"}, fetch="EAGER"
+     * )
      *
      * @ORM\OrderBy({"added": "ASC"})
      *
@@ -384,7 +404,10 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramContact", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramContact", mappedBy="program",
+     *     orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
      */
     private Collection $programContacts;
 
@@ -406,8 +429,8 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      * @ApiSubresource
      *
      * @ORM\OneToMany(
-     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramBorrowerTypeAllocation",
-     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="id_program_choice_option"
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramBorrowerTypeAllocation", mappedBy="program",
+     *     orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="id_program_choice_option"
      * )
      */
     private Collection $programBorrowerTypeAllocations;
@@ -417,7 +440,10 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption", mappedBy="program",
+     *     orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
      */
     private Collection $programChoiceOptions;
 
@@ -426,7 +452,10 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramEligibility", mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"})
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramEligibility", mappedBy="program",
+     *     orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     * )
      */
     private Collection $programEligibilities;
 
@@ -436,8 +465,8 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      * @ApiSubresource
      *
      * @ORM\OneToMany(
-     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\Participation",
-     *     mappedBy="program", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="id_company"
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\Participation", mappedBy="program",
+     *     orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}, indexBy="id_company"
      * )
      */
     private Collection $participations;
@@ -730,7 +759,9 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      */
     public function isCompanyGroupTagValid(): bool
     {
-        return \in_array($this->getCompanyGroupTag()->getCode(), [self::COMPANY_GROUP_TAG_CORPORATE, self::COMPANY_GROUP_TAG_AGRICULTURE], true);
+        $companyGroupTags = [self::COMPANY_GROUP_TAG_CORPORATE, self::COMPANY_GROUP_TAG_AGRICULTURE];
+
+        return \in_array($this->getCompanyGroupTag()->getCode(), $companyGroupTags, true);
     }
 
     public function isInDraft(): bool
@@ -804,17 +835,22 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         return $this;
     }
 
-    public function removeProgramBorrowerTypeAllocation(ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation): Program
-    {
+    public function removeProgramBorrowerTypeAllocation(
+        ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation
+    ): Program {
         $this->programBorrowerTypeAllocations->removeElement($programBorrowerTypeAllocation);
 
         return $this;
     }
 
-    public function addProgramBorrowerTypeAllocation(ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation): Program
-    {
-        $callback = static function (int $key, ProgramBorrowerTypeAllocation $existingProgramBorrowerTypeAllocation) use ($programBorrowerTypeAllocation): bool {
-            return $existingProgramBorrowerTypeAllocation->getProgramChoiceOption() === $programBorrowerTypeAllocation->getProgramChoiceOption();
+    public function addProgramBorrowerTypeAllocation(
+        ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation
+    ): Program {
+        $callback = static function (
+            int $key,
+            ProgramBorrowerTypeAllocation $pbta
+        ) use ($programBorrowerTypeAllocation): bool {
+            return $pbta->getProgramChoiceOption() === $programBorrowerTypeAllocation->getProgramChoiceOption();
         };
         if (
             $programBorrowerTypeAllocation->getProgram() === $this
@@ -846,10 +882,11 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
 
     public function addProgramChoiceOption(ProgramChoiceOption $programChoiceOption): Program
     {
-        $callback = function (int $key, ProgramChoiceOption $existingProgramChoiceOption) use ($programChoiceOption): bool {
-            return $existingProgramChoiceOption->getField()       === $programChoiceOption->getField()
-                && $existingProgramChoiceOption->getDescription() === $programChoiceOption->getDescription();
+        $callback = function (int $key, ProgramChoiceOption $pco) use ($programChoiceOption): bool {
+            return $pco->getField()       === $programChoiceOption->getField()
+                && $pco->getDescription() === $programChoiceOption->getDescription();
         };
+
         if (
             $programChoiceOption->getProgram() === $this
             && false === $this->programChoiceOptions->exists($callback)
@@ -880,7 +917,8 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
 
     public function addProgramEligibility(ProgramEligibility $programEligibility): Program
     {
-        $callback = fn (int $key, ProgramEligibility $existingProgramEligibility): bool => $existingProgramEligibility->getField() === $programEligibility->getField();
+        $callback = fn (int $key, ProgramEligibility $pe): bool => $pe->getField() === $programEligibility->getField();
+
         if (
             $programEligibility->getProgram() === $this
             && false === $this->programEligibilities->exists($callback)
@@ -947,9 +985,16 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
                 }
 
                 if (false === $reservation->getProject() instanceof Project) {
-                    throw new RuntimeException(\sprintf('Cannot find the project for reservation %d. Please check the data.', $reservation->getId()));
+                    throw new RuntimeException(
+                        \sprintf(
+                            'Cannot find the project for reservation %d. Please check the data.',
+                            $reservation->getId()
+                        )
+                    );
                 }
-                $totalProjectFunds = MoneyCalculator::add($reservation->getProject()->getFundingMoney(), $totalProjectFunds);
+
+                $fundingMoney      = $reservation->getProject()->getFundingMoney();
+                $totalProjectFunds = MoneyCalculator::add($fundingMoney, $totalProjectFunds);
             }
         }
 
@@ -969,8 +1014,11 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      */
     public function getReservedAmountsSum(): MoneyInterface
     {
-        $reservations  = $this->getReservations()->filter(static fn (Reservation $item) => $item->isSent() && false === $item->isFormalized());
-        $fundingMoneys = $reservations->map(static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney())->toArray();
+        $callbackReservation  = static fn (Reservation $item) => $item->isSent() && false === $item->isFormalized();
+        $callbackFundingMoney = static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney();
+
+        $reservations  = $this->getReservations()->filter($callbackReservation);
+        $fundingMoneys = $reservations->map($callbackFundingMoney)->toArray();
 
         return MoneyCalculator::sum($fundingMoneys);
     }
@@ -980,8 +1028,10 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
      */
     public function getContractualizedAmountsSum(): MoneyInterface
     {
+        $callbackFundingMoney = static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney();
+
         $reservations  = $this->getReservations()->filter(static fn (Reservation $item) => $item->isFormalized());
-        $fundingMoneys = $reservations->map(static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney())->toArray();
+        $fundingMoneys = $reservations->map($callbackFundingMoney)->toArray();
 
         return MoneyCalculator::sum($fundingMoneys);
     }
@@ -991,7 +1041,9 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         $duplicatedProgram          = clone $this;
         $duplicatedProgram->drive   = new Drive();
         $duplicatedProgram->addedBy = $duplicatedBy->getUser();
-        $duplicatedProgram->setCurrentStatus(new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy));
+        $duplicatedProgram->setCurrentStatus(
+            new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy)
+        );
 
         return $duplicatedProgram;
     }
@@ -1007,8 +1059,10 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
             ->setParticipations($this->cloneCollection($this->participations))
         ;
 
-        // Replace the ProgramChoiceOption (if not null) in the ProgramEligibilityConfiguration and ProgramBorrowerTypeAllocation (which are not remplace in the previous process)
-        // by the newly created one. The new one was created with setProgramChoiceOptions() in the duplicated program.
+        // Replace the ProgramChoiceOption (if not null)
+        // in the ProgramEligibilityConfiguration and ProgramBorrowerTypeAllocation
+        // (which are not remplace in the previous process) by the newly created one.
+        // The new one was created with setProgramChoiceOptions() in the duplicated program.
         foreach ($this->getProgramEligibilities() as $programEligibility) {
             foreach ($programEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
                 $originalProgramChoiceOption = $programEligibilityConfiguration->getProgramChoiceOption();
@@ -1032,14 +1086,21 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private function applyTotalProjectFundsFilters(Reservation $reservation, array $filter): bool
     {
         if (false === $reservation->getBorrower()->getBorrowerType() instanceof ProgramChoiceOption) {
-            throw new RuntimeException(\sprintf('Cannot find the borrower type for reservation %d. Please check the data.', $reservation->getId()));
+            throw new RuntimeException(
+                \sprintf(
+                    'Cannot find the borrower type for reservation %d. Please check the data.',
+                    $reservation->getId()
+                )
+            );
         }
 
         if (isset($filter['grade']) && $reservation->getBorrower()->getGrade() !== $filter['grade']) {
             return false;
         }
 
-        if (isset($filter['borrowerType']) && $reservation->getBorrower()->getBorrowerType()->getId() !== $filter['borrowerType']) {
+        $borrowerTypeId = $reservation->getBorrower()->getBorrowerType()->getId();
+
+        if (isset($filter['borrowerType']) && $borrowerTypeId !== $filter['borrowerType']) {
             return false;
         }
 
@@ -1064,7 +1125,12 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         foreach ($collectionToDuplicate as $item) {
             $clonedItem = clone $item;
             if (false === \method_exists($clonedItem, 'setProgram')) {
-                throw new LogicException(\sprintf('Cannot find the method setProgram of the class %s. Make sure it exists or it is accessible.', \get_class($clonedItem)));
+                throw new LogicException(
+                    \sprintf(
+                        'Cannot find the method setProgram of the class %s. Make sure it exists or it is accessible.',
+                        \get_class($clonedItem)
+                    )
+                );
             }
             $clonedItem->setProgram($this);
             $clonedArrayCollection->add($clonedItem);
