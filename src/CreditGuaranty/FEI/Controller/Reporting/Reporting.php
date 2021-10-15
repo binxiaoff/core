@@ -12,21 +12,14 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Reporting
 {
-    private ReportingExtractor $reportingExtractor;
-
-    public function __construct(ReportingExtractor $reportingExtractor)
-    {
-        $this->reportingExtractor = $reportingExtractor;
-    }
-
     /**
      * @throws Exception
      */
-    public function __invoke(Request $request, ReportingTemplate $data): Paginator
+    public function __invoke(Request $request, ReportingTemplate $data, ReportingExtractor $reportingExtractor): Paginator
     {
         $itemsPerPage = (int) $request->query->get('itemsPerPage', 100);
         $page         = (int) $request->query->get('page', 1);
 
-        return $this->reportingExtractor->extracts($data, $itemsPerPage, $page);
+        return $reportingExtractor->extracts($data, $itemsPerPage, $page);
     }
 }

@@ -62,7 +62,7 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
     {
         $data = $object->getQuery()->getResult();
 
-        foreach ($data as $key => $row) {
+        foreach ($data as &$row) {
             $financingObject = null;
 
             // transform id into iri
@@ -73,27 +73,27 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
                     throw new LogicException(\sprintf('Impossible to generate reporting, FinancingObject id %s is not found', $row['id_financing_object']));
                 }
 
-                $data[$key]['id_financing_object'] = $this->iriConverter->getIriFromItem($financingObject);
+                $row['id_financing_object'] = $this->iriConverter->getIriFromItem($financingObject);
             }
 
             // add value to virtual fields
             foreach (FieldAlias::VIRTUAL_FIELDS as $fieldAlias) {
                 if (\array_key_exists($fieldAlias, $row)) {
-                    $data[$key][$fieldAlias] = $this->getVirtualFieldValue($financingObject->getReservation(), $fieldAlias);
+                    $row[$fieldAlias] = $this->getVirtualFieldValue($financingObject->getReservation(), $fieldAlias);
                 }
             }
 
             // format dates
             foreach (FieldAlias::DATE_FIELDS as $fieldAlias) {
                 if (false === empty($row[$fieldAlias])) {
-                    $data[$key][$fieldAlias] = ($data[$key][$fieldAlias])->format('Y-m-d');
+                    $row[$fieldAlias] = ($row[$fieldAlias])->format('Y-m-d');
                 }
             }
 
             // special case for transforming decimal to percentage
             // TODO: if there is another one decimal field, create a constant in FieldAlias file and loop through it
             if (false === empty($row[FieldAlias::AID_INTENSITY])) {
-                $data[$key][FieldAlias::AID_INTENSITY] = ($row[FieldAlias::AID_INTENSITY] * 100) . ' %';
+                $row[FieldAlias::AID_INTENSITY] = ($row[FieldAlias::AID_INTENSITY] * 100) . ' %';
             }
         }
 
