@@ -76,7 +76,15 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     {
         $this->entityManager = $manager;
 
-        foreach ($this->loadData() as $reference => $reservationData) {
+        foreach ($this->loadDataForProgramCommercialized() as $reference => $reservationData) {
+            $reservation = $this->buildReservation($reservationData);
+            $manager->persist($reservation);
+            $this->addReference($reference, $reservation);
+        }
+
+        $manager->flush();
+
+        foreach ($this->loadDataForProgramPaused() as $reference => $reservationData) {
             $reservation = $this->buildReservation($reservationData);
             $manager->persist($reservation);
             $this->addReference($reference, $reservation);
@@ -85,7 +93,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $manager->flush();
     }
 
-    private function loadData(): iterable
+    private function loadDataForProgramCommercialized(): iterable
     {
         /** @var Program $program */
         $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
@@ -384,6 +392,63 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
     }
 
+    private function loadDataForProgramPaused(): iterable
+    {
+        /** @var Program $program */
+        $program = $this->getReference(ProgramFixtures::REFERENCE_PAUSED);
+
+        foreach ([ParticipationFixtures::PARTICIPANT_SAVO, ParticipationFixtures::PARTICIPANT_TOUL] as $participationReference) {
+            /** @var Participation $participation */
+            $participation        = $this->getReference($participationReference);
+            $staff                = $participation->getParticipant()->getStaff()->current();
+            $participationParts   = \explode('_', $participationReference);
+            $participantShortCode = \mb_strtolower(\array_pop($participationParts));
+            $referenceSuffix      = \sprintf('%s_%s', $program->getId(), $participantShortCode);
+
+            foreach (\range(1, 10) as $index) {
+                yield \sprintf('%s_%s_%s', self::RESERVATION_CONTRACT_FORMALIZED, $referenceSuffix, $index) => [
+                    'name'     => \sprintf('Reservation contractualisée %s (%s)', $index, $participantShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SA,
+                        FieldAlias::EMPLOYEES_NUMBER     => 300,
+                    ],
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => true,
+                        FieldAlias::AID_INTENSITY         => '0.80',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 300,
+                    ],
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                    ],
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
+                ];
+            }
+        }
+    }
+
     private function buildReservation(array $reservationData): Reservation
     {
         $reservation = new Reservation($reservationData['program'], $reservationData['addedBy']);
@@ -458,7 +523,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setInvestmentType($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence))
             ->setDetail($this->faker->sentence)
             ->setAidIntensity($this->findProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $data[FieldAlias::AID_INTENSITY]))
-            ->setAdditionalGuaranty($this->findProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->sentence(3)))
+            ->setAdditionalGuaranty($this->findProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->unique()->sentence(3)))
             ->setAgriculturalBranch($this->findProgramChoiceOption($program, FieldAlias::AGRICULTURAL_BRANCH, 'Branch N: ' . $this->faker->sentence))
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)

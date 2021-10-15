@@ -10,7 +10,7 @@ use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use Symfony\Component\PropertyAccess\Exception\AccessException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 
-class EligibilityHelper
+class ReservationAccessor
 {
     private PropertyAccessorInterface $propertyAccessor;
 

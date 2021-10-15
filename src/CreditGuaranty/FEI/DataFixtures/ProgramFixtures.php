@@ -30,8 +30,8 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     ];
 
     public const REFERENCE_COMMERCIALIZED         = 'program-commercialized';
+    public const REFERENCE_PAUSED                 = 'program-paused';
     private const REFERENCE_DRAFT                 = 'program-draft';
-    private const REFERENCE_PAUSED                = 'program-paused';
     private const REFERENCE_CANCELLED             = 'program-cancelled';
     private const REFERENCE_CANCELLED_CORPORATE   = self::REFERENCE_CANCELLED . '-' . CompanyGroupFixtures::CORPORATE;
     private const REFERENCE_CANCELLED_AGRICULTURE = self::REFERENCE_CANCELLED . '-' . CompanyGroupFixtures::AGRICULTURE;

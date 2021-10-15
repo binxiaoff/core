@@ -26,7 +26,6 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
     {
         return [
             StaffFixtures::class,
-            ParticipationFixtures::class,
         ];
     }
 

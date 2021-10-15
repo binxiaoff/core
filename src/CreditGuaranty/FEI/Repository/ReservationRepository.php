@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace KLS\CreditGuaranty\FEI\Repository;
 
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use Doctrine\Persistence\ManagerRegistry;
+use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
+use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 
 /**
  * @method Reservation|null find($id, $lockMode = null, $lockVersion = null)
@@ -49,5 +55,46 @@ class ReservationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+    }
+
+    public function findByReportingFilters(array $selects, array $joins, int $itemsPerPage, int $page): Paginator
+    {
+        $qb = $this->createQueryBuilder('r');
+
+        if (empty($selects) || empty($joins)) {
+            $qb->andWhere('1 = 0');
+        } else {
+            $qb
+                ->select('financingObjects.id AS id_financing_object')
+                ->addSelect('financingObjects.reportingFirstDate AS reporting_first_date')
+                ->addSelect('financingObjects.reportingLastDate AS reporting_last_date')
+                ->addSelect('financingObjects.reportingValidationDate AS reporting_validation_date')
+                ->leftJoin(FinancingObject::class, 'financingObjects', Join::WITH, 'r.id = financingObjects.reservation')
+            ;
+
+            foreach ($selects as $select) {
+                $qb->addSelect($select);
+            }
+            foreach ($joins as $join) {
+                $qb->leftJoin(...$join);
+            }
+
+            $qb
+                ->innerJoin('r.currentStatus', 'rcs')
+                ->where('rcs.status = :reservationStatus')
+                ->setParameter('reservationStatus', ReservationStatus::STATUS_CONTRACT_FORMALIZED)
+            ;
+        }
+
+        $criteria = Criteria::create()
+            ->setFirstResult(($page - 1) * $itemsPerPage)
+            ->setMaxResults($itemsPerPage)
+        ;
+        $qb->addCriteria($criteria);
+
+        $doctrinePaginator = new DoctrinePaginator($qb, false);
+        $doctrinePaginator->setUseOutputWalkers(false);
+
+        return new Paginator($doctrinePaginator);
     }
 }

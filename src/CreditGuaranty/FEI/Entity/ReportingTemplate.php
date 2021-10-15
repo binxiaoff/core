@@ -18,6 +18,7 @@ use KLS\Core\Entity\Traits\ArchivableTrait;
 use KLS\Core\Entity\Traits\BlamableAddedTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\CreditGuaranty\FEI\Controller\Reporting\Reporting;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -51,6 +52,30 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "controller": "KLS\CreditGuaranty\FEI\Controller\Reporting\Download",
  *             "path": "/credit_guaranty/reporting_templates/{publicId}/import-file/download",
  *             "security": "is_granted('view', object)",
+ *         },
+ *         "reporting": {
+ *             "method": "GET",
+ *             "path": "/credit_guaranty/reporting_templates/{publicId}/reporting",
+ *             "controller": Reporting::class,
+ *             "security": "is_granted('view', object)",
+ *             "openapi_context": {
+ *                 "parameters": {
+ *                     {
+ *                         "in": "query",
+ *                         "name": "itemsPerPage",
+ *                         "type": "integer",
+ *                         "description": "The items number per page (100 by default)",
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "page",
+ *                         "type": "integer",
+ *                         "description": "The page number (1 by default)",
+ *                         "required": false,
+ *                     },
+ *                 },
+ *             },
  *         },
  *     },
  *     collectionOperations={
