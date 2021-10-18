@@ -178,6 +178,12 @@ services:
     class: 'Symfony\Contracts\HttpClient\HttpClientInterface'
     factory: [ 'Symfony\Component\HttpClient\HttpClient', create ]
 
+  #Rollbar
+  KLS\Core\Service\RollbarPersonHandler:
+    decorates: Rollbar\Symfony\RollbarBundle\Factories\RollbarHandlerFactory
+    arguments:
+      - '@service_container'
+
   # formatter
 
   currency_formatter:
