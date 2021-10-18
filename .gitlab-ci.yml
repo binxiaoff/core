@@ -38,9 +38,8 @@ cache:
         export ANSIBLE_VAULT_PASS=$ANSIBLE_VAULT_PASS_PROD
         echo "$SSH_KNOWN_HOSTS_PROD" >> ~/.ssh/known_hosts
       elif [[ "${CI_ENVIRONMENT_NAME}" = "preprod" ]]
-        then
-        ssh-keyscan "private.web1.${CI_ENVIRONMENT_NAME}.kls-platform.com" >> ~/.ssh/known_hosts
-        ssh-keyscan "private.web2.${CI_ENVIRONMENT_NAME}.kls-platform.com" >> ~/.ssh/known_hosts
+      then
+        echo "$SSH_KNOWN_HOSTS_PREPROD" >> ~/.ssh/known_hosts
       else
         ssh-keyscan "private.${CI_ENVIRONMENT_NAME}.kls-platform.com" >> ~/.ssh/known_hosts
       fi
