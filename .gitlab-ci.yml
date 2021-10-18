@@ -1,7 +1,7 @@
 ###
 # Global configuration
 ###
-image: klstech/php-ci:7.4.16
+image: klstech/php-ci:7.4.24
 
 variables:
   APP_ENV: test
