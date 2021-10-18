@@ -30,8 +30,18 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'Apiculteur', 'Exploitant céréalier', 'Ostréiculteur',
             'Producteur de lait', 'Vignoble',
         ],
+        FieldAlias::ACTIVITY_DEPARTMENT => [
+            'Paris',
+            'Seine-et-Marne',
+            'Val-de-Marne',
+        ],
         FieldAlias::ACTIVITY_COUNTRY => [
             'FR',
+        ],
+        FieldAlias::INVESTMENT_DEPARTMENT => [
+            'Paris',
+            'Seine-et-Marne',
+            'Val-de-Marne',
         ],
         FieldAlias::INVESTMENT_COUNTRY => [
             'FR',

@@ -40,7 +40,8 @@ trait ReservationSetTrait
 
     protected function withBorrower(Reservation $reservation): void
     {
-        $program           = $reservation->getProgram();
+        $program = $reservation->getProgram();
+
         $borrowerTypeField = new Field(
             'borrower_type',
             Field::TAG_ELIGIBILITY,
@@ -80,6 +81,19 @@ trait ReservationSetTrait
             null,
             ['FR']
         );
+        $activityDepartmentField = new Field(
+            'activity_department',
+            Field::TAG_ELIGIBILITY,
+            'test',
+            'list',
+            'borrower',
+            'addressDepartment',
+            'ProgramChoiceOption',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
 
         $reservation->getBorrower()
             ->setBeneficiaryName('Borrower Name')
@@ -92,7 +106,7 @@ trait ReservationSetTrait
             ->setAddressStreet('42 rue de de la paix')
             ->setAddressCity('Paris')
             ->setAddressPostCode('75042')
-            ->setAddressDepartment('Ile-De-France')
+            ->setAddressDepartment(new ProgramChoiceOption($program, 'department', $activityDepartmentField))
             ->setAddressCountry(new ProgramChoiceOption($program, 'FR', $activityCountryField))
             ->setSiret(\str_repeat('1', 14))
             ->setLegalForm(new ProgramChoiceOption($program, 'legal form', $legalFormField))
@@ -105,7 +119,8 @@ trait ReservationSetTrait
 
     protected function withProject(Reservation $reservation): void
     {
-        $program                 = $reservation->getProgram();
+        $program = $reservation->getProgram();
+
         $investmentThematicField = new Field(
             'investment_thematic',
             Field::TAG_ELIGIBILITY,
