@@ -70,36 +70,33 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
         ]);
 
         foreach ($turnoverEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
-            $turnoverEligibilityCondition = new ProgramEligibilityCondition(
+            $turnoverEligibilityCondition = (new ProgramEligibilityCondition(
                 $programEligibilityConfiguration,
                 $turnoverField,
                 $totalAssetsField,
                 MathOperator::INFERIOR,
-                ProgramEligibilityCondition::VALUE_TYPE_RATE,
-                '0.2'
-            );
+                ProgramEligibilityCondition::VALUE_TYPE_RATE
+            ))->setValue('0.2');
             $manager->persist($turnoverEligibilityCondition);
         }
         foreach ($totalFeiCreditEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
-            $totalFeiCreditEligibilityCondition = new ProgramEligibilityCondition(
+            $totalFeiCreditEligibilityCondition = (new ProgramEligibilityCondition(
                 $programEligibilityConfiguration,
                 $totalFeiCreditField,
                 $creditExcludingFeiField,
                 MathOperator::SUPERIOR,
-                ProgramEligibilityCondition::VALUE_TYPE_RATE,
-                '0.4'
-            );
+                ProgramEligibilityCondition::VALUE_TYPE_RATE
+            ))->setValue('0.4');
             $manager->persist($totalFeiCreditEligibilityCondition);
         }
         foreach ($loanDurationEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
-            $loanDurationEligibilityCondition = new ProgramEligibilityCondition(
+            $loanDurationEligibilityCondition = (new ProgramEligibilityCondition(
                 $programEligibilityConfiguration,
                 $loanDurationField,
                 null,
                 MathOperator::SUPERIOR_OR_EQUAL,
-                ProgramEligibilityCondition::VALUE_TYPE_VALUE,
-                '4'
-            );
+                ProgramEligibilityCondition::VALUE_TYPE_VALUE
+            ))->setValue('4');
             $manager->persist($loanDurationEligibilityCondition);
         }
 

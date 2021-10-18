@@ -6,6 +6,7 @@ namespace KLS\CreditGuaranty\FEI\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Constant\MathOperator;
 use KLS\Core\Entity\Traits\CloneableTrait;
@@ -125,7 +126,8 @@ class ProgramEligibilityCondition
     private string $valueType;
 
     /**
-     * The value to compare in case of type "value" or "bool", or the value to calculate for comparison in case of type "rate".
+     * The value to compare in case of type "value" or "bool",
+     * or the value to calculate for comparison in case of type "rate".
      *
      * @ORM\Column(type="string", nullable=true)
      *
@@ -134,23 +136,21 @@ class ProgramEligibilityCondition
      *
      * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:write"})
      */
-    private ?string $value;
+    private ?string $value = null;
 
     public function __construct(
         ProgramEligibilityConfiguration $programEligibilityConfiguration,
         Field $leftOperandField,
         ?Field $rightOperandField,
         string $operation,
-        string $valueType,
-        ?string $value = null
+        string $valueType
     ) {
         $this->programEligibilityConfiguration = $programEligibilityConfiguration;
         $this->leftOperandField                = $leftOperandField;
         $this->rightOperandField               = $rightOperandField;
         $this->operation                       = $operation;
         $this->valueType                       = $valueType;
-        $this->value                           = $value;
-        $this->added                           = new \DateTimeImmutable();
+        $this->added                           = new DateTimeImmutable();
     }
 
     public function getProgramEligibilityConfiguration(): ProgramEligibilityConfiguration
@@ -158,8 +158,9 @@ class ProgramEligibilityCondition
         return $this->programEligibilityConfiguration;
     }
 
-    public function setProgramEligibilityConfiguration(ProgramEligibilityConfiguration $programEligibilityConfiguration): ProgramEligibilityCondition
-    {
+    public function setProgramEligibilityConfiguration(
+        ProgramEligibilityConfiguration $programEligibilityConfiguration
+    ): ProgramEligibilityCondition {
         $this->programEligibilityConfiguration = $programEligibilityConfiguration;
 
         return $this;
