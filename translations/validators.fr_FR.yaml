@@ -214,10 +214,12 @@ CreditGuaranty:
                 invalid: Vous ne pouvez pas mettre programChoiceOption d'un autre program.
             field:
                 invalid: Vous ne pouvez pas mettre programChoiceOption d'un autre champ.
+        requiredForEsb: Le programme ne peut être distribué, le champ %fieldAlias% doit avoir au moins un ProgramEligibilityConfiguration.
         value:
             invalid: La value n'est pas valable.
     ProgramEligibility:
         field:
+            requiredForEsb: Le programme ne peut être distribué, le champ %fieldAlias% doit avoir un ProgramEligibility.
             unsupportedType: le type criteria n'est pas valable.
     ProgramGradeAllocation:
         grade:
