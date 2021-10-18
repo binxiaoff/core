@@ -78,7 +78,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'youngFarmer',
             'propertyType'            => 'bool',
             'objectClass'             => Borrower::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -91,7 +91,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'creationInProgress',
             'propertyType'            => 'bool',
             'objectClass'             => Borrower::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -104,7 +104,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'subsidiary',
             'propertyType'            => 'bool',
             'objectClass'             => Borrower::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -312,7 +312,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'receivingGrant',
             'propertyType'            => 'bool',
             'objectClass'             => Project::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
@@ -572,7 +572,7 @@ class FieldFixtures extends AbstractFixtures
             'propertyPath'            => 'supportingGenerationsRenewal',
             'propertyType'            => 'bool',
             'objectClass'             => FinancingObject::class,
-            'comparable'              => false,
+            'comparable'              => true,
             'unit'                    => null,
             'predefinedItems'         => null,
         ];

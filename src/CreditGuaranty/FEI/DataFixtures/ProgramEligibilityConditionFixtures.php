@@ -55,7 +55,9 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
         /** @var Program $program */
         $program                          = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
         $programEligibilities             = $this->programEligibilityRepository->findBy(['program' => $program]);
-        $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programEligibility' => $programEligibilities]);
+        $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy([
+            'programEligibility' => $programEligibilities,
+        ]);
 
         foreach ($programEligibilityConfigurations as $programEligibilityConfiguration) {
             $fieldAlias = $programEligibilityConfiguration->getProgramEligibility()->getField()->getFieldAlias();
@@ -65,14 +67,13 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
             }
 
             foreach ($conditions[$fieldAlias] as $condition) {
-                $programEligibilityCondition = new ProgramEligibilityCondition(
+                $programEligibilityCondition = (new ProgramEligibilityCondition(
                     $programEligibilityConfiguration,
                     $condition['leftOperand'],
                     $condition['rightOperand'],
                     $condition['operator'],
-                    $condition['type'],
-                    (string) $condition['value']
-                );
+                    $condition['type']
+                ))->setValue((string) $condition['value']);
                 $manager->persist($programEligibilityCondition);
             }
         }
@@ -83,12 +84,20 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
     private function createConditions(): array
     {
         // comparable person
-        $employeesNumberField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::EMPLOYEES_NUMBER]);
+        $employeesNumberField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::EMPLOYEES_NUMBER,
+        ]);
         // comparable money
-        $tangibleFeiCreditField   = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::TANGIBLE_FEI_CREDIT]);
-        $intangibleFeiCreditField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::INTANGIBLE_FEI_CREDIT]);
+        $tangibleFeiCreditField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::TANGIBLE_FEI_CREDIT,
+        ]);
+        $intangibleFeiCreditField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::INTANGIBLE_FEI_CREDIT,
+        ]);
         // comparable month
-        $loanDurationField = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LOAN_DURATION]);
+        $loanDurationField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::LOAN_DURATION,
+        ]);
 
         return [
             FieldAlias::LEGAL_FORM => [
