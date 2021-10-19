@@ -83,11 +83,6 @@ services:
     arguments:
       $permissionCheckers: !tagged kls.file.download.permission.checker
 
-  KLS\Core\Security\UsernamePasswordRecaptchaAuthenticator:
-    $authenticationSuccessHandler: '@lexik_jwt_authentication.handler.authentication_success'
-    $authenticationFailureHandler: '@lexik_jwt_authentication.handler.authentication_failure'
-    $path: '/core/authentication_token'
-
   # Serializer
 
   KLS\Core\Serializer\ContextBuilder\CircularReferenceHandler:
@@ -143,10 +138,6 @@ services:
 
   KLS\Core\Service\File\FileDeleteManager:
     $managers: !tagged kls.file.delete
-
-  KLS\Core\Service\GoogleRecaptchaManager:
-    $client: '@eight_points_guzzle.client.google_recaptcha'
-    $secret: '%env(GOOGLE_RECAPTCHA_SECRET)%'
 
   KLS\Core\Service\Monolog\Processor\EnvironmentProcessor:
     $environment: '%kls.environment%'

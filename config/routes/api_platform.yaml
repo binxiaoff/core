@@ -2,8 +2,7 @@ api_platform:
     resource: .
     type: api_platform
 
-# Login route. The controller here do not matter as it will not be executed
-# Used by UsernamePasswordRecaptchaAuthenticator
+# Used by LexikJWTAuthenticationBundle
 authentication_token:
     path: /core/authentication_token
     methods: ['POST']
