@@ -10,27 +10,23 @@ use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
-use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConfigurationRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityRepository;
 use LogicException;
 
 class EligibilityChecker
 {
-    private FieldRepository $fieldRepository;
     private ProgramEligibilityRepository $programEligibilityRepository;
     private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
     private ReservationAccessor $reservationAccessor;
     private EligibilityConditionChecker $eligibilityConditionChecker;
 
     public function __construct(
-        FieldRepository $fieldRepository,
         ProgramEligibilityRepository $programEligibilityRepository,
         ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository,
         ReservationAccessor $reservationAccessor,
         EligibilityConditionChecker $eligibilityConditionChecker
     ) {
-        $this->fieldRepository                           = $fieldRepository;
         $this->programEligibilityRepository              = $programEligibilityRepository;
         $this->programEligibilityConfigurationRepository = $programEligibilityConfigurationRepository;
         $this->reservationAccessor                       = $reservationAccessor;
@@ -39,14 +35,16 @@ class EligibilityChecker
 
     public function check(Reservation $reservation, bool $withConditions, ?string $category): array
     {
-        /** @var iterable|Field[] $fields */
-        $fields = (false === empty($category))
-            ? $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY, 'category' => $category])
-            : $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY]);
+        $programEligibilities = $this->programEligibilityRepository->findByProgramAndFieldCategory(
+            $reservation->getProgram(),
+            $category
+        );
 
         $ineligibles = [];
 
-        foreach ($fields as $field) {
+        foreach ($programEligibilities as $programEligibility) {
+            $field = $programEligibility->getField();
+
             if (false === $this->checkByField($reservation, $field, $withConditions)) {
                 $ineligibles[$field->getCategory()][] = $field->getFieldAlias();
             }
@@ -91,8 +89,12 @@ class EligibilityChecker
         return $this->isEligible($reservation, $programEligibility, $withConditions, $value);
     }
 
-    private function isEligible(Reservation $reservation, ProgramEligibility $programEligibility, bool $withConditions, $value): bool
-    {
+    private function isEligible(
+        Reservation $reservation,
+        ProgramEligibility $programEligibility,
+        bool $withConditions,
+        $value
+    ): bool {
         if (null === $value) {
             return false;
         }
@@ -103,15 +105,23 @@ class EligibilityChecker
             return false;
         }
 
-        if ($withConditions && false === $this->eligibilityConditionChecker->checkByConfiguration($reservation, $programEligibilityConfiguration)) {
+        if (
+            $withConditions
+            && false === $this->eligibilityConditionChecker->checkByConfiguration(
+                $reservation,
+                $programEligibilityConfiguration
+            )
+        ) {
             return false;
         }
 
         return true;
     }
 
-    private function getConfigurationByFieldType(ProgramEligibility $programEligibility, $value): ProgramEligibilityConfiguration
-    {
+    private function getConfigurationByFieldType(
+        ProgramEligibility $programEligibility,
+        $value
+    ): ProgramEligibilityConfiguration {
         switch ($programEligibility->getField()->getType()) {
             case Field::TYPE_OTHER:
                 $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
