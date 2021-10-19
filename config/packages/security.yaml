@@ -39,7 +39,6 @@ security:
             <<: *firewall_shared_configuration
 
     access_control:
-        - { path: '^/captcha_checks', allow_if: "is_anonymous()" }
         - { path: '^/core/authentication_token', allow_if: "is_anonymous()" }
         - { path: '^/core/legal_documents', allow_if: "is_authenticated() or is_anonymous()" }
         - { path: '^/core/pulse$', allow_if: "is_anonymous()" }
