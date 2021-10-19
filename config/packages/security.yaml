@@ -30,12 +30,12 @@ security:
                     limiter: app.login_rate_limiter
         api:
             stateless: true
+            # the login attempts limiting doesn't work for the jwt, as the jwt decoder throws an exception for an invalid jwt before the authentication process
+            jwt: ~
             guard:
                 authenticators:
-                    # the login attempts limiting doesn't work for the jwt, as the jwt decoder throws an exception for an invalid jwt before the authentication process.
-                    - lexik_jwt_authentication.jwt_token_authenticator
                     - KLS\Core\Security\TemporaryTokenAuthenticator
-            entry_point: lexik_jwt_authentication.jwt_token_authenticator
+            entry_point: jwt
             <<: *firewall_shared_configuration
 
     access_control:
