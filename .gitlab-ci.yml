@@ -51,6 +51,9 @@ cache:
     - export DEPLOY_USER="${GITLAB_USER_NAME}"
   script:
     - ansible-playbook -i "inventory/private/${CI_ENVIRONMENT_NAME}.yml" deploy-api.yml --extra-vars="gitBranch=${CI_COMMIT_REF_NAME}"
+  tags:
+    # this can be overriden, if you specify tags it is replaced, not appended
+    - staging-deployment
   when: manual
 
 ###
