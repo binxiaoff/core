@@ -147,7 +147,7 @@ class ProgramEligibilityCondition
      *
      * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:write"})
      */
-    private ?ProgramChoiceOption $programChoiceOption;
+    private ?ProgramChoiceOption $programChoiceOption = null;
 
     public function __construct(
         ProgramEligibilityConfiguration $programEligibilityConfiguration,
