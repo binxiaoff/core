@@ -6,7 +6,6 @@ namespace KLS\CreditGuaranty\FEI\Service;
 
 use Doctrine\Common\Collections\Collection;
 use KLS\CreditGuaranty\FEI\Entity\Field;
-use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
@@ -101,6 +100,10 @@ class EligibilityChecker
 
         $programEligibilityConfiguration = $this->getConfigurationByFieldType($programEligibility, $value);
 
+        if (false === ($programEligibilityConfiguration instanceof ProgramEligibilityConfiguration)) {
+            return false;
+        }
+
         if (false === $programEligibilityConfiguration->isEligible()) {
             return false;
         }
@@ -121,7 +124,9 @@ class EligibilityChecker
     private function getConfigurationByFieldType(
         ProgramEligibility $programEligibility,
         $value
-    ): ProgramEligibilityConfiguration {
+    ): ?ProgramEligibilityConfiguration {
+        $programEligibilityConfiguration = null;
+
         switch ($programEligibility->getField()->getType()) {
             case Field::TYPE_OTHER:
                 $programEligibilityConfiguration = $this->programEligibilityConfigurationRepository->findOneBy([
@@ -149,16 +154,6 @@ class EligibilityChecker
             default:
                 // the check is done in ProgramEligibility::initialiseConfigurations
                 throw new LogicException('This code should not be reached');
-        }
-
-        if (false === ($programEligibilityConfiguration instanceof ProgramEligibilityConfiguration)) {
-            throw new LogicException(
-                \sprintf(
-                    'Cannot found programEligibilityConfiguration for programEligibility #%s with value %s',
-                    $programEligibility->getId(),
-                    ($value instanceof ProgramChoiceOption) ? $value->getDescription() : $value
-                )
-            );
         }
 
         return $programEligibilityConfiguration;
