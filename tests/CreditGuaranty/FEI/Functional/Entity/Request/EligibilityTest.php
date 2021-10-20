@@ -91,14 +91,13 @@ class EligibilityTest extends AbstractApiTest
         yield 'user-1 - reservation draft 1 - checking profile without conditions : eligible' => [
             'staff_company:basic_user-1',
             ReservationFixtures::RESERVATION_DRAFT_1,
-            'profile',
             false,
             [],
+            'profile',
         ];
         yield 'user-1 - reservation draft 2 - checking profile without conditions : ineligible' => [
             'staff_company:basic_user-1',
             ReservationFixtures::RESERVATION_DRAFT_2,
-            'profile',
             false,
             [
                 'profile' => [
@@ -106,59 +105,60 @@ class EligibilityTest extends AbstractApiTest
                     'subsidiary',
                 ],
             ],
+            'profile',
         ];
         yield 'user-2 - reservation sent 1 - checking profile without conditions : eligible' => [
             'staff_company:basic_user-2',
             ReservationFixtures::RESERVATION_SENT_1,
-            'profile',
             false,
             [],
+            'profile',
         ];
         yield 'user-2 - reservation sent 1 - checking profile with conditions : eligible' => [
             'staff_company:basic_user-2',
             ReservationFixtures::RESERVATION_SENT_1,
-            'profile',
             true,
             [],
+            'profile',
         ];
         yield 'user-3 - reservation sent 1 - checking project without conditions : eligible' => [
             'staff_company:basic_user-3',
             ReservationFixtures::RESERVATION_SENT_1,
-            'project',
             false,
             [],
+            'project',
         ];
         yield 'user-3 - reservation sent 1 - checking project with conditions : ineligible' => [
             'staff_company:basic_user-3',
             ReservationFixtures::RESERVATION_SENT_1,
-            'project',
             true,
             [
                 'project' => [
                     'total_fei_credit',
                 ],
             ],
+            'project',
         ];
         yield 'user-5 - reservation sent 1 - checking loan without conditions : eligible' => [
             'staff_company:basic_user-5',
             ReservationFixtures::RESERVATION_SENT_1,
-            'loan',
             false,
             [],
+            'loan',
         ];
         yield 'user-5 - reservation sent 1 - checking loan with conditions : eligible' => [
             'staff_company:basic_user-5',
             ReservationFixtures::RESERVATION_SENT_1,
-            'loan',
             true,
             [],
+            'loan',
         ];
         yield 'user-11 - reservation sent 1 - checking conditions : eligible' => [
             'staff_company:basic_user-11',
             ReservationFixtures::RESERVATION_SENT_1,
-            null,
             true,
             [],
+            null,
         ];
         yield 'user-3 - reservation sent 2 - checking profile without conditions : ineligible' => [
             'staff_company:basic_user-3',
@@ -175,7 +175,6 @@ class EligibilityTest extends AbstractApiTest
         yield 'user-3 - reservation sent 2 - checking profile with conditions : ineligible' => [
             'staff_company:basic_user-3',
             ReservationFixtures::RESERVATION_SENT_2,
-            'profile',
             true,
             [
                 'profile' => [
@@ -183,51 +182,51 @@ class EligibilityTest extends AbstractApiTest
                     'creation_in_progress',
                 ],
             ],
+            'profile',
         ];
         yield 'user-4 - reservation sent 2 - checking project without conditions : ineligible' => [
             'staff_company:basic_user-4',
             ReservationFixtures::RESERVATION_SENT_2,
-            'project',
             false,
             [
                 'project' => [
                     'project_grant',
                 ],
             ],
+            'project',
         ];
         yield 'user-4 - reservation sent 2 - checking project with conditions : ineligible' => [
             'staff_company:basic_user-4',
             ReservationFixtures::RESERVATION_SENT_2,
-            'project',
             true,
             [
                 'project' => [
                     'project_grant',
                 ],
             ],
+            'project',
         ];
         yield 'user-5 - reservation sent 2 - checking loan without conditions : eligible' => [
             'staff_company:basic_user-5',
             ReservationFixtures::RESERVATION_SENT_2,
-            'loan',
             false,
             [],
+            'loan',
         ];
         yield 'user-5 - reservation sent 2 - checking loan with conditions : ineligible' => [
             'staff_company:basic_user-5',
             ReservationFixtures::RESERVATION_SENT_2,
-            'loan',
             true,
             [
                 'loan' => [
                     'loan_duration',
                 ],
             ],
+            'loan',
         ];
         yield 'user-11 - reservation sent 2 - checking conditions : ineligible' => [
             'staff_company:basic_user-11',
             ReservationFixtures::RESERVATION_SENT_2,
-            null,
             true,
             [
                 'profile' => [
@@ -242,6 +241,7 @@ class EligibilityTest extends AbstractApiTest
                     'loan_duration',
                 ],
             ],
+            null,
         ];
     }
 
