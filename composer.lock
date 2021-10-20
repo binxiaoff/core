@@ -2599,21 +2599,21 @@
         },
         {
             "name": "facile-it/doctrine-mysql-come-back",
-            "version": "v1.9.0",
+            "version": "1.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/facile-it/doctrine-mysql-come-back.git",
-                "reference": "086d205115e58e875e2ad5fe53eb8f4fcffc5855"
+                "reference": "ff4a854339f008395d8d4398bda847efd088915d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/facile-it/doctrine-mysql-come-back/zipball/086d205115e58e875e2ad5fe53eb8f4fcffc5855",
-                "reference": "086d205115e58e875e2ad5fe53eb8f4fcffc5855",
+                "url": "https://api.github.com/repos/facile-it/doctrine-mysql-come-back/zipball/ff4a854339f008395d8d4398bda847efd088915d",
+                "reference": "ff4a854339f008395d8d4398bda847efd088915d",
                 "shasum": ""
             },
             "require": {
                 "doctrine/dbal": "^2.11",
-                "php": "^7.3"
+                "php": "^7.3 || ^8.0"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^2.12.17",
@@ -2648,9 +2648,9 @@
             ],
             "support": {
                 "issues": "https://github.com/facile-it/doctrine-mysql-come-back/issues",
-                "source": "https://github.com/facile-it/doctrine-mysql-come-back/tree/v1.9.0"
+                "source": "https://github.com/facile-it/doctrine-mysql-come-back/tree/1.10.1"
             },
-            "time": "2020-10-31T10:07:52+00:00"
+            "time": "2021-04-23T12:26:58+00:00"
         },
         {
             "name": "fig/link-util",
@@ -4629,21 +4629,21 @@
         },
         {
             "name": "nexylan/slack-bundle",
-            "version": "v2.2.2",
+            "version": "v2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nexylan/slack-bundle.git",
-                "reference": "dd0d1218252cf53e38ed03816e7d5d61da4c529d"
+                "reference": "db0b3450517ea5fecdc148d899dd6152452da012"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nexylan/slack-bundle/zipball/dd0d1218252cf53e38ed03816e7d5d61da4c529d",
-                "reference": "dd0d1218252cf53e38ed03816e7d5d61da4c529d",
+                "url": "https://api.github.com/repos/nexylan/slack-bundle/zipball/db0b3450517ea5fecdc148d899dd6152452da012",
+                "reference": "db0b3450517ea5fecdc148d899dd6152452da012",
                 "shasum": ""
             },
             "require": {
                 "nexylan/slack": "^3.0",
-                "php": "^7.3",
+                "php": "^7.4 || ^8.0",
                 "php-http/discovery": "^1.6",
                 "php-http/httplug": "^2.0",
                 "php-http/httplug-bundle": "^1.17",
@@ -4654,7 +4654,7 @@
                 "matthiasnoback/symfony-dependency-injection-test": "^4.0",
                 "php-http/guzzle6-adapter": "^1.1.1 || ^2.0",
                 "php-http/mock-client": "^1.1",
-                "phpunit/phpunit": "^8.0",
+                "phpunit/phpunit": "^8.4",
                 "symfony/framework-bundle": "^3.4 || ^4.4 || ^5.0"
             },
             "suggest": {
@@ -4684,9 +4684,9 @@
             "description": "Symfony bundle integration of nexylan/slack library",
             "support": {
                 "issues": "https://github.com/nexylan/slack-bundle/issues",
-                "source": "https://github.com/nexylan/slack-bundle/tree/master"
+                "source": "https://github.com/nexylan/slack-bundle/tree/v2.3.0"
             },
-            "time": "2020-01-31T18:56:23+00:00"
+            "time": "2021-03-31T13:25:07+00:00"
         },
         {
             "name": "odolbeau/phone-number-bundle",
