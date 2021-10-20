@@ -20,7 +20,4 @@ class ResetPassword
 {
     /** @var string */
     public $email;
-
-    /** @var string */
-    public $captchaValue;
 }

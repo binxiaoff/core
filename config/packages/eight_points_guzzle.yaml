@@ -1,9 +1,5 @@
 eight_points_guzzle:
     clients:
-        google_recaptcha:
-            base_url: 'https://www.google.com/recaptcha/api/siteverify'
-            options:
-                http_errors: false
         insee:
             base_url: "https://api.insee.fr/entreprises/sirene/V3/siren/"
             options:

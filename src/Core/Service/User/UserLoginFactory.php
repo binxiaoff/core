@@ -8,7 +8,6 @@ use Exception;
 use KLS\Core\Entity\User;
 use KLS\Core\Entity\UserFailedLogin;
 use KLS\Core\Entity\UserSuccessfulLogin;
-use KLS\Core\Exception\Authentication\RecaptchaChallengeFailedException;
 use KLS\Core\Service\UserActivity\IpGeoLocManager;
 use KLS\Core\Service\UserActivity\UserAgentManager;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -58,12 +57,6 @@ class UserLoginFactory
             }
         }
 
-        $recaptchaResult = $user->getRecaptchaResult();
-
-        if ($recaptchaResult) {
-            $entry->setRecaptchaScore($recaptchaResult->score);
-        }
-
         return $entry;
     }
 
@@ -82,10 +75,6 @@ class UserLoginFactory
 
         $failedLogin->setUsername($username);
         $failedLogin->setError($exception->getMessage());
-
-        if ($exception instanceof RecaptchaChallengeFailedException) {
-            $failedLogin->setRecaptchaScore($exception->getResult()->score);
-        }
 
         return $failedLogin;
     }

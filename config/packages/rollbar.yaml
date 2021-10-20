@@ -15,7 +15,6 @@ rollbar:
         - csrf_token
         - access_token
         # customised values
-        - google_recaptcha_secret
         - maxmind_license_key
         - app_secret
         - mailjet_api_key
@@ -24,7 +23,6 @@ rollbar:
         - cloudfront_distribution
         - file_encryption_kek_passphrase
         - database_url_migration
-        - google_recaptcha_key
         - docusign_user_id
         - docusign_integrator_key
         - slack_webhook_url

@@ -57,9 +57,8 @@ class AuthenticationTokenTest extends ApiTestCase
             self::ENDPOINT_AUTH_TOKEN,
             [
                 'json' => [
-                    'username'     => $user->getEmail(),
-                    'password'     => UserFixtures::DEFAULT_PASSWORD,
-                    'captchaValue' => 'ignored in test',
+                    'username' => $user->getEmail(),
+                    'password' => UserFixtures::DEFAULT_PASSWORD,
                 ],
             ]
         );
@@ -111,9 +110,8 @@ class AuthenticationTokenTest extends ApiTestCase
             self::ENDPOINT_AUTH_TOKEN,
             [
                 'json' => [
-                    'username'     => $user->getEmail(),
-                    'password'     => $password,
-                    'captchaValue' => 'ignored in test',
+                    'username' => $user->getEmail(),
+                    'password' => $password,
                 ],
             ]
         );

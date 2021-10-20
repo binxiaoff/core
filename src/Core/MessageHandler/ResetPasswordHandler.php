@@ -7,27 +7,19 @@ namespace KLS\Core\MessageHandler;
 use Exception;
 use KLS\Core\Entity\Request\ResetPassword;
 use KLS\Core\Repository\UserRepository;
-use KLS\Core\Service\GoogleRecaptchaManager;
 use KLS\Core\Service\User\UserNotifier;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 class ResetPasswordHandler implements MessageHandlerInterface
 {
-    /** @var UserRepository */
-    private $userRepository;
-    /** @var UserNotifier */
-    private $notifier;
-    /** @var GoogleRecaptchaManager */
-    private $googleRecaptchaManager;
+    private UserRepository $userRepository;
 
-    public function __construct(
-        UserRepository $userRepository,
-        UserNotifier $notifier,
-        GoogleRecaptchaManager $googleRecaptchaManager
-    ) {
-        $this->userRepository         = $userRepository;
-        $this->notifier               = $notifier;
-        $this->googleRecaptchaManager = $googleRecaptchaManager;
+    private UserNotifier            $notifier;
+
+    public function __construct(UserRepository $userRepository, UserNotifier $notifier)
+    {
+        $this->userRepository = $userRepository;
+        $this->notifier       = $notifier;
     }
 
     /**
@@ -37,7 +29,7 @@ class ResetPasswordHandler implements MessageHandlerInterface
     {
         $user = $this->userRepository->findOneBy(['email' => $resetPasswordRequest->email]);
 
-        if ($user && $this->googleRecaptchaManager->getResult($resetPasswordRequest->captchaValue)->valid) {
+        if ($user) {
             $this->notifier->notifyPasswordRequest($user);
         }
     }

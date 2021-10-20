@@ -42,7 +42,8 @@ class SwaggerDecorator implements NormalizerInterface
             $this->router->generate('authentication_token')       => $this->generateAuthenticationTokenPath(),
             $this->router->generate('gesdinet_jwt_refresh_token') => $this->generateRefreshTokenPath(),
         ];
-        $docs['paths'] = \array_merge($authenticationPaths, $docs['paths']); // put authentication paths at top of the list
+        // put authentication paths at top of the list
+        $docs['paths'] = \array_merge($authenticationPaths, $docs['paths']);
 
         // Schemas
         $docs['components']['schemas']['Folder'] = [
@@ -76,12 +77,8 @@ class SwaggerDecorator implements NormalizerInterface
                                         'description' => 'Password',
                                         'type'        => 'string',
                                     ],
-                                    'captchaValue' => [
-                                        'description' => 'Captcha value',
-                                        'type'        => 'string',
-                                    ],
                                 ],
-                                'required' => ['username', 'password', 'captchaValue'],
+                                'required' => ['username', 'password'],
                             ],
                         ],
                     ],
@@ -100,10 +97,6 @@ class SwaggerDecorator implements NormalizerInterface
                                         ],
                                         'password' => [
                                             'description' => 'Password',
-                                            'type'        => 'string',
-                                        ],
-                                        'captchaValue' => [
-                                            'description' => 'Captcha value',
                                             'type'        => 'string',
                                         ],
                                     ],
