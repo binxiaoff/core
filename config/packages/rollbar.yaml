@@ -4,6 +4,7 @@ rollbar:
     environment: '%kls.environment%'
     autodetect_branch: true
     local_vars_dump: false
+    capture_email: true
     scrub_fields:
         # default values
         - passwd
