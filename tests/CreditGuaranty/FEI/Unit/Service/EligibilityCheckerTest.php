@@ -19,7 +19,6 @@ use KLS\CreditGuaranty\FEI\Service\EligibilityChecker;
 use KLS\CreditGuaranty\FEI\Service\EligibilityConditionChecker;
 use KLS\CreditGuaranty\FEI\Service\ReservationAccessor;
 use KLS\Test\CreditGuaranty\FEI\Unit\Traits\ReservationSetTrait;
-use LogicException;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -721,7 +720,7 @@ class EligibilityCheckerTest extends TestCase
      *
      * @param mixed $value
      */
-    public function testCheckExceptionWithoutProgramEligibilityConfiguration(Field $field, $value): void
+    public function testCheckWithoutProgramEligibilityConfiguration(Field $field, $value): void
     {
         $category             = $field->getCategory();
         $withConditions       = false;
@@ -767,10 +766,13 @@ class EligibilityCheckerTest extends TestCase
             ->shouldNotBeCalled()
         ;
 
-        static::expectException(LogicException::class);
-
         $eligibilityChecker = $this->createTestObject();
-        $eligibilityChecker->check($this->reservation, $withConditions, $category);
+        $result             = $eligibilityChecker->check($this->reservation, $withConditions, $category);
+
+        static::assertSame(
+            [$field->getCategory() => [$field->getFieldAlias()]],
+            $result
+        );
     }
 
     private function getEntity(Field $field)

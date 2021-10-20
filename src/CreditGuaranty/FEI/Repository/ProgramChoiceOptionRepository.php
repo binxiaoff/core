@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS\CreditGuaranty\FEI\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -49,8 +50,22 @@ class ProgramChoiceOptionRepository extends ServiceEntityRepository
      */
     public function remove(ProgramChoiceOption $programChoiceOption): void
     {
-        $this->getEntityManager()->remove($programChoiceOption);
-        $this->getEntityManager()->flush();
+        if ($programChoiceOption->isArchived()) {
+            return;
+        }
+
+        try {
+            $this->getEntityManager()->remove($programChoiceOption);
+            $this->getEntityManager()->flush();
+        } catch (ForeignKeyConstraintViolationException $exception) {
+            // we have to reset registry manager because it closes on exception
+            $this->resetManager();
+
+            // we use find() instead of merge() because it will be deprecated
+            $programChoiceOption = $this->find($programChoiceOption->getId());
+            $programChoiceOption->archive();
+            $this->save($programChoiceOption);
+        }
     }
 
     public function resetManager(): void
