@@ -98,7 +98,7 @@ class FieldAlias extends AbstractEnum
         self::LOAN_NAF_CODE    => 'loan_nace_code',
     ];
 
-    public const ESB_FIELDS = [
+    public const ESB_RELATED_FIELDS = [
         self::AID_INTENSITY,
         self::LOAN_DURATION,
         self::LOAN_MONEY,

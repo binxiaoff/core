@@ -14,7 +14,6 @@ use KLS\Core\Entity\Traits\BlamableAddedTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use KLS\Core\Traits\ConstantsAwareTrait;
-use KLS\CreditGuaranty\FEI\Validator\Constraints\ProgramDistributedEsb;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -54,7 +53,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     callback={"KLS\Core\Validator\Constraints\TraceableStatusValidator", "validate"},
  *     payload={ "path": "status", "allowedStatus": self::ALLOWED_STATUS }
  * )
- * @ProgramDistributedEsb
  */
 class ProgramStatus implements StatusInterface
 {

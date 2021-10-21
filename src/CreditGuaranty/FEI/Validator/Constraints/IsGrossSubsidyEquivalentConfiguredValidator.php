@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace KLS\CreditGuaranty\FEI\Validator\Constraints;
 
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
+use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
-use KLS\CreditGuaranty\FEI\Entity\ProgramStatus;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityRepository;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
-class ProgramDistributedEsbValidator extends ConstraintValidator
+class IsGrossSubsidyEquivalentConfiguredValidator extends ConstraintValidator
 {
     private FieldRepository $fieldRepository;
     private ProgramEligibilityRepository $programEligibilityRepository;
@@ -26,22 +26,27 @@ class ProgramDistributedEsbValidator extends ConstraintValidator
     }
 
     /**
-     * @param ProgramStatus         $value
-     * @param ProgramDistributedEsb $constraint
+     * @param ?bool                              $value
+     * @param IsGrossSubsidyEquivalentConfigured $constraint
      */
     public function validate($value, Constraint $constraint): void
     {
-        if (ProgramStatus::STATUS_DISTRIBUTED !== $value->getStatus() || null !== $value->getId()) {
+        if (Program::class !== $this->context->getClassName()) {
             return;
         }
 
-        $program = $value->getProgram();
-
-        if (false === $program->isEsbCalculationActivated()) {
+        if ('esbCalculationActivated' !== $this->context->getPropertyName()) {
             return;
         }
 
-        $fields = $this->fieldRepository->findBy(['fieldAlias' => FieldAlias::ESB_FIELDS]);
+        /** @var Program $program */
+        $program = $this->context->getObject();
+
+        if (true !== $program->isEsbCalculationActivated()) {
+            return;
+        }
+
+        $fields = $this->fieldRepository->findBy(['fieldAlias' => FieldAlias::ESB_RELATED_FIELDS]);
 
         foreach ($fields as $field) {
             $programEligibility = $this->programEligibilityRepository->findOneBy([
@@ -50,15 +55,21 @@ class ProgramDistributedEsbValidator extends ConstraintValidator
             ]);
 
             if (false === ($programEligibility instanceof ProgramEligibility)) {
-                $this->context->buildViolation('CreditGuaranty.ProgramEligibility.field.requiredForEsb')
+                $this->context->buildViolation(
+                    'CreditGuaranty.Program.esbCalculationActivated.missingProgramEligibilityForEsb'
+                )
                     ->setParameter('%fieldAlias%', $field->getFieldAlias())
-                    ->atPath('programEligibilities')
                     ->addViolation()
                 ;
-            } elseif (0 === $programEligibility->getProgramEligibilityConfigurations()->count()) {
-                $this->context->buildViolation('CreditGuaranty.ProgramEligibilityConfiguration.requiredForEsb')
+
+                return;
+            }
+
+            if (0 === $programEligibility->getProgramEligibilityConfigurations()->count()) {
+                $this->context->buildViolation(
+                    'CreditGuaranty.Program.esbCalculationActivated.missingProgramEligibilityConfigurationForEsb'
+                )
                     ->setParameter('%fieldAlias%', $field->getFieldAlias())
-                    ->atPath('programEligibilities')
                     ->addViolation()
                 ;
             }
