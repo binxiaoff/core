@@ -235,9 +235,10 @@ CreditGuaranty:
             notComparableUnit: Les champs choisis n'ont pas le même unit.
         operation:
             notEqual: L'operation doit être un égal pour une comparaison de type "bool" ou "list".
-        programChoiceOption:
+        programChoiceOptions:
+            invalidMappingField: Le field {{ fieldId }} du programChoiceOption ne correspond pas au leftOperandField {{ leftOperandFieldId }} du ProgramEligibilityCondition.
             notEmpty: programChoiceOption doit être vide si ce n'est pas une comparaison de type "list".
-            required: Merci de remplir un programChoiceOption pour une comparaison de type "list".
+            required: Merci de remplir les programChoiceOptions pour une comparaison de type "list".
         rightOperandField:
             notEmpty: rightOperandField doit être vide pour une comparaison de type "value", "bool" ou "list".
             required: rightOperandField doit être requis pour une comparaison de type "rate".

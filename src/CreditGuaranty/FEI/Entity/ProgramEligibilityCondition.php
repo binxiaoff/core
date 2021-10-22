@@ -7,6 +7,8 @@ namespace KLS\CreditGuaranty\FEI\Entity;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Constant\MathOperator;
 use KLS\Core\Entity\Traits\CloneableTrait;
@@ -140,14 +142,18 @@ class ProgramEligibilityCondition
     private ?string $value = null;
 
     /**
-     * The option to compare in case of type "list".
+     * The option(s) to compare in case of type "list".
      *
-     * @ORM\ManyToOne(targetEntity=ProgramChoiceOption::class)
-     * @ORM\JoinColumn(name="id_program_choice_option")
+     * @var ProgramChoiceOption[]|Collection
+     *
+     * @ORM\ManyToMany(targetEntity=ProgramChoiceOption::class)
+     * @ORM\JoinTable(name="credit_guaranty_program_eligibility_condition_choice_option")
+     *
+     * @ApiProperty(readableLink=false)
      *
      * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:write"})
      */
-    private ?ProgramChoiceOption $programChoiceOption = null;
+    private Collection $programChoiceOptions;
 
     public function __construct(
         ProgramEligibilityConfiguration $programEligibilityConfiguration,
@@ -161,6 +167,7 @@ class ProgramEligibilityCondition
         $this->rightOperandField               = $rightOperandField;
         $this->operation                       = $operation;
         $this->valueType                       = $valueType;
+        $this->programChoiceOptions            = new ArrayCollection();
         $this->added                           = new DateTimeImmutable();
     }
 
@@ -237,14 +244,40 @@ class ProgramEligibilityCondition
         return $this;
     }
 
-    public function getProgramChoiceOption(): ?ProgramChoiceOption
+    /**
+     * @return ProgramChoiceOption[]|Collection
+     */
+    public function getProgramChoiceOptions(): Collection
     {
-        return $this->programChoiceOption;
+        return $this->programChoiceOptions;
     }
 
-    public function setProgramChoiceOption(?ProgramChoiceOption $programChoiceOption): ProgramEligibilityCondition
+    public function addProgramChoiceOption(ProgramChoiceOption $programChoiceOption): ProgramEligibilityCondition
     {
-        $this->programChoiceOption = $programChoiceOption;
+        $callback = function (int $key, ProgramChoiceOption $pco) use ($programChoiceOption): bool {
+            return $pco->getProgram()     === $programChoiceOption->getProgram()
+                && $pco->getField()       === $programChoiceOption->getField()
+                && $pco->getDescription() === $programChoiceOption->getDescription();
+        };
+
+        if (false === $this->programChoiceOptions->exists($callback)) {
+            $this->programChoiceOptions->add($programChoiceOption);
+        }
+
+        return $this;
+    }
+
+    public function removeProgramChoiceOption(ProgramChoiceOption $programChoiceOption): ProgramEligibilityCondition
+    {
+        $callback = function (int $key, ProgramChoiceOption $pco) use ($programChoiceOption): bool {
+            return $pco->getProgram()     === $programChoiceOption->getProgram()
+                && $pco->getField()       === $programChoiceOption->getField()
+                && $pco->getDescription() === $programChoiceOption->getDescription();
+        };
+
+        if ($this->programChoiceOptions->exists($callback)) {
+            $this->programChoiceOptions->removeElement($programChoiceOption);
+        }
 
         return $this;
     }
@@ -252,6 +285,7 @@ class ProgramEligibilityCondition
     public static function getAvailableOperations(): array
     {
         $operations = MathOperator::getConstList();
+
         if (isset($operations['BETWEEN'])) {
             unset($operations['BETWEEN']);
         }
@@ -402,15 +436,15 @@ class ProgramEligibilityCondition
     /**
      * @Assert\Callback
      */
-    public function validateProgramChoiceOption(ExecutionContextInterface $context): void
+    public function validateProgramChoiceOptions(ExecutionContextInterface $context): void
     {
-        $valueType           = $this->getValueType();
-        $programChoiceOption = $this->getProgramChoiceOption();
+        $valueType            = $this->getValueType();
+        $programChoiceOptions = $this->getProgramChoiceOptions();
 
         if (\in_array($valueType, self::ALLOWED_VALUE_TYPES_FOR_VALUE)) {
-            if (null !== $programChoiceOption) {
-                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.programChoiceOption.notEmpty')
-                    ->atPath('programChoiceOption')
+            if (0 < $programChoiceOptions->count()) {
+                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.programChoiceOptions.notEmpty')
+                    ->atPath('programChoiceOptions')
                     ->addViolation()
                 ;
             }
@@ -418,11 +452,25 @@ class ProgramEligibilityCondition
             return;
         }
 
-        if (false === ($programChoiceOption instanceof ProgramChoiceOption)) {
-            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.programChoiceOption.required')
-                ->atPath('programChoiceOption')
+        if (0 === $programChoiceOptions->count()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.programChoiceOptions.required')
+                ->atPath('programChoiceOptions')
                 ->addViolation()
             ;
+        }
+
+        foreach ($programChoiceOptions as $programChoiceOption) {
+            if ($this->getLeftOperandField() !== $programChoiceOption->getField()) {
+                $context
+                    ->buildViolation(
+                        'CreditGuaranty.ProgramEligibilityCondition.programChoiceOptions.invalidMappingField'
+                    )
+                    ->setParameter('{{ fieldId }}', (string) $programChoiceOption->getField()->getId())
+                    ->setParameter('{{ leftOperandFieldId }}', (string) $this->getLeftOperandField()->getId())
+                    ->atPath('programChoiceOptions')
+                    ->addViolation()
+                ;
+            }
         }
 
         if (MathOperator::EQUAL !== $this->getOperation()) {
