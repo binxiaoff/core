@@ -113,7 +113,7 @@ class HubspotContactManager
 
         $lastContactId = 0;
         if (\array_key_exists('paging', $content)) {
-            $lastContactId = $content['paging']['next']['after'];
+            $lastContactId = (int) $content['paging']['next']['after'];
         }
 
         return [
@@ -188,7 +188,11 @@ class HubspotContactManager
         $response = $this->hubspotClient->fetchAllContacts($lastContactId);
 
         if (Response::HTTP_OK !== $response->getStatusCode()) {
-            $this->logger->error(\sprintf('There is an error while fetching %s : Error is %s', $response->getInfo()['url'], $response->getContent(false)));
+            $this->logger->error(\sprintf(
+                'There is an error while fetching %s : Error is %s',
+                $response->getInfo()['url'],
+                $response->getContent(false)
+            ));
 
             return [];
         }
@@ -198,8 +202,10 @@ class HubspotContactManager
 
     private function formatData(User $user): array
     {
-        $temporaryToken        = $this->temporaryTokenRepository->findOneBy(['user' => $user], ['id' => 'DESC']);
-        $lastLogin             = $this->userSuccessfulLoginRepository->findOneBy(['user' => $user], ['id' => 'DESC']); // get by user order by date desc, prendre le premier
+        $temporaryToken = $this->temporaryTokenRepository->findOneBy(['user' => $user], ['id' => 'DESC']);
+        $lastLogin      = $this->userSuccessfulLoginRepository->findOneBy([
+            'user' => $user,
+        ], ['id' => 'DESC']); // get by user order by date desc, prendre le premier
         $temporaryTokenExpires = $temporaryToken ? $temporaryToken->getExpires() : null;
         $lastLoginDate         = $lastLogin ? $lastLogin->getAdded() : null;
 
@@ -231,14 +237,16 @@ class HubspotContactManager
 
         return [
             'properties' => [
-                'firstname'                      => $user->getFirstName(),
-                'lastname'                       => $user->getLastName(),
-                'email'                          => $user->getEmail(),
-                'jobtitle'                       => $user->getJobFunction(),
-                'phone'                          => $user->getPhone(),
-                'kls_user_status'                => 10 === $user->getCurrentStatus()->getStatus() ? 'invited' : 'created',
-                'kls_last_login'                 => $lastLoginDate ? $lastLoginDate->format('Y-m-d') : null,
-                'kls_init_token_expiry'          => $temporaryTokenExpires ? $temporaryTokenExpires->format('Y-m-d') : null,
+                'firstname'       => $user->getFirstName(),
+                'lastname'        => $user->getLastName(),
+                'email'           => $user->getEmail(),
+                'jobtitle'        => $user->getJobFunction(),
+                'phone'           => $user->getPhone(),
+                'kls_user_status' => 10 === $user->getCurrentStatus()->getStatus()
+                    ? 'invited' : 'created',
+                'kls_last_login'        => $lastLoginDate ? $lastLoginDate->format('Y-m-d') : null,
+                'kls_init_token_expiry' => $temporaryTokenExpires ?
+                    $temporaryTokenExpires->format('Y-m-d') : null,
                 'kls_user_staff'                 => \implode("\n", $data['userStaff']),
                 'kls_user_manager'               => \implode("\n", $data['userManager']),
                 'kls_user_admin'                 => \implode("\n", $data['userAdmin']),
@@ -270,7 +278,8 @@ class HubspotContactManager
     }
 
     /**
-     * Flow: Post new contact on hubspot. If 201, we create the relation between our user and the contact Id that Hubspot just sent us back.
+     * Flow: Post new contact on hubspot. If 201, we create the relation between our user and the contact Id that
+     * Hubspot just sent us back.
      *
      * @throws ORMException
      * @throws ClientExceptionInterface
