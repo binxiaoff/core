@@ -70,7 +70,8 @@ class HubspotCompanyManager
 
         if (
             false === \array_key_exists('results', $content)
-            || ((isset($content['results'])) && 0 === \count($content['results']))
+            || ((isset($content['results']))
+                && 0 === \count($content['results']))
         ) {
             $this->logger->info('There is an error on the request URI or no company found on Hubspot');
 
@@ -277,9 +278,9 @@ class HubspotCompanyManager
                 'domain'         => $company->getEmailDomain(),
                 'kls_short_code' => $company->getShortCode(),
                 'kls_bank_group' => $company->getCompanyGroup()
-                    ? $company->getCompanyGroup()->getName() : null,
+                                    ? $company->getCompanyGroup()->getName() : null,
                 'kls_company_status'       => $status,
-                'kls_user_init_percentage' => $activeUsersPercentage['kls_user_init_percentage'] ?? null,
+                'kls_user_init_percentage' => $activeUsersPercentage['user_init_percentage'] ?? null,
                 'kls_active_modules'       => \implode(', ', $company->getActivatedModules()),
                 'kls_agency_projects'      => $this->projectAgencyRepository->countProjectsByCompany($company),
                 'kls_arrangement_projects' => $this->projectArrangementRepository->countProjectsByCompany($company),

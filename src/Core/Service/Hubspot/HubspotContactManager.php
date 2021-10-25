@@ -9,6 +9,7 @@ use Doctrine\ORM\ORMException;
 use JsonException;
 use KLS\Core\Entity\HubspotContact;
 use KLS\Core\Entity\User;
+use KLS\Core\Entity\UserStatus;
 use KLS\Core\Repository\HubspotContactRepository;
 use KLS\Core\Repository\TemporaryTokenRepository;
 use KLS\Core\Repository\UserRepository;
@@ -242,11 +243,11 @@ class HubspotContactManager
                 'email'           => $user->getEmail(),
                 'jobtitle'        => $user->getJobFunction(),
                 'phone'           => $user->getPhone(),
-                'kls_user_status' => 10 === $user->getCurrentStatus()->getStatus()
-                    ? 'invited' : 'created',
+                'kls_user_status' => UserStatus::STATUS_INVITED
+                                     === $user->getCurrentStatus()->getStatus() ? 'invited' : 'created',
                 'kls_last_login'        => $lastLoginDate ? $lastLoginDate->format('Y-m-d') : null,
                 'kls_init_token_expiry' => $temporaryTokenExpires ?
-                    $temporaryTokenExpires->format('Y-m-d') : null,
+                                           $temporaryTokenExpires->format('Y-m-d') : null,
                 'kls_user_staff'                 => \implode("\n", $data['userStaff']),
                 'kls_user_manager'               => \implode("\n", $data['userManager']),
                 'kls_user_admin'                 => \implode("\n", $data['userAdmin']),
