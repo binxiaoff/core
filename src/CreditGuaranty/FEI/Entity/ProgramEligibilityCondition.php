@@ -122,7 +122,7 @@ class ProgramEligibilityCondition
     /**
      * @ORM\Column(length=20)
      *
-     * @Assert\Choice(callback="getAvailableValueType")
+     * @Assert\Choice(callback="getAvailableValueTypes")
      *
      * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:write"})
      */
@@ -281,7 +281,7 @@ class ProgramEligibilityCondition
         return $operations;
     }
 
-    public static function getAvailableValueType(): array
+    public static function getAvailableValueTypes(): array
     {
         return static::getConstants('VALUE_TYPE_');
     }
@@ -447,6 +447,8 @@ class ProgramEligibilityCondition
             ;
         }
 
+        $configurationProgramChoiceOption = $this->getProgramEligibilityConfiguration()->getProgramChoiceOption();
+
         foreach ($programChoiceOptions as $programChoiceOption) {
             if ($this->getLeftOperandField() !== $programChoiceOption->getField()) {
                 $context
@@ -455,6 +457,16 @@ class ProgramEligibilityCondition
                     )
                     ->setParameter('{{ fieldId }}', (string) $programChoiceOption->getField()->getId())
                     ->setParameter('{{ leftOperandFieldId }}', (string) $this->getLeftOperandField()->getId())
+                    ->atPath('programChoiceOptions')
+                    ->addViolation()
+                ;
+            }
+
+            if ($configurationProgramChoiceOption === $programChoiceOption) {
+                $context
+                    ->buildViolation(
+                        'CreditGuaranty.ProgramEligibilityCondition.programChoiceOptions.sameWithConfiguration'
+                    )
                     ->atPath('programChoiceOptions')
                     ->addViolation()
                 ;

@@ -239,6 +239,7 @@ CreditGuaranty:
             invalidMappingField: Le field {{ fieldId }} du programChoiceOption ne correspond pas au leftOperandField {{ leftOperandFieldId }} du ProgramEligibilityCondition.
             notEmpty: programChoiceOption doit être vide si ce n'est pas une comparaison de type "list".
             required: Merci de remplir les programChoiceOptions pour une comparaison de type "list".
+            sameWithConfiguration: Les éléments de la collection programChoiceOptions ne doivent pas correspondre au programChoiceOption du ProgramEligibilityConfiguration.
         rightOperandField:
             notEmpty: rightOperandField doit être vide pour une comparaison de type "value", "bool" ou "list".
             required: rightOperandField doit être requis pour une comparaison de type "rate".

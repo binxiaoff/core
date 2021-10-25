@@ -8,11 +8,17 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\Core\Entity\Constant\LegalForm;
+use KLS\Core\Entity\Constant\LoanType;
 use KLS\Core\Entity\Constant\MathOperator;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Program;
+use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
+use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityCondition;
+use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
+use KLS\CreditGuaranty\FEI\Repository\ProgramChoiceOptionRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConfigurationRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityRepository;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -20,19 +26,22 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class ProgramEligibilityConditionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     private FieldRepository $fieldRepository;
-    private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
+    private ProgramChoiceOptionRepository $programChoiceOptionRepository;
     private ProgramEligibilityRepository $programEligibilityRepository;
+    private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
 
     public function __construct(
         TokenStorageInterface $tokenStorage,
         FieldRepository $fieldRepository,
-        ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository,
-        ProgramEligibilityRepository $programEligibilityRepository
+        ProgramChoiceOptionRepository $programChoiceOptionRepository,
+        ProgramEligibilityRepository $programEligibilityRepository,
+        ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository
     ) {
         parent::__construct($tokenStorage);
         $this->fieldRepository                           = $fieldRepository;
-        $this->programEligibilityConfigurationRepository = $programEligibilityConfigurationRepository;
+        $this->programChoiceOptionRepository             = $programChoiceOptionRepository;
         $this->programEligibilityRepository              = $programEligibilityRepository;
+        $this->programEligibilityConfigurationRepository = $programEligibilityConfigurationRepository;
     }
 
     /**
@@ -42,6 +51,7 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
     {
         return [
             ProgramEligibilityConfigurationFixtures::class,
+            ReservationFixtures::class,
         ];
     }
 
@@ -50,30 +60,54 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
      */
     public function load(ObjectManager $manager): void
     {
-        $conditions = $this->createConditions();
-
         /** @var Program $program */
-        $program                          = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
-        $programEligibilities             = $this->programEligibilityRepository->findBy(['program' => $program]);
-        $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy([
-            'programEligibility' => $programEligibilities,
-        ]);
+        $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
 
-        foreach ($programEligibilityConfigurations as $programEligibilityConfiguration) {
-            $fieldAlias = $programEligibilityConfiguration->getProgramEligibility()->getField()->getFieldAlias();
+        foreach ($this->loadData($program) as $fieldAlias => $conditionItems) {
+            $programEligibility = $this->programEligibilityRepository->findOneBy([
+                'program' => $program,
+                'field'   => $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]),
+            ]);
 
-            if (false === \array_key_exists($fieldAlias, $conditions)) {
+            if (false === ($programEligibility instanceof $programEligibility)) {
                 continue;
             }
 
-            foreach ($conditions[$fieldAlias] as $condition) {
-                $programEligibilityCondition = (new ProgramEligibilityCondition(
+            foreach ($conditionItems as $condition) {
+                $programEligibilityConfiguration = $this->getProgramEligibilityConfiguration(
+                    $programEligibility,
+                    $condition['configurationValue'],
+                    $condition['configurationOption']
+                );
+
+                if (false === ($programEligibilityConfiguration instanceof ProgramEligibilityConfiguration)) {
+                    continue;
+                }
+
+                $leftOperandField = $this->fieldRepository->findOneBy([
+                    'fieldAlias' => $condition['leftOperandAlias'],
+                ]);
+                $rightOperandField = (null !== $condition['rightOperandAlias'])
+                    ? $this->fieldRepository->findOneBy(['fieldAlias' => $condition['rightOperandAlias']])
+                    : null
+                ;
+
+                $programEligibilityCondition = new ProgramEligibilityCondition(
                     $programEligibilityConfiguration,
-                    $condition['leftOperand'],
-                    $condition['rightOperand'],
+                    $leftOperandField,
+                    $rightOperandField,
                     $condition['operator'],
                     $condition['type']
-                ))->setValue((string) $condition['value']);
+                );
+
+                if (null !== $condition['value']) {
+                    $programEligibilityCondition->setValue((string) $condition['value']);
+                } else {
+                    foreach ($condition['programChoiceOptions'] as $programChoiceOption) {
+                        $programEligibilityCondition->addProgramChoiceOption($programChoiceOption);
+                    }
+                }
+
                 $manager->persist($programEligibilityCondition);
             }
         }
@@ -81,50 +115,113 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
         $manager->flush();
     }
 
-    private function createConditions(): array
+    private function loadData(Program $program): array
     {
-        // comparable person
-        $employeesNumberField = $this->fieldRepository->findOneBy([
-            'fieldAlias' => FieldAlias::EMPLOYEES_NUMBER,
+        // programChoiceOptions
+        $investmentThematicOptions = $this->programChoiceOptionRepository->findBy([
+            'program' => $program,
+            'field'   => $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::INVESTMENT_THEMATIC]),
         ]);
-        // comparable money
-        $tangibleFeiCreditField = $this->fieldRepository->findOneBy([
-            'fieldAlias' => FieldAlias::TANGIBLE_FEI_CREDIT,
+        $sarlOption = $this->programChoiceOptionRepository->findOneBy([
+            'program'     => $program,
+            'field'       => $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LEGAL_FORM]),
+            'description' => LegalForm::SARL,
         ]);
-        $intangibleFeiCreditField = $this->fieldRepository->findOneBy([
-            'fieldAlias' => FieldAlias::INTANGIBLE_FEI_CREDIT,
+        $saOption = $this->programChoiceOptionRepository->findOneBy([
+            'program'     => $program,
+            'field'       => $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LEGAL_FORM]),
+            'description' => LegalForm::SA,
         ]);
-        // comparable month
-        $loanDurationField = $this->fieldRepository->findOneBy([
-            'fieldAlias' => FieldAlias::LOAN_DURATION,
+        $sasOption = $this->programChoiceOptionRepository->findOneBy([
+            'program'     => $program,
+            'field'       => $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LEGAL_FORM]),
+            'description' => LegalForm::SAS,
+        ]);
+        $signatureCommitmentOption = $this->programChoiceOptionRepository->findOneBy([
+            'program'     => $program,
+            'field'       => $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LOAN_TYPE]),
+            'description' => LoanType::SIGNATURE_COMMITMENT,
         ]);
 
         return [
-            FieldAlias::LEGAL_FORM => [
+            FieldAlias::CREATION_IN_PROGRESS => [
                 [
-                    'type'         => ProgramEligibilityCondition::VALUE_TYPE_VALUE,
-                    'leftOperand'  => $employeesNumberField,
-                    'rightOperand' => null,
-                    'operator'     => MathOperator::INFERIOR,
-                    'value'        => 500.00,
-                ],
-                [
-                    'type'         => ProgramEligibilityCondition::VALUE_TYPE_RATE,
-                    'leftOperand'  => $intangibleFeiCreditField,
-                    'rightOperand' => $tangibleFeiCreditField,
-                    'operator'     => MathOperator::INFERIOR,
-                    'value'        => 0.80,
+                    'configurationValue'   => '0',
+                    'configurationOption'  => null,
+                    'type'                 => ProgramEligibilityCondition::VALUE_TYPE_LIST,
+                    'leftOperandAlias'     => FieldAlias::LEGAL_FORM,
+                    'rightOperandAlias'    => null,
+                    'operator'             => MathOperator::INFERIOR,
+                    'value'                => null,
+                    'programChoiceOptions' => [$sarlOption, $saOption, $sasOption],
                 ],
             ],
-            FieldAlias::PROJECT_TOTAL_AMOUNT => [
+            FieldAlias::TANGIBLE_FEI_CREDIT => [
                 [
-                    'type'         => ProgramEligibilityCondition::VALUE_TYPE_VALUE,
-                    'leftOperand'  => $loanDurationField,
-                    'rightOperand' => null,
-                    'operator'     => MathOperator::EQUAL,
-                    'value'        => 4,
+                    'configurationValue'   => null,
+                    'configurationOption'  => null,
+                    'type'                 => ProgramEligibilityCondition::VALUE_TYPE_RATE,
+                    'leftOperandAlias'     => FieldAlias::TANGIBLE_FEI_CREDIT,
+                    'rightOperandAlias'    => FieldAlias::INTANGIBLE_FEI_CREDIT,
+                    'operator'             => MathOperator::SUPERIOR,
+                    'value'                => 0.10,
+                    'programChoiceOptions' => [],
+                ],
+            ],
+            FieldAlias::INVESTMENT_THEMATIC => [
+                [
+                    'configurationValue'   => null,
+                    'configurationOption'  => $investmentThematicOptions[1],
+                    'type'                 => ProgramEligibilityCondition::VALUE_TYPE_LIST,
+                    'leftOperandAlias'     => FieldAlias::INVESTMENT_THEMATIC,
+                    'rightOperandAlias'    => null,
+                    'operator'             => MathOperator::EQUAL,
+                    'value'                => null,
+                    'programChoiceOptions' => [$investmentThematicOptions[2], $investmentThematicOptions[3]],
+                ],
+            ],
+            FieldAlias::LOAN_DURATION => [
+                [
+                    'configurationValue'   => null,
+                    'configurationOption'  => null,
+                    'type'                 => ProgramEligibilityCondition::VALUE_TYPE_VALUE,
+                    'leftOperandAlias'     => FieldAlias::LOAN_DURATION,
+                    'rightOperandAlias'    => null,
+                    'operator'             => MathOperator::INFERIOR_OR_EQUAL,
+                    'value'                => 70,
+                    'programChoiceOptions' => [],
+                ],
+            ],
+            FieldAlias::LOAN_TYPE => [
+                [
+                    'configurationValue'   => null,
+                    'configurationOption'  => $signatureCommitmentOption,
+                    'type'                 => ProgramEligibilityCondition::VALUE_TYPE_BOOL,
+                    'leftOperandAlias'     => FieldAlias::YOUNG_FARMER,
+                    'rightOperandAlias'    => null,
+                    'operator'             => MathOperator::EQUAL,
+                    'value'                => true,
+                    'programChoiceOptions' => [],
                 ],
             ],
         ];
+    }
+
+    private function getProgramEligibilityConfiguration(
+        ProgramEligibility $programEligibility,
+        ?string $configurationValue,
+        ?ProgramChoiceOption $configurationOption
+    ): ?ProgramEligibilityConfiguration {
+        if ($configurationOption instanceof ProgramChoiceOption) {
+            return $this->programEligibilityConfigurationRepository->findOneBy([
+                'programEligibility'  => $programEligibility,
+                'programChoiceOption' => $configurationOption,
+            ]);
+        }
+
+        return $this->programEligibilityConfigurationRepository->findOneBy([
+            'programEligibility' => $programEligibility,
+            'value'              => $configurationValue,
+        ]);
     }
 }
