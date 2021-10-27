@@ -87,6 +87,21 @@ validation:db:
 
 # Testing
 
+test:functional:
+  services:
+    - name: mysql:8.0.20
+      alias: db
+  stage: test
+  before_script:
+  - composer config -g cache-dir "$(pwd)/.composer-cache"
+  - composer install
+  script:
+    - php bin/console doctrine:database:drop --env=test --connection=migration --if-exists --force
+    - php bin/console doctrine:database:create --env=test --connection=migration
+    - php bin/console doctrine:migration:migrate -n --env=test
+    - php bin/console doctrine:fixtures:load --env=test -n --group=test
+    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='functional'
+
 test:application:
   ### Uncomment the following if using a database
   # services:
