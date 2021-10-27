@@ -88,7 +88,6 @@ class FieldAlias extends AbstractEnum
         self::INVESTMENT_DEPARTMENT,
         self::INVESTMENT_COUNTRY,
         self::INVESTMENT_LOCATION,
-        self::INVESTMENT_THEMATIC,
         self::INVESTMENT_TYPE,
         self::LEGAL_FORM,
         self::LOAN_NAF_CODE,

@@ -6,6 +6,7 @@ namespace KLS\CreditGuaranty\FEI\Service;
 
 use Doctrine\Common\Collections\Collection;
 use KLS\CreditGuaranty\FEI\Entity\Field;
+use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
@@ -75,6 +76,17 @@ class EligibilityChecker
             foreach ($entity as $entityItem) {
                 $value = $this->reservationAccessor->getValue($entityItem, $field);
 
+                if ('Collection' === $field->getPropertyType()) {
+                    /** @var ProgramChoiceOption[]|Collection $value */
+                    foreach ($value as $valueItem) {
+                        if (false === $this->isEligible($reservation, $programEligibility, $withConditions, $valueItem)) {
+                            return false;
+                        }
+                    }
+
+                    return 0 < $value->count();
+                }
+
                 if (false === $this->isEligible($reservation, $programEligibility, $withConditions, $value)) {
                     return false;
                 }
@@ -84,6 +96,16 @@ class EligibilityChecker
         }
 
         $value = $this->reservationAccessor->getValue($entity, $field);
+
+        if ('Collection' === $field->getPropertyType()) {
+            foreach ($value as $valueItem) {
+                if (false === $this->isEligible($reservation, $programEligibility, $withConditions, $valueItem)) {
+                    return false;
+                }
+            }
+
+            return 0 < $value->count();
+        }
 
         return $this->isEligible($reservation, $programEligibility, $withConditions, $value);
     }

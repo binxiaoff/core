@@ -147,7 +147,7 @@ class FieldFixtures extends AbstractSQLFixtures
         ),
         (
             '23892bef-00b0-4df5-981e-32913e708a2b', 'eligibility', 'project', 'list',
-            'investment_thematic', 'project', 'investmentThematic', 'ProgramChoiceOption',
+            'investment_thematic', 'project', 'investmentThematics', 'Collection',
             'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 1, NULL, NULL
         ),
         (

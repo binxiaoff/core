@@ -128,6 +128,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.60',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
@@ -157,6 +162,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::EMPLOYEES_NUMBER     => 800,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => false,
                         FieldAlias::AID_INTENSITY         => '0.20',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
@@ -181,6 +189,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::EMPLOYEES_NUMBER     => 300,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
@@ -210,6 +223,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::EMPLOYEES_NUMBER     => 300,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 100000,
@@ -234,6 +252,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::EMPLOYEES_NUMBER     => 150,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 100,
@@ -258,6 +281,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::EMPLOYEES_NUMBER     => 30,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 22000,
@@ -287,6 +315,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::EMPLOYEES_NUMBER     => 450,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 6000,
@@ -326,6 +359,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 80000,
@@ -353,6 +391,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::EMPLOYEES_NUMBER     => 300,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
@@ -415,6 +458,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::EMPLOYEES_NUMBER     => 300,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
@@ -518,8 +566,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $program = $reservation->getProgram();
         $project = $reservation->getProject();
 
+        foreach ($data[FieldAlias::INVESTMENT_THEMATIC] as $investmentThematicDescription) {
+            $project->addInvestmentThematic($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, $investmentThematicDescription));
+        }
+
         $project
-            ->setInvestmentThematic($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project : ' . $this->faker->sentence))
             ->setInvestmentType($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence))
             ->setDetail($this->faker->sentence)
             ->setAidIntensity($this->findProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $data[FieldAlias::AID_INTENSITY]))

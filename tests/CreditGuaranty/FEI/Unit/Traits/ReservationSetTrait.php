@@ -127,8 +127,8 @@ trait ReservationSetTrait
             'test',
             'list',
             'project',
-            'investmentThematic',
-            'ProgramChoiceOption',
+            'investmentThematics',
+            'Collection',
             Project::class,
             false,
             null,
@@ -188,7 +188,9 @@ trait ReservationSetTrait
         );
 
         $reservation->getProject()
-            ->setInvestmentThematic(new ProgramChoiceOption($program, 'investment thematic', $investmentThematicField))
+            ->addInvestmentThematic(new ProgramChoiceOption($program, 'Thématique A', $investmentThematicField))
+            ->addInvestmentThematic(new ProgramChoiceOption($program, 'Thématique B', $investmentThematicField))
+            ->addInvestmentThematic(new ProgramChoiceOption($program, 'Thématique C', $investmentThematicField))
             ->setInvestmentType(new ProgramChoiceOption($program, 'investment type', $investmentTypeField))
             ->setAidIntensity(new ProgramChoiceOption($program, '0.42', $aidIntensityField))
             ->setAdditionalGuaranty(new ProgramChoiceOption($program, 'additional guaranty', $additionalGuaranty))
@@ -197,8 +199,10 @@ trait ReservationSetTrait
         ;
     }
 
-    protected function createFinancingObject(Reservation $reservation, bool $supportingGenerationsRenewal): FinancingObject
-    {
+    protected function createFinancingObject(
+        Reservation $reservation,
+        bool $supportingGenerationsRenewal
+    ): FinancingObject {
         $program = $reservation->getProgram();
 
         $financingObjectTypeField = new Field(
@@ -236,7 +240,9 @@ trait ReservationSetTrait
                 'financing object name'
             ))
                 ->setSupportingGenerationsRenewal($supportingGenerationsRenewal)
-                ->setFinancingObjectType(new ProgramChoiceOption($program, 'financing object test', $financingObjectTypeField))
+                ->setFinancingObjectType(
+                    new ProgramChoiceOption($program, 'financing object test', $financingObjectTypeField)
+                )
                 ->setLoanType(new ProgramChoiceOption($program, 'loan type 2', $loanTypeField))
                 ->setLoanDuration(4)
                 ->setLoanDeferral(1)
