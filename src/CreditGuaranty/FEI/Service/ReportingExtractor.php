@@ -8,6 +8,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
 use ArrayIterator;
 use Doctrine\ORM\Query\Expr\Join;
 use Exception;
+use KLS\Core\Entity\NafNace;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
@@ -96,8 +97,12 @@ class ReportingExtractor
                     null !== $search
                     && ('string' === $field->getPropertyType() || 'ProgramChoiceOption' === $field->getPropertyType())
                 ) {
-                    $selectParts         = \explode(' AS ', $select);
-                    $searchExpressions[] = $selectParts[0] . ' LIKE :search';
+                    $selectParts = \explode(' AS ', $select);
+
+                    // we have to ignore some selects that returns '' for virtual fields
+                    if ('\'\'' !== $selectParts[0]) {
+                        $searchExpressions[] = $selectParts[0] . ' LIKE :search';
+                    }
                 }
             }
 
@@ -132,6 +137,14 @@ class ReportingExtractor
                 $fieldAlias,
                 $fieldAlias
             );
+
+            if (\array_key_exists($fieldAlias, FieldAlias::NAF_NACE_FIELDS)) {
+                yield \sprintf(
+                    'pco_naf_nace_%s.naceCode AS %s',
+                    $fieldAlias,
+                    FieldAlias::NAF_NACE_FIELDS[$fieldAlias]
+                );
+            }
 
             return;
         }
@@ -184,6 +197,17 @@ class ReportingExtractor
                 Join::WITH,
                 \sprintf('%s.id = %s.%s', $alias, $fieldPropertyName, $field->getPropertyPath()),
             ];
+
+            if (\array_key_exists($fieldAlias, FieldAlias::NAF_NACE_FIELDS)) {
+                $aliasNafNace = \sprintf('pco_naf_nace_%s', $fieldAlias);
+
+                yield FieldAlias::NAF_NACE_FIELDS[$fieldAlias] => [
+                    NafNace::class,
+                    $aliasNafNace,
+                    Join::WITH,
+                    \sprintf('%s.description = %s.nafCode', $alias, $aliasNafNace),
+                ];
+            }
         }
 
         if ('currentStatus' === $fieldPropertyName) {

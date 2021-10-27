@@ -6,10 +6,6 @@ namespace KLS\CreditGuaranty\FEI\Entity\Constant;
 
 use KLS\Core\Entity\Constant\AbstractEnum;
 
-/**
- * There is a convention that the name of the target class property should be the camel case form of the related constant value in this class.
- * For exemple, the target property of self::BORROWER_TYPE should be Borrower::borrowerType.
- */
 class FieldAlias extends AbstractEnum
 {
     //
@@ -127,5 +123,11 @@ class FieldAlias extends AbstractEnum
         self::RESERVATION_CREATION_DATE,
         self::RESERVATION_SIGNING_DATE,
         self::FIRST_RELEASE_DATE,
+    ];
+
+    // NAF NACE Fields
+    public const NAF_NACE_FIELDS = [
+        self::COMPANY_NAF_CODE => 'company_nace_code',
+        self::LOAN_NAF_CODE    => 'loan_nace_code',
     ];
 }

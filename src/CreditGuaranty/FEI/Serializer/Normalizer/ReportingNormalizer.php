@@ -70,7 +70,12 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
                 $financingObject = $this->financingObjectRepository->find($row['id_financing_object']);
 
                 if (false === ($financingObject instanceof FinancingObject)) {
-                    throw new LogicException(\sprintf('Impossible to generate reporting, FinancingObject id %s is not found', $row['id_financing_object']));
+                    throw new LogicException(
+                        \sprintf(
+                            'Impossible to generate reporting, FinancingObject id %s is not found',
+                            $row['id_financing_object']
+                        )
+                    );
                 }
 
                 $row['id_financing_object'] = $this->iriConverter->getIriFromItem($financingObject);
@@ -95,6 +100,14 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
             if (false === empty($row[FieldAlias::AID_INTENSITY])) {
                 $row[FieldAlias::AID_INTENSITY] = ($row[FieldAlias::AID_INTENSITY] * 100) . ' %';
             }
+
+            // delete naf code fields to keep only its nace code
+            // because CASA only want nace code in generating reporting
+            foreach (FieldAlias::NAF_NACE_FIELDS as $fieldAlias => $relatedFieldAlias) {
+                if (\array_key_exists($fieldAlias, $row) && \array_key_exists($relatedFieldAlias, $row)) {
+                    unset($row[$fieldAlias]);
+                }
+            }
         }
 
         return $data;
@@ -106,7 +119,9 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
         $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
 
         if (false === ($field instanceof Field)) {
-            throw new LogicException(\sprintf('Impossible to generate reporting, field with alias %s is not found', $fieldAlias));
+            throw new LogicException(
+                \sprintf('Impossible to generate reporting, field with alias %s is not found', $fieldAlias)
+            );
         }
 
         $value = $this->reservationAccessor->getEntity($reservation, $field);
