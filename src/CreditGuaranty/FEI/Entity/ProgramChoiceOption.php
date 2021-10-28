@@ -8,20 +8,20 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use Closure;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\ArchivableTrait;
 use KLS\Core\Entity\Traits\CloneableTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\EquivalenceCheckerInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
- * Pagination need to be enabled (which is the default configuration) on the resource, otherwise it will be out of memory.
- *
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
@@ -76,7 +76,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @UniqueEntity({"description", "field", "program"})
  */
-class ProgramChoiceOption
+class ProgramChoiceOption implements EquivalenceCheckerInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -185,6 +185,17 @@ class ProgramChoiceOption
         return $this->field->getFieldAlias();
     }
 
+    public function getEquivalenceChecker(): Closure
+    {
+        $self = $this;
+
+        return function (int $key, ProgramChoiceOption $pco) use ($self): bool {
+            return $pco->getProgram()     === $self->getProgram()
+                && $pco->getField()       === $self->getField()
+                && $pco->getDescription() === $self->getDescription();
+        };
+    }
+
     /**
      * @Assert\Callback
      */
@@ -194,8 +205,14 @@ class ProgramChoiceOption
             return;
         }
 
-        if (\count($this->field->getPredefinedItems()) && false === \in_array($this->description, $this->field->getPredefinedItems(), true)) {
-            $context->buildViolation('CreditGuaranty.ProgramChoiceOption.invalid')->atPath('description')->addViolation();
+        if (
+            \count($this->field->getPredefinedItems())
+            && false === \in_array($this->description, $this->field->getPredefinedItems(), true)
+        ) {
+            $context->buildViolation('CreditGuaranty.ProgramChoiceOption.invalid')
+                ->atPath('description')
+                ->addViolation()
+            ;
         }
     }
 }

@@ -237,13 +237,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
 
     public function addInvestmentThematic(ProgramChoiceOption $programChoiceOption): Project
     {
-        $callback = function (int $key, ProgramChoiceOption $pco) use ($programChoiceOption): bool {
-            return $pco->getProgram()     === $programChoiceOption->getProgram()
-                && $pco->getField()       === $programChoiceOption->getField()
-                && $pco->getDescription() === $programChoiceOption->getDescription();
-        };
-
-        if (false === $this->investmentThematics->exists($callback)) {
+        if (false === $this->investmentThematics->exists($programChoiceOption->getEquivalenceChecker())) {
             $this->investmentThematics->add($programChoiceOption);
         }
 
@@ -252,13 +246,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
 
     public function removeInvestmentThematic(ProgramChoiceOption $programChoiceOption): Project
     {
-        $callback = function (int $key, ProgramChoiceOption $pco) use ($programChoiceOption): bool {
-            return $pco->getProgram()     === $programChoiceOption->getProgram()
-                && $pco->getField()       === $programChoiceOption->getField()
-                && $pco->getDescription() === $programChoiceOption->getDescription();
-        };
-
-        if ($this->investmentThematics->exists($callback)) {
+        if ($this->investmentThematics->exists($programChoiceOption->getEquivalenceChecker())) {
             $this->investmentThematics->removeElement($programChoiceOption);
         }
 
