@@ -21,7 +21,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
  */
 class ReportingTemplateDownloadTest extends AbstractApiTest
 {
-    private const ENDPOINT = '/credit_guaranty/reporting_templates/{publicId}/import-file/download';
+    private const ENDPOINT = '/credit_guaranty/programs/{publicId}/reporting/import-file/download';
 
     protected function setUp(): void
     {
@@ -43,17 +43,30 @@ class ReportingTemplateDownloadTest extends AbstractApiTest
 
         // Avoid displaying the file content in the console (capture console output)
         \ob_start();
-
-        $response = $this->createAuthClient($staff)->request(Request::METHOD_GET, \str_replace('{publicId}', 'reporting-template-1', self::ENDPOINT));
-
+        $response = $this->createAuthClient($staff)->request(
+            Request::METHOD_GET,
+            \str_replace('{publicId}', 'program:paused', self::ENDPOINT),
+            [
+                'headers' => [
+                    'accept' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+                ],
+            ]
+        );
         \ob_end_clean();
+
         static::assertResponseIsSuccessful();
 
         $headers = $response->getHeaders();
         static::assertArrayHasKey('content-disposition', $headers);
         static::assertArrayHasKey('content-type', $headers);
-        static::assertSame('attachment; filename=kls_credit-and-guaranty_import-file_1.0.xlsx', $headers['content-disposition'][0]);
-        static::assertSame('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $headers['content-type'][0]);
+        static::assertSame(
+            'attachment; filename=kls_credit-and-guaranty_import-file_1.0.xlsx',
+            $headers['content-disposition'][0]
+        );
+        static::assertSame(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            $headers['content-type'][0]
+        );
     }
 
     public function successfulProvider(): iterable
@@ -73,7 +86,17 @@ class ReportingTemplateDownloadTest extends AbstractApiTest
         /** @var Staff $staff */
         $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
 
-        $this->createAuthClient($staff)->request(Request::METHOD_GET, \str_replace('{publicId}', 'reporting-template-1', self::ENDPOINT));
+        \ob_start();
+        $this->createAuthClient($staff)->request(
+            Request::METHOD_GET,
+            \str_replace('{publicId}', 'program:paused', self::ENDPOINT),
+            [
+                'headers' => [
+                    'accept' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+                ],
+            ]
+        );
+        \ob_end_clean();
 
         static::assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
     }
