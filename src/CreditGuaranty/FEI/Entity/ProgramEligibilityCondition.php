@@ -254,13 +254,7 @@ class ProgramEligibilityCondition
 
     public function addProgramChoiceOption(ProgramChoiceOption $programChoiceOption): ProgramEligibilityCondition
     {
-        $callback = function (int $key, ProgramChoiceOption $pco) use ($programChoiceOption): bool {
-            return $pco->getProgram()     === $programChoiceOption->getProgram()
-                && $pco->getField()       === $programChoiceOption->getField()
-                && $pco->getDescription() === $programChoiceOption->getDescription();
-        };
-
-        if (false === $this->programChoiceOptions->exists($callback)) {
+        if (false === $this->programChoiceOptions->exists($programChoiceOption->getEquivalenceChecker())) {
             $this->programChoiceOptions->add($programChoiceOption);
         }
 
@@ -269,13 +263,7 @@ class ProgramEligibilityCondition
 
     public function removeProgramChoiceOption(ProgramChoiceOption $programChoiceOption): ProgramEligibilityCondition
     {
-        $callback = function (int $key, ProgramChoiceOption $pco) use ($programChoiceOption): bool {
-            return $pco->getProgram()     === $programChoiceOption->getProgram()
-                && $pco->getField()       === $programChoiceOption->getField()
-                && $pco->getDescription() === $programChoiceOption->getDescription();
-        };
-
-        if ($this->programChoiceOptions->exists($callback)) {
+        if ($this->programChoiceOptions->exists($programChoiceOption->getEquivalenceChecker())) {
             $this->programChoiceOptions->removeElement($programChoiceOption);
         }
 

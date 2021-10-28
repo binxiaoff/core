@@ -882,14 +882,9 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
 
     public function addProgramChoiceOption(ProgramChoiceOption $programChoiceOption): Program
     {
-        $callback = function (int $key, ProgramChoiceOption $pco) use ($programChoiceOption): bool {
-            return $pco->getField()       === $programChoiceOption->getField()
-                && $pco->getDescription() === $programChoiceOption->getDescription();
-        };
-
         if (
             $programChoiceOption->getProgram() === $this
-            && false === $this->programChoiceOptions->exists($callback)
+            && false === $this->programChoiceOptions->exists($programChoiceOption->getEquivalenceChecker())
         ) {
             $this->programChoiceOptions->add($programChoiceOption);
         }
