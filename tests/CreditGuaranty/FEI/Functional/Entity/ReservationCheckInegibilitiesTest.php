@@ -2,27 +2,23 @@
 
 declare(strict_types=1);
 
-namespace KLS\Test\CreditGuaranty\FEI\Functional\Entity\Request;
+namespace KLS\Test\CreditGuaranty\FEI\Functional\Entity;
 
-use ApiPlatform\Core\Api\IriConverterInterface;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Repository\StaffRepository;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
-use KLS\CreditGuaranty\FEI\Repository\ReservationRepository;
 use KLS\Test\Core\Functional\Api\AbstractApiTest;
 use KLS\Test\CreditGuaranty\FEI\DataFixtures\ReservationFixtures;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @coversNothing
  *
  * @internal
  */
-class EligibilityTest extends AbstractApiTest
+class ReservationCheckInegibilitiesTest extends AbstractApiTest
 {
-    private const ENDPOINT_ELIGIBILITY          = '/credit_guaranty/eligibilities/';
-    private const ENDPOINT_ELIGIBILITY_CHECKING = self::ENDPOINT_ELIGIBILITY . 'checking';
+    private const ENDPOINT_RESERVATION_ELIGIBILITY_CHECKING = '/credit_guaranty/reservations/{publicId}/ineligibilities';
 
     protected function setUp(): void
     {
@@ -34,20 +30,6 @@ class EligibilityTest extends AbstractApiTest
         parent::tearDown();
     }
 
-    public function testGetEligibilitiesNotFoundAction(): void
-    {
-        /** @var Staff $staff */
-        $staff = static::getContainer()->get(StaffRepository::class)->findOneBy([
-            'publicId' => 'staff_company:bar_user-a',
-        ]);
-
-        $response = $this->createAuthClient($staff)
-            ->request(Request::METHOD_GET, self::ENDPOINT_ELIGIBILITY . 'not_an_id')
-        ;
-
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
-    }
-
     /**
      * @dataProvider successfullProvider
      */
@@ -56,45 +38,29 @@ class EligibilityTest extends AbstractApiTest
         string $reservationPublicId,
         bool $withConditions,
         array $ineligibles,
+        int $statusCode,
         ?string $category = null
     ): void {
-        /** @var IriConverterInterface $iriConverter */
-        $iriConverter = static::getContainer()->get(IriConverterInterface::class);
-
         /** @var Staff $staff */
         $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
         /** @var Reservation $reservation */
-        $reservation = static::getContainer()->get(ReservationRepository::class)->findOneBy([
-            'publicId' => $reservationPublicId,
-        ]);
-        $reservationIri = $iriConverter->getIriFromItem($reservation);
+        $condition = $withConditions ? 1 : 0;
 
-        $response = $this->createAuthClient($staff)
-            ->request(Request::METHOD_POST, self::ENDPOINT_ELIGIBILITY_CHECKING, [
-                'json' => [
-                    'reservation'    => $reservationIri,
-                    'category'       => $category,
-                    'withConditions' => $withConditions,
-                ],
-            ])
-        ;
+        $iri = \str_replace(
+            '{publicId}',
+            $reservationPublicId,
+            self::ENDPOINT_RESERVATION_ELIGIBILITY_CHECKING
+        )
+            . "?category={$category}&withConditions={$condition}";
 
-        $this->assertResponseIsSuccessful();
+        $response = $this->createAuthClient($staff)->request(Request::METHOD_GET, $iri);
 
-        $this->assertJsonContains(['@type' => 'credit_guaranty_eligibility']);
-        $this->assertJsonContains(['id' => 'not_an_id']);
-        $this->assertJsonContains(['ineligibles' => $ineligibles]);
+        self::assertResponseStatusCodeSame($statusCode);
+        self::assertJsonContains(['ineligibles' => $ineligibles]);
     }
 
     public function successfullProvider(): iterable
     {
-        yield 'user-1 - reservation draft 1 - checking profile without conditions : eligible' => [
-            'staff_company:basic_user-1',
-            ReservationFixtures::RESERVATION_DRAFT_1,
-            false,
-            [],
-            'profile',
-        ];
         yield 'user-1 - reservation draft 2 - checking profile without conditions : ineligible' => [
             'staff_company:basic_user-1',
             ReservationFixtures::RESERVATION_DRAFT_2,
@@ -105,6 +71,7 @@ class EligibilityTest extends AbstractApiTest
                     'subsidiary',
                 ],
             ],
+            403,
             'profile',
         ];
         yield 'user-2 - reservation sent 1 - checking profile without conditions : eligible' => [
@@ -112,6 +79,7 @@ class EligibilityTest extends AbstractApiTest
             ReservationFixtures::RESERVATION_SENT_1,
             false,
             [],
+            200,
             'profile',
         ];
         yield 'user-2 - reservation sent 1 - checking profile with conditions : eligible' => [
@@ -119,6 +87,7 @@ class EligibilityTest extends AbstractApiTest
             ReservationFixtures::RESERVATION_SENT_1,
             true,
             [],
+            200,
             'profile',
         ];
         yield 'user-3 - reservation sent 1 - checking project without conditions : eligible' => [
@@ -126,6 +95,7 @@ class EligibilityTest extends AbstractApiTest
             ReservationFixtures::RESERVATION_SENT_1,
             false,
             [],
+            200,
             'project',
         ];
         yield 'user-3 - reservation sent 1 - checking project with conditions : ineligible' => [
@@ -137,6 +107,7 @@ class EligibilityTest extends AbstractApiTest
                     'total_fei_credit',
                 ],
             ],
+            403,
             'project',
         ];
         yield 'user-5 - reservation sent 1 - checking loan without conditions : eligible' => [
@@ -144,6 +115,7 @@ class EligibilityTest extends AbstractApiTest
             ReservationFixtures::RESERVATION_SENT_1,
             false,
             [],
+            200,
             'loan',
         ];
         yield 'user-5 - reservation sent 1 - checking loan with conditions : eligible' => [
@@ -151,6 +123,7 @@ class EligibilityTest extends AbstractApiTest
             ReservationFixtures::RESERVATION_SENT_1,
             true,
             [],
+            200,
             'loan',
         ];
         yield 'user-11 - reservation sent 1 - checking conditions : eligible' => [
@@ -158,12 +131,12 @@ class EligibilityTest extends AbstractApiTest
             ReservationFixtures::RESERVATION_SENT_1,
             true,
             [],
+            200,
             null,
         ];
         yield 'user-3 - reservation sent 2 - checking profile without conditions : ineligible' => [
             'staff_company:basic_user-3',
             ReservationFixtures::RESERVATION_SENT_2,
-            'profile',
             false,
             [
                 'profile' => [
@@ -171,6 +144,8 @@ class EligibilityTest extends AbstractApiTest
                     'creation_in_progress',
                 ],
             ],
+            403,
+            'profile',
         ];
         yield 'user-3 - reservation sent 2 - checking profile with conditions : ineligible' => [
             'staff_company:basic_user-3',
@@ -182,6 +157,7 @@ class EligibilityTest extends AbstractApiTest
                     'creation_in_progress',
                 ],
             ],
+            403,
             'profile',
         ];
         yield 'user-4 - reservation sent 2 - checking project without conditions : ineligible' => [
@@ -193,6 +169,7 @@ class EligibilityTest extends AbstractApiTest
                     'project_grant',
                 ],
             ],
+            403,
             'project',
         ];
         yield 'user-4 - reservation sent 2 - checking project with conditions : ineligible' => [
@@ -204,6 +181,7 @@ class EligibilityTest extends AbstractApiTest
                     'project_grant',
                 ],
             ],
+            403,
             'project',
         ];
         yield 'user-5 - reservation sent 2 - checking loan without conditions : eligible' => [
@@ -211,6 +189,7 @@ class EligibilityTest extends AbstractApiTest
             ReservationFixtures::RESERVATION_SENT_2,
             false,
             [],
+            200,
             'loan',
         ];
         yield 'user-5 - reservation sent 2 - checking loan with conditions : ineligible' => [
@@ -222,6 +201,7 @@ class EligibilityTest extends AbstractApiTest
                     'loan_duration',
                 ],
             ],
+            403,
             'loan',
         ];
         yield 'user-11 - reservation sent 2 - checking conditions : ineligible' => [
@@ -229,56 +209,51 @@ class EligibilityTest extends AbstractApiTest
             ReservationFixtures::RESERVATION_SENT_2,
             true,
             [
-                'profile' => [
-                    'young_farmer',
-                    'creation_in_progress',
-                    'turnover',
-                ],
-                'project' => [
-                    'project_grant',
-                ],
                 'loan' => [
                     'loan_duration',
                 ],
             ],
-            null,
+            403,
+            'loan',
         ];
     }
 
     /**
      * @dataProvider forbiddenProvider
      */
-    public function testPostEligibilitiesCheckingForbidden(string $staffPublicId): void
-    {
-        /** @var IriConverterInterface $iriConverter */
-        $iriConverter = static::getContainer()->get(IriConverterInterface::class);
-
+    public function testPostEligibilitiesCheckingForbidden(
+        string $staffPublicId,
+        string $reservationPublicId,
+        bool $withConditions,
+        int $statusCode,
+        ?string $category = null
+    ): void {
         /** @var Staff $staff */
-        $staff = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
-        /** @var Reservation $reservation */
-        $reservation = static::getContainer()->get(ReservationRepository::class)->findOneBy([
-            'publicId' => ReservationFixtures::RESERVATION_DRAFT_1,
-        ]);
-        $reservationIri = $iriConverter->getIriFromItem($reservation);
+        $staff     = static::getContainer()->get(StaffRepository::class)->findOneBy(['publicId' => $staffPublicId]);
+        $condition = $withConditions ? 1 : 0;
+
+        $iri = \str_replace(
+            '{publicId}',
+            $reservationPublicId,
+            self::ENDPOINT_RESERVATION_ELIGIBILITY_CHECKING
+        )
+            . "?category={$category}&withConditions={$condition}";
 
         $response = $this->createAuthClient($staff)
-            ->request(Request::METHOD_POST, self::ENDPOINT_ELIGIBILITY_CHECKING, [
-                'json' => [
-                    'reservation' => $reservationIri,
-                    'category'    => 'general',
-                ],
-            ])
+            ->request(Request::METHOD_POST, $iri)
         ;
 
-        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+        self::assertResponseStatusCodeSame($statusCode);
     }
 
     public function forbiddenProvider(): iterable
     {
-        yield 'user-a' => ['staff_company:foo_user-a'];
-        yield 'user-b' => ['staff_company:foo_user-b'];
-        yield 'user-c' => ['staff_company:foo_user-c'];
-        yield 'user-d' => ['staff_company:foo_user-d'];
-        yield 'user-e' => ['staff_company:foo_user-e'];
+        yield 'user-a' => [
+            'staff_company:basic_user-1',
+            ReservationFixtures::RESERVATION_DRAFT_2,
+            false,
+            405,
+            'profile',
+        ];
     }
 }
