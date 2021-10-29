@@ -231,6 +231,8 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *     orphanRemoval=true,
      *     fetch="EXTRA_LAZY"
      * )
+     *
+     * @Groups({"creditGuaranty:reservation:read"})
      */
     private Collection $financingObjects;
 
