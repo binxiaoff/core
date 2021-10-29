@@ -7,6 +7,10 @@ framework:
         ip_login:
             policy: no_limit
             limit: 0 # limit is required, but no effect when the policy is defined to no_limit
+        anonymous_api:
+            policy: token_bucket
+            limit: 5
+            rate: { interval: '15 minutes', amount: 1 }
 
 services:
     app.login_rate_limiter:
