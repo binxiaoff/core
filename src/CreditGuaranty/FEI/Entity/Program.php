@@ -155,7 +155,18 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 },
  *             },
  *         },
- *         "get",
+ *         "get": {
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:program:list",
+ *                     "creditGuaranty:programStatus:read",
+ *                     "timestampable:read",
+ *                     "money:read",
+ *                     "nullableMoney:read",
+ *                 },
+ *                 "openapi_definition_name": "collection-get-list",
+ *             },
+ *         },
  *     },
  * )
  *

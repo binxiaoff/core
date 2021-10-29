@@ -12,8 +12,10 @@ use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use Doctrine\Persistence\ManagerRegistry;
+use KLS\Core\Entity\Staff;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\Program;
+use KLS\CreditGuaranty\FEI\Entity\ProgramStatus;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 
@@ -45,6 +47,31 @@ class ReservationRepository extends ServiceEntityRepository
     public function flush(): void
     {
         $this->getEntityManager()->flush();
+    }
+
+    public function countByStaffAndProgramAndStatuses(Staff $staff, Program $program, array $statuses): int
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+
+        return (int) $queryBuilder
+            ->select('COUNT(r)')
+            ->innerJoin('r.program', 'p')
+            ->innerJoin('r.currentStatus', 'rs')
+            ->innerJoin('p.currentStatus', 'ps')
+            ->leftJoin('p.participations', 'pp')
+            ->where('r.program = :program')
+            ->andWhere($queryBuilder->expr()->orX(
+                'p.managingCompany = :staffCompany',
+                'pp.participant = :staffCompany AND ps.status <> :statusDraft'
+            ))
+            ->andWhere('rs.status IN (:statuses)')
+            ->setParameter('program', $program)
+            ->setParameter('staffCompany', $staff->getCompany())
+            ->setParameter('statusDraft', ProgramStatus::STATUS_DRAFT)
+            ->setParameter('statuses', $statuses)
+            ->getQuery()
+            ->getSingleScalarResult()
+        ;
     }
 
     public function findByCurrentStatus(int $status): iterable
