@@ -23,7 +23,8 @@ class Reporting
         $itemsPerPage = (int) $request->query->get('itemsPerPage', 100);
         $page         = (int) $request->query->get('page', 1);
         $search       = $request->query->get('search');
+        $orders       = (array) $request->query->get('order');
 
-        return $reportingExtractor->extracts($data, $itemsPerPage, $page, $search);
+        return $reportingExtractor->extracts($data, $itemsPerPage, $page, $orders, $search);
     }
 }

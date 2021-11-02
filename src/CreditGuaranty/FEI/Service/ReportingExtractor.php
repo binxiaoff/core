@@ -34,6 +34,7 @@ class ReportingExtractor
         ReportingTemplate $reportingTemplate,
         int $itemsPerPage,
         int $page,
+        array $orders,
         ?string $search
     ): Paginator {
         $fields  = $this->getOrderedFields($reportingTemplate);
@@ -44,6 +45,7 @@ class ReportingExtractor
             $filters['selects'] ?? [],
             $filters['joins'] ?? [],
             $filters['clauses'] ?? [],
+            $orders,
             $itemsPerPage,
             $page
         );
