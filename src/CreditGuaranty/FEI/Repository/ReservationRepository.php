@@ -13,6 +13,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use Doctrine\Persistence\ManagerRegistry;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
+use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 
@@ -57,8 +58,14 @@ class ReservationRepository extends ServiceEntityRepository
         ;
     }
 
-    public function findByReportingFilters(array $selects, array $joins, int $itemsPerPage, int $page): Paginator
-    {
+    public function findByReportingFilters(
+        Program $program,
+        array $selects,
+        array $joins,
+        array $clauses,
+        int $itemsPerPage,
+        int $page
+    ): Paginator {
         $qb = $this->createQueryBuilder('r');
 
         if (empty($selects) || empty($joins)) {
@@ -69,7 +76,12 @@ class ReservationRepository extends ServiceEntityRepository
                 ->addSelect('financingObjects.reportingFirstDate AS reporting_first_date')
                 ->addSelect('financingObjects.reportingLastDate AS reporting_last_date')
                 ->addSelect('financingObjects.reportingValidationDate AS reporting_validation_date')
-                ->leftJoin(FinancingObject::class, 'financingObjects', Join::WITH, 'r.id = financingObjects.reservation')
+                ->leftJoin(
+                    FinancingObject::class,
+                    'financingObjects',
+                    Join::WITH,
+                    'r.id = financingObjects.reservation'
+                )
             ;
 
             foreach ($selects as $select) {
@@ -80,10 +92,20 @@ class ReservationRepository extends ServiceEntityRepository
             }
 
             $qb
+                ->innerJoin('r.program', 'program')
                 ->innerJoin('r.currentStatus', 'rcs')
-                ->where('rcs.status = :reservationStatus')
+                ->where('program = :program')
+                ->andWhere('rcs.status = :reservationStatus')
+                ->setParameter('program', $program)
                 ->setParameter('reservationStatus', ReservationStatus::STATUS_CONTRACT_FORMALIZED)
             ;
+
+            foreach ($clauses as $clause) {
+                $qb
+                    ->andWhere($clause['expression'])
+                    ->setParameter(...$clause['parameter'])
+                ;
+            }
         }
 
         $criteria = Criteria::create()

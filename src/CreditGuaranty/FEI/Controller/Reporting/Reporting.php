@@ -15,11 +15,15 @@ class Reporting
     /**
      * @throws Exception
      */
-    public function __invoke(Request $request, ReportingTemplate $data, ReportingExtractor $reportingExtractor): Paginator
-    {
+    public function __invoke(
+        Request $request,
+        ReportingTemplate $data,
+        ReportingExtractor $reportingExtractor
+    ): Paginator {
         $itemsPerPage = (int) $request->query->get('itemsPerPage', 100);
         $page         = (int) $request->query->get('page', 1);
+        $search       = $request->query->get('search');
 
-        return $reportingExtractor->extracts($data, $itemsPerPage, $page);
+        return $reportingExtractor->extracts($data, $itemsPerPage, $page, $search);
     }
 }

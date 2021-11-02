@@ -11,6 +11,7 @@ use Exception;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
+use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
@@ -28,14 +29,20 @@ class ReportingExtractor
     /**
      * @throws Exception
      */
-    public function extracts(ReportingTemplate $reportingTemplate, int $itemsPerPage, int $page): Paginator
-    {
+    public function extracts(
+        ReportingTemplate $reportingTemplate,
+        int $itemsPerPage,
+        int $page,
+        ?string $search
+    ): Paginator {
         $fields  = $this->getOrderedFields($reportingTemplate);
-        $filters = $this->generateFilters($fields);
+        $filters = $this->generateFilters($fields, $search);
 
         return $this->reservationRepository->findByReportingFilters(
+            $reportingTemplate->getProgram(),
             $filters['selects'] ?? [],
             $filters['joins'] ?? [],
+            $filters['clauses'] ?? [],
             $itemsPerPage,
             $page
         );
@@ -67,7 +74,7 @@ class ReportingExtractor
     /**
      * @param array|Field[] $fields
      */
-    private function generateFilters(array $fields): array
+    private function generateFilters(array $fields, ?string $search): array
     {
         if (empty($fields)) {
             return [];
@@ -75,75 +82,119 @@ class ReportingExtractor
 
         $selects = [];
         $joins   = [];
+        $clauses = [];
+
+        $searchExpressions = [];
 
         /** @var Field $field */
         foreach ($fields as $field) {
             foreach ($this->generateSelectByField($field) as $select) {
                 $selects[] = $select;
+
+                // generate search expressions
+                if (
+                    null !== $search
+                    && ('string' === $field->getPropertyType() || 'ProgramChoiceOption' === $field->getPropertyType())
+                ) {
+                    $selectParts         = \explode(' AS ', $select);
+                    $searchExpressions[] = $selectParts[0] . ' LIKE :search';
+                }
             }
 
-            $fieldObjectClass  = $field->getObjectClass();
-            $fieldPropertyName = $field->getReservationPropertyName();
-            $fieldPropertyPath = $field->getPropertyPath();
-
-            if (
-                false === empty($fieldObjectClass)
-                && false === \array_key_exists($fieldObjectClass, $joins)
-                && FinancingObject::class !== $fieldObjectClass
-            ) {
-                $joins[$fieldObjectClass] = ['r.' . $fieldPropertyName, $fieldPropertyName];
-            }
-
-            if ('ProgramChoiceOption' === $field->getPropertyType()) {
-                $alias = \sprintf('pco_%s_%s', $fieldPropertyName, $fieldPropertyPath);
-
-                $joins[$field->getFieldAlias()] = [ProgramChoiceOption::class, $alias, Join::WITH, \sprintf('%s.id = %s.%s', $alias, $fieldPropertyName, $fieldPropertyPath)];
-            }
-
-            if ('currentStatus' === $fieldPropertyName) {
-                $alias = \sprintf('rs_%s', $fieldPropertyName);
-
-                $joins[$field->getFieldAlias()] = [ReservationStatus::class, $alias, Join::WITH, \sprintf('%s.id = r.%s', $alias, $fieldPropertyName)];
+            foreach ($this->generateJoinByField($field) as $key => $join) {
+                $joins[$key] = $join;
             }
         }
 
-        return ['selects' => $selects, 'joins' => $joins];
+        if (null !== $search) {
+            $clauses[] = [
+                'expression' => \join(' OR ', $searchExpressions),
+                'parameter'  => ['search', '%' . $search . '%'], // @todo be careful of special chars
+            ];
+        }
+
+        return ['selects' => $selects, 'joins' => $joins, 'clauses' => $clauses];
     }
 
     private function generateSelectByField(Field $field): iterable
     {
-        $alias = ' AS ' . $field->getFieldAlias();
+        $fieldAlias = $field->getFieldAlias();
 
-        if (\in_array($field->getFieldAlias(), FieldAlias::VIRTUAL_FIELDS, true)) {
-            yield '\'\'' . $alias;
+        if (\in_array($fieldAlias, FieldAlias::VIRTUAL_FIELDS, true)) {
+            yield '\'\' AS ' . $fieldAlias;
 
             return;
         }
 
         if ('ProgramChoiceOption' === $field->getPropertyType()) {
-            yield \sprintf('pco_%s_%s.%s %s', $field->getReservationPropertyName(), $field->getPropertyPath(), 'description', $alias);
+            yield \sprintf(
+                'pco_%s.description AS %s',
+                $fieldAlias,
+                $fieldAlias
+            );
 
             return;
         }
 
-        if ('currentStatus' === $field->getReservationPropertyName()) {
-            yield \sprintf('rs_%s.%s %s', $field->getReservationPropertyName(), 'status', $alias);
+        $fieldPropertyName = $field->getReservationPropertyName();
+
+        if ('currentStatus' === $fieldPropertyName) {
+            yield \sprintf('rs_%s.status AS %s', $fieldAlias, $fieldAlias);
 
             return;
         }
 
-        $select = (empty($field->getObjectClass()) ? 'r.' : '') . $field->getReservationPropertyName();
+        $fieldPropertyPath = $field->getPropertyPath();
 
-        if (false === empty($field->getPropertyPath())) {
-            $select .= '.' . $field->getPropertyPath();
+        $select = (empty($field->getObjectClass()) ? 'r.' : '') . $fieldPropertyName;
+
+        if (false === empty($fieldPropertyPath)) {
+            $select .= '.' . $fieldPropertyPath;
         }
 
         if (\in_array($field->getPropertyType(), ['MoneyInterface', 'Money', 'NullableMoney'])) {
-            yield \sprintf('CONCAT(%s.amount, \' \', %s.currency) %s', $select, $select, $alias);
+            yield \sprintf('CONCAT(%s.amount, \' \', %s.currency) AS %s', $select, $select, $fieldAlias);
 
             return;
         }
 
-        yield $select . $alias;
+        yield \sprintf('%s AS %s', $select, $fieldAlias);
+    }
+
+    private function generateJoinByField(Field $field): iterable
+    {
+        $fieldAlias        = $field->getFieldAlias();
+        $fieldObjectClass  = $field->getObjectClass();
+        $fieldPropertyName = $field->getReservationPropertyName();
+
+        if (
+            false === empty($fieldObjectClass)
+            && FinancingObject::class !== $fieldObjectClass
+            && Program::class !== $fieldObjectClass
+        ) {
+            yield $fieldObjectClass => ['r.' . $fieldPropertyName, $fieldPropertyName];
+        }
+
+        if ('ProgramChoiceOption' === $field->getPropertyType()) {
+            $alias = \sprintf('pco_%s', $fieldAlias);
+
+            yield $fieldAlias => [
+                ProgramChoiceOption::class,
+                $alias,
+                Join::WITH,
+                \sprintf('%s.id = %s.%s', $alias, $fieldPropertyName, $field->getPropertyPath()),
+            ];
+        }
+
+        if ('currentStatus' === $fieldPropertyName) {
+            $alias = \sprintf('rs_%s', $fieldAlias);
+
+            yield $fieldAlias => [
+                ReservationStatus::class,
+                $alias,
+                Join::WITH,
+                \sprintf('%s.id = r.%s', $alias, $fieldPropertyName),
+            ];
+        }
     }
 }

@@ -68,6 +68,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                         "description": "The page number (1 by default)",
  *                         "required": false,
  *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "search",
+ *                         "type": "string",
+ *                         "description": "The search filter on text values of reporting",
+ *                         "required": false,
+ *                     },
  *                 },
  *             },
  *         },
