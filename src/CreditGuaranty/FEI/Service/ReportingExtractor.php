@@ -8,6 +8,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
 use ArrayIterator;
 use Doctrine\ORM\Query\Expr\Join;
 use Exception;
+use KLS\Core\Entity\NafNace;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
@@ -96,8 +97,13 @@ class ReportingExtractor
                     null !== $search
                     && ('string' === $field->getPropertyType() || 'ProgramChoiceOption' === $field->getPropertyType())
                 ) {
-                    $selectParts         = \explode(' AS ', $select);
-                    $searchExpressions[] = $selectParts[0] . ' LIKE :search';
+                    $selectParts = \explode(' AS ', $select);
+
+                    // we cannot search on some fields because these fields values are defined in ReportingNormalizer
+                    // so we have to ignore selects having a ''
+                    if ('\'\'' !== $selectParts[0]) {
+                        $searchExpressions[] = $selectParts[0] . ' LIKE :search';
+                    }
                 }
             }
 
@@ -116,11 +122,23 @@ class ReportingExtractor
         return ['selects' => $selects, 'joins' => $joins, 'clauses' => $clauses];
     }
 
+    /**
+     * We need to generate the select for each reporting template field to respect its position whatever the field type.
+     */
     private function generateSelectByField(Field $field): iterable
     {
-        $fieldAlias = $field->getFieldAlias();
+        $fieldAlias        = $field->getFieldAlias();
+        $fieldPropertyPath = $field->getPropertyPath();
 
-        if (\in_array($fieldAlias, FieldAlias::VIRTUAL_FIELDS, true)) {
+        // Virtual fields are fields which values are accessed by dynamic getters,
+        // and investment_thematic field was hard to concatenate in sql all at once
+        // (since each reporting line represents a financing objet and investment_thematic field belongs to project),
+        // that's why we define here an empty string as the value of these fields
+        // which will be defined in ReportingNormalizer.
+        if (
+            \in_array($fieldAlias, FieldAlias::VIRTUAL_FIELDS, true)
+            || 'investmentThematics' === $fieldPropertyPath
+        ) {
             yield '\'\' AS ' . $fieldAlias;
 
             return;
@@ -133,6 +151,14 @@ class ReportingExtractor
                 $fieldAlias
             );
 
+            if (\array_key_exists($fieldAlias, FieldAlias::NAF_NACE_FIELDS)) {
+                yield \sprintf(
+                    'pco_naf_nace_%s.naceCode AS %s',
+                    $fieldAlias,
+                    FieldAlias::NAF_NACE_FIELDS[$fieldAlias]
+                );
+            }
+
             return;
         }
 
@@ -143,8 +169,6 @@ class ReportingExtractor
 
             return;
         }
-
-        $fieldPropertyPath = $field->getPropertyPath();
 
         $select = (empty($field->getObjectClass()) ? 'r.' : '') . $fieldPropertyName;
 
@@ -184,6 +208,17 @@ class ReportingExtractor
                 Join::WITH,
                 \sprintf('%s.id = %s.%s', $alias, $fieldPropertyName, $field->getPropertyPath()),
             ];
+
+            if (\array_key_exists($fieldAlias, FieldAlias::NAF_NACE_FIELDS)) {
+                $aliasNafNace = \sprintf('pco_naf_nace_%s', $fieldAlias);
+
+                yield FieldAlias::NAF_NACE_FIELDS[$fieldAlias] => [
+                    NafNace::class,
+                    $aliasNafNace,
+                    Join::WITH,
+                    \sprintf('%s.description = %s.nafCode', $alias, $aliasNafNace),
+                ];
+            }
         }
 
         if ('currentStatus' === $fieldPropertyName) {

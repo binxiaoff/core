@@ -9,17 +9,22 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
+use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
 use KLS\CreditGuaranty\FEI\Repository\FinancingObjectRepository;
 use KLS\CreditGuaranty\FEI\Service\ReservationAccessor;
 use LogicException;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 
+/**
+ * This normalizer is used to process some reporting data that cannot be done in sql
+ * (see ReportingExtractor.php for more details,
+ * where selects, joins and clauses are generated from reporting template fields).
+ */
 class ReportingNormalizer implements ContextAwareNormalizerInterface, NormalizerAwareInterface
 {
     use NormalizerAwareTrait;
@@ -55,8 +60,6 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
 
     /**
      * @param Paginator $object
-     *
-     * @throws ExceptionInterface
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
@@ -70,13 +73,18 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
                 $financingObject = $this->financingObjectRepository->find($row['id_financing_object']);
 
                 if (false === ($financingObject instanceof FinancingObject)) {
-                    throw new LogicException(\sprintf('Impossible to generate reporting, FinancingObject id %s is not found', $row['id_financing_object']));
+                    throw new LogicException(
+                        \sprintf(
+                            'Impossible to generate reporting, FinancingObject id %s is not found',
+                            $row['id_financing_object']
+                        )
+                    );
                 }
 
                 $row['id_financing_object'] = $this->iriConverter->getIriFromItem($financingObject);
             }
 
-            // add value to virtual fields
+            // set virtual fields value
             foreach (FieldAlias::VIRTUAL_FIELDS as $fieldAlias) {
                 if (\array_key_exists($fieldAlias, $row)) {
                     $row[$fieldAlias] = $this->getVirtualFieldValue($financingObject->getReservation(), $fieldAlias);
@@ -95,6 +103,27 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
             if (false === empty($row[FieldAlias::AID_INTENSITY])) {
                 $row[FieldAlias::AID_INTENSITY] = ($row[FieldAlias::AID_INTENSITY] * 100) . ' %';
             }
+
+            // delete naf code fields to keep only its nace code
+            // because CASA only want nace code in generating reporting
+            foreach (FieldAlias::NAF_NACE_FIELDS as $fieldAlias => $relatedFieldAlias) {
+                if (\array_key_exists($fieldAlias, $row) && \array_key_exists($relatedFieldAlias, $row)) {
+                    unset($row[$fieldAlias]);
+                }
+            }
+
+            // concatenate all investment thematics of project here because it was hard to do in sql all at once
+            if (\array_key_exists(FieldAlias::INVESTMENT_THEMATIC, $row)) {
+                $investmentThematics = $financingObject
+                    ->getReservation()
+                    ->getProject()
+                    ->getInvestmentThematics()
+                    ->map(fn (ProgramChoiceOption $pco) => $pco->getDescription())
+                    ->toArray()
+                ;
+
+                $row[FieldAlias::INVESTMENT_THEMATIC] = \implode(' ; ', $investmentThematics);
+            }
         }
 
         return $data;
@@ -106,7 +135,9 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
         $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
 
         if (false === ($field instanceof Field)) {
-            throw new LogicException(\sprintf('Impossible to generate reporting, field with alias %s is not found', $fieldAlias));
+            throw new LogicException(
+                \sprintf('Impossible to generate reporting, field with alias %s is not found', $fieldAlias)
+            );
         }
 
         $value = $this->reservationAccessor->getEntity($reservation, $field);
