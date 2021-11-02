@@ -18,3 +18,5 @@ project-participation-status:
   -10: Archivé par l’arrangeur
   -20: Archivé par le participant
   -30: Rejeté par le comité
+rate-limit:
+  too-many-calls: Suite à de trop nombreuses tentatives, vous avez été bloqué temporairement. Merci de bien vouloir ré-essayer dans %minutes% minutes.
