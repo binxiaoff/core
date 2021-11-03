@@ -151,15 +151,8 @@ class EligibilityConditionChecker
     private function checkList(
         ProgramEligibilityCondition $programEligibilityCondition,
         $leftValue,
-        $valueToCompare
+        Collection $valueToCompare
     ): bool {
-        if (false === ($valueToCompare instanceof Collection)) {
-            // The valueToCompare must be refer to ProgramEligibilityCondition::$programChoiceOptions that is typehinted
-            // as a ProgramChoiceOption collection
-            // And a check is done in list type conditions that requires the property to be filled in
-            throw new LogicException('This code should not be reached');
-        }
-
         if ($leftValue instanceof Collection) {
             foreach ($leftValue as $leftValueItem) {
                 if (false === ($leftValueItem instanceof ProgramChoiceOption)) {

@@ -69,10 +69,6 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
                 'field'   => $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]),
             ]);
 
-            if (false === ($programEligibility instanceof $programEligibility)) {
-                continue;
-            }
-
             foreach ($conditionItems as $condition) {
                 $programEligibilityConfiguration = $this->getProgramEligibilityConfiguration(
                     $programEligibility,
