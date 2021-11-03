@@ -100,18 +100,18 @@ class FieldAlias extends AbstractEnum
     public const TOTAL_GROSS_SUBSIDY_EQUIVALENT = 'total_gross_subsidy_equivalent';
 
     // Date
-    public const FIRST_RELEASE_DATE        = 'first_release_date';
-    public const REPORTING_FIRST_DATE      = 'reporting_first_date';
-    public const REPORTING_LAST_DATE       = 'reporting_last_date';
-    public const REPORTING_VALIDATION_DATE = 'reporting_validation_date';
-    public const RESERVATION_CREATION_DATE = 'reservation_creation_date';
-    public const RESERVATION_REFUSAL_DATE  = 'reservation_refusal_date';
-    public const RESERVATION_SIGNING_DATE  = 'reservation_signing_date';
+    public const FIRST_RELEASE_DATE         = 'first_release_date';
+    public const REPORTING_FIRST_DATE       = 'reporting_first_date';
+    public const REPORTING_LAST_DATE        = 'reporting_last_date';
+    public const REPORTING_VALIDATION_DATE  = 'reporting_validation_date';
+    public const RESERVATION_CREATION_DATE  = 'reservation_creation_date';
+    public const RESERVATION_EXCLUSION_DATE = 'reservation_exclusion_date';
+    public const RESERVATION_SIGNING_DATE   = 'reservation_signing_date';
 
     // Virtual Fields
     public const VIRTUAL_FIELDS = [
         self::RECEIVING_GRANT,
-        self::RESERVATION_REFUSAL_DATE,
+        self::RESERVATION_EXCLUSION_DATE,
         self::TOTAL_GROSS_SUBSIDY_EQUIVALENT,
     ];
 

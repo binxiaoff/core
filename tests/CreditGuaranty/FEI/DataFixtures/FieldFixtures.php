@@ -810,8 +810,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-reservation_refusal_date' => [
-            'fieldAlias'              => 'reservation_refusal_date',
+        yield 'field-reservation_exclusion_date' => [
+            'fieldAlias'              => 'reservation_exclusion_date',
             'tag'                     => Field::TAG_INFO,
             'category'                => 'reservation',
             'type'                    => 'other',
@@ -888,7 +888,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_money_after_contract' => [ // need the reference to be shorter because reference is set as publicId and publicId has limit
+        // this reference needs to be shorter because reference is set as publicId and publicId has a character limit
+        yield 'field-loan_money_after_contract' => [
             'fieldAlias'              => 'loan_money_after_contractualisation',
             'tag'                     => Field::TAG_INFO,
             'category'                => 'loan',
