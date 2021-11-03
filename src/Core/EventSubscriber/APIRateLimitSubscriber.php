@@ -6,6 +6,7 @@ namespace KLS\Core\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -46,12 +47,12 @@ class APIRateLimitSubscriber implements EventSubscriberInterface
             $retryAfter             = $limit->getRetryAfter()->getTimestamp() - (new \DateTime())->getTimestamp();
             $headers['Retry-After'] = $retryAfter;
             $event->setResponse(new JsonResponse([
-                'code'    => 429,
+                'code'    => Response::HTTP_TOO_MANY_REQUESTS,
                 'message' => $this->translator->trans(
                     'rate-limit.too-many-calls',
                     ['%minutes%' => \ceil($retryAfter / 60)]
                 ),
-            ], 429, $headers));
+            ], Response::HTTP_TOO_MANY_REQUESTS, $headers));
         }
     }
 }
