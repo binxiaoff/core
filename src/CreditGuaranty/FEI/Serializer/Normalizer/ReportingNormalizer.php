@@ -91,25 +91,10 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
                 }
             }
 
-            // format dates
-            foreach (FieldAlias::DATE_FIELDS as $fieldAlias) {
-                if (false === empty($row[$fieldAlias])) {
-                    $row[$fieldAlias] = ($row[$fieldAlias])->format('Y-m-d');
-                }
-            }
-
             // special case for transforming decimal to percentage
             // TODO: if there is another one decimal field, create a constant in FieldAlias file and loop through it
             if (false === empty($row[FieldAlias::AID_INTENSITY])) {
                 $row[FieldAlias::AID_INTENSITY] = ($row[FieldAlias::AID_INTENSITY] * 100) . ' %';
-            }
-
-            // delete naf code fields to keep only its nace code
-            // because CASA only want nace code in generating reporting
-            foreach (FieldAlias::NAF_NACE_FIELDS as $fieldAlias => $relatedFieldAlias) {
-                if (\array_key_exists($fieldAlias, $row) && \array_key_exists($relatedFieldAlias, $row)) {
-                    unset($row[$fieldAlias]);
-                }
             }
 
             // concatenate all investment thematics of project here because it was hard to do in sql all at once

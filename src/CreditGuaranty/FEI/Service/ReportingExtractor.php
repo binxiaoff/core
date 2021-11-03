@@ -91,21 +91,14 @@ class ReportingExtractor
 
         /** @var Field $field */
         foreach ($fields as $field) {
-            foreach ($this->generateSelectByField($field) as $select) {
-                $selects[] = $select;
+            $select    = $this->generateSelectByField($field);
+            $selects[] = $select;
 
-                // generate search expressions
-                if (
-                    null !== $search
-                    && ('string' === $field->getPropertyType() || 'ProgramChoiceOption' === $field->getPropertyType())
-                ) {
-                    $selectParts = \explode(' AS ', $select);
+            if (null !== $search) {
+                $searchExpression = $this->generateSearchExpression($field, $select);
 
-                    // we cannot search on some fields because these fields values are defined in ReportingNormalizer
-                    // so we have to ignore selects having a ''
-                    if ('\'\'' !== $selectParts[0]) {
-                        $searchExpressions[] = $selectParts[0] . ' LIKE :search';
-                    }
+                if (null !== $searchExpression) {
+                    $searchExpressions[] = $searchExpression;
                 }
             }
 
@@ -127,64 +120,58 @@ class ReportingExtractor
     /**
      * We need to generate the select for each reporting template field to respect its position whatever the field type.
      */
-    private function generateSelectByField(Field $field): iterable
+    private function generateSelectByField(Field $field): string
     {
         $fieldAlias        = $field->getFieldAlias();
         $fieldPropertyPath = $field->getPropertyPath();
 
         // Virtual fields are fields which values are accessed by dynamic getters,
         // and investment_thematic field was hard to concatenate in sql all at once
-        // (since each reporting line represents a financing objet and investment_thematic field belongs to project),
+        // (maybe re-try in sql to avoid to do it in normalizer and to be able to order by this field)
         // that's why we define here an empty string as the value of these fields
         // which will be defined in ReportingNormalizer.
         if (
             \in_array($fieldAlias, FieldAlias::VIRTUAL_FIELDS, true)
             || 'investmentThematics' === $fieldPropertyPath
         ) {
-            yield '\'\' AS ' . $fieldAlias;
-
-            return;
+            return '\'\' AS ' . $fieldAlias;
         }
 
         if ('ProgramChoiceOption' === $field->getPropertyType()) {
-            yield \sprintf(
-                'pco_%s.description AS %s',
-                $fieldAlias,
-                $fieldAlias
-            );
-
+            // we only need nace code because CASA needs it in reporting to send to FEI
             if (\array_key_exists($fieldAlias, FieldAlias::NAF_NACE_FIELDS)) {
-                yield \sprintf(
+                return \sprintf(
                     'pco_naf_nace_%s.naceCode AS %s',
                     $fieldAlias,
                     FieldAlias::NAF_NACE_FIELDS[$fieldAlias]
                 );
             }
 
-            return;
+            return \sprintf(
+                'pco_%s.description AS %s',
+                $fieldAlias,
+                $fieldAlias
+            );
         }
 
         $fieldPropertyName = $field->getReservationPropertyName();
 
         if ('currentStatus' === $fieldPropertyName) {
-            yield \sprintf('rs_%s.status AS %s', $fieldAlias, $fieldAlias);
-
-            return;
+            return \sprintf('rs_%s.status AS %s', $fieldAlias, $fieldAlias);
         }
 
         $select = (empty($field->getObjectClass()) ? 'r.' : '') . $fieldPropertyName;
-
-        if (false === empty($fieldPropertyPath)) {
-            $select .= '.' . $fieldPropertyPath;
-        }
+        $select .= (false === empty($fieldPropertyPath)) ? '.' . $fieldPropertyPath : '';
 
         if (\in_array($field->getPropertyType(), ['MoneyInterface', 'Money', 'NullableMoney'])) {
-            yield \sprintf('CONCAT(%s.amount, \' \', %s.currency) AS %s', $select, $select, $fieldAlias);
-
-            return;
+            return \sprintf('CONCAT(%s.amount, \' \', %s.currency) AS %s', $select, $select, $fieldAlias);
         }
 
-        yield \sprintf('%s AS %s', $select, $fieldAlias);
+        if (\in_array($fieldAlias, FieldAlias::DATE_FIELDS)) {
+            $select = \sprintf('DATE_FORMAT(%s, %s)', $select, '\'%Y-%m-%d\'');
+        }
+
+        return \sprintf('%s AS %s', $select, $fieldAlias);
     }
 
     private function generateJoinByField(Field $field): iterable
@@ -233,5 +220,23 @@ class ReportingExtractor
                 \sprintf('%s.id = r.%s', $alias, $fieldPropertyName),
             ];
         }
+    }
+
+    private function generateSearchExpression(Field $field, string $select): ?string
+    {
+        if (false === \in_array($field->getPropertyType(), ['string', 'ProgramChoiceOption'], true)) {
+            return null;
+        }
+
+        \preg_match('/^(.+) AS \w+/', $select, $matches);
+        $selectPropertyPath = $matches[1] ?? '';
+
+        // we cannot search on some fields because these fields values are defined in ReportingNormalizer
+        // so we have to ignore selects having a ''
+        if ('' === $selectPropertyPath) {
+            return null;
+        }
+
+        return $selectPropertyPath . ' LIKE :search';
     }
 }
