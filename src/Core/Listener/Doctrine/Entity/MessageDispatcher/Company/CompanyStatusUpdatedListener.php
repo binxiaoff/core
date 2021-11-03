@@ -17,7 +17,11 @@ class CompanyStatusUpdatedListener
     {
         if ($args->hasChangedField('currentStatus')) {
             $this->messageBus->dispatch(
-                new CompanyStatusUpdated($company, $args->getOldValue('currentStatus'), $args->getNewValue('currentStatus'))
+                new CompanyStatusUpdated(
+                    $company,
+                    $args->getOldValue('currentStatus'),
+                    $args->getNewValue('currentStatus')
+                )
             );
         }
     }
