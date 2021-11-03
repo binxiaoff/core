@@ -48,7 +48,7 @@ class EligibilityChecking
         // Actually the front can submit a reservation without any financingObject
         // because eligibility checking returns true
         // so we need to force the eligibility to false for this special case
-        if (empty($ineligibles) && 0 === $data->getFinancingObjects()->count()) {
+        if (false === \array_key_exists('loan', $ineligibles) && 0 === $data->getFinancingObjects()->count()) {
             $ineligibles['loan'] = [];
         }
 
