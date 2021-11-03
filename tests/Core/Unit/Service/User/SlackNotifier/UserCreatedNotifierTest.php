@@ -51,6 +51,7 @@ class UserCreatedNotifierTest extends TestCase
         $company->getLegalName()->shouldNotBeCalled();
 
         $this->slack->sendMessage(Argument::type(MessageInterface::class))->shouldBeCalledOnce();
+        $messageInterface->setText(Argument::type('string'))->shouldBeCalledOnce()->willReturn($messageInterface);
         $messageInterface->enableMarkdown()->shouldBeCalledOnce()->willReturn($messageInterface);
         $messageInterface->attach(Argument::type(Attachment::class))->shouldBeCalled(2)->willReturn($messageInterface);
         $this->slack->createMessage()->shouldBeCalledOnce()->willReturn($messageInterface->reveal());
@@ -70,6 +71,7 @@ class UserCreatedNotifierTest extends TestCase
 
         $this->slack->sendMessage(Argument::type(MessageInterface::class))->shouldBeCalledOnce();
         $messageInterface->enableMarkdown()->shouldBeCalledOnce()->willReturn($messageInterface);
+        $messageInterface->setText(Argument::type('string'))->shouldBeCalledOnce()->willReturn($messageInterface);
         $messageInterface->attach(Argument::type(Attachment::class))->shouldBeCalled(2)->willReturn($messageInterface);
         $this->slack->createMessage()->shouldBeCalledOnce()->willReturn($messageInterface->reveal());
 

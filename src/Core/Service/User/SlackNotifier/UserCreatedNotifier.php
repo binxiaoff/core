@@ -33,7 +33,7 @@ class UserCreatedNotifier
         $userAdmin = [];
         foreach ($user->getStaff() as $staff) {
             if ($staff->isAdmin()) {
-                $userAdmin[] = $staff->getCompany()->getLegalName();
+                $userAdmin[] = $staff->getCompany()->getDisplayName();
             }
         }
 
@@ -46,14 +46,7 @@ class UserCreatedNotifier
 
         return $this->slack->createMessage()
             ->enableMarkdown()
-            ->attach(
-                (new Attachment())
-                    ->addField(new AttachmentField(
-                        'Message',
-                        $user->getFirstName() . ' ' . $user->getLastName() . ' vient d\'initialiser son compte',
-                        false
-                    ))
-            )
+            ->setText($user->getFirstName() . ' ' . $user->getLastName() . ' vient d\'initialiser son compte')
             ->attach(
                 (new Attachment())
                     ->addField(new AttachmentField(
