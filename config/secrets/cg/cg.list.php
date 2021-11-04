@@ -1,8 +1,0 @@
-<?php
-
-return array (
-  'AWS_API_SECRET' => NULL,
-  'ENQUEUE_DSN' => NULL,
-  'GOOGLE_RECAPTCHA_SECRET' => NULL,
-  'MAILJET_API_SECRET' => NULL,
-);

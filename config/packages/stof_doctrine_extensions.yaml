@@ -5,4 +5,5 @@ stof_doctrine_extensions:
             loggable: true
             softdeleteable: true
             blameable: true
+            sortable: true
         migration: *doctrine_extensions_configuration

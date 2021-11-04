@@ -10,29 +10,29 @@ use KLS\Core\Message\AsyncMessageInterface;
 
 class CompanyStatusUpdated implements AsyncMessageInterface
 {
-    private Company $company;
-    private CompanyStatus $previousStatus;
-    private CompanyStatus $nextStatus;
+    private int $companyId;
+    private int $previousStatus;
+    private int $nextStatus;
 
     public function __construct(Company $company, CompanyStatus $previousStatus, CompanyStatus $nextStatus)
     {
-        $this->company        = $company;
-        $this->previousStatus = $previousStatus;
-        $this->nextStatus     = $nextStatus;
+        $this->companyId      = $company->getId();
+        $this->previousStatus = $previousStatus->getStatus();
+        $this->nextStatus     = $nextStatus->getStatus();
     }
 
     public function getCompanyId(): int
     {
-        return $this->company->getId();
+        return $this->companyId;
     }
 
     public function getPreviousStatus(): int
     {
-        return $this->previousStatus->getStatus();
+        return $this->previousStatus;
     }
 
     public function getNextStatus(): int
     {
-        return $this->nextStatus->getStatus();
+        return $this->nextStatus;
     }
 }

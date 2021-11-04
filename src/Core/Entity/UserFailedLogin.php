@@ -6,6 +6,7 @@ namespace KLS\Core\Entity;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use KLS\Core\Entity\Traits\IdentityTrait;
 
 /**
  * @ORM\Table(
@@ -19,6 +20,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class UserFailedLogin
 {
+    use IdentityTrait;
+
     /**
      * @ORM\Column(name="username", type="string", length=191, nullable=true)
      */
@@ -39,26 +42,9 @@ class UserFailedLogin
      */
     private DateTimeImmutable $added;
 
-    /**
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    private int $id;
-
-    /**
-     * @ORM\Column(type="float", nullable=true)
-     */
-    private ?float $recaptchaScore;
-
     public function __construct()
     {
         $this->added = new DateTimeImmutable();
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
     }
 
     public function getAdded(): DateTimeImmutable
@@ -98,18 +84,6 @@ class UserFailedLogin
     public function setError(?string $error): UserFailedLogin
     {
         $this->error = $error;
-
-        return $this;
-    }
-
-    public function getRecaptchaScore(): ?float
-    {
-        return $this->recaptchaScore;
-    }
-
-    public function setRecaptchaScore(?float $recaptchaScore): UserFailedLogin
-    {
-        $this->recaptchaScore = $recaptchaScore;
 
         return $this;
     }

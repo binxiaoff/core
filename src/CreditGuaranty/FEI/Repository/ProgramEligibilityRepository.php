@@ -34,6 +34,27 @@ class ProgramEligibilityRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
+    /**
+     * @return ProgramEligibility[]|array
+     */
+    public function findByProgramAndFieldCategory(Program $program, ?string $category = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('pe')
+            ->where('pe.program = :program')
+            ->setParameter('program', $program)
+        ;
+
+        if (null !== $category) {
+            $queryBuilder
+                ->innerJoin('pe.field', 'f')
+                ->andWhere('f.category = :category')
+                ->setParameter('category', $category)
+            ;
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
     public function findFieldCategoriesByProgram(Program $program): array
     {
         $categories = $this->createQueryBuilder('pe')

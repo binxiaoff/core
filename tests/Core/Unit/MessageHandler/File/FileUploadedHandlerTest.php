@@ -10,6 +10,7 @@ use KLS\Core\MessageHandler\File\FileUploadedHandler;
 use KLS\Core\MessageHandler\File\FileUploadedNotifierInterface;
 use KLS\Test\Core\Unit\Traits\PropertyValueTrait;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 
 /**
@@ -20,6 +21,7 @@ use Prophecy\Prophecy\ObjectProphecy;
 class FileUploadedHandlerTest extends TestCase
 {
     use PropertyValueTrait;
+    use ProphecyTrait;
 
     /**
      * @covers ::__invoke

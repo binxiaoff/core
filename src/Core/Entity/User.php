@@ -13,7 +13,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
-use KLS\Core\DTO\GoogleRecaptchaResult;
 use KLS\Core\Entity\Interfaces\StatusInterface;
 use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
@@ -188,8 +187,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
 
     private ?Staff $currentStaff = null;
 
-    private ?GoogleRecaptchaResult $recaptchaResult = null;
-
     /**
      * @throws Exception
      */
@@ -358,15 +355,19 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
         }
 
         if (false === $user->isGrantedLogin()) {
-            return false; // The user has been changed to a critical status. He/she is no longer the user that we known as he/she was.
+            // The user has been changed to a critical status. He/she is no longer the user that we knew as he/she was.
+            return false;
         }
 
         return true;
     }
 
+    /**
+     * Since we use the BCrypt password encoder, the salt will be ignored. The auto-generated one is always the best.
+     */
     public function getSalt(): string
     {
-        return ''; // Since we use the BCrypt password encoder, the salt will be ignored. The auto-generated one is always the best.
+        return '';
     }
 
     public function getUsername(): string
@@ -428,18 +429,6 @@ class User implements UserInterface, EquatableInterface, TraceableStatusAwareInt
     public function setServiceTermsToSign(LegalDocument $serviceTermsToSign): User
     {
         $this->serviceTermsToSign = $serviceTermsToSign;
-
-        return $this;
-    }
-
-    public function getRecaptchaResult(): ?GoogleRecaptchaResult
-    {
-        return $this->recaptchaResult;
-    }
-
-    public function setRecaptchaResult(?GoogleRecaptchaResult $recaptchaResult): User
-    {
-        $this->recaptchaResult = $recaptchaResult;
 
         return $this;
     }

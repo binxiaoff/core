@@ -18,6 +18,7 @@ use KLS\Syndication\Arrangement\Service\Project\MailNotifier\ProjectUploadNotifi
 use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Swift_Mailer;
 use Symfony\Component\Routing\RouterInterface;
@@ -30,6 +31,7 @@ use Symfony\Component\Routing\RouterInterface;
 class ProjectUploadNotifierTest extends TestCase
 {
     use UserStaffTrait;
+    use ProphecyTrait;
 
     /** @var Swift_Mailer|ObjectProphecy */
     private $mailer;

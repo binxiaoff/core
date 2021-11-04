@@ -6,6 +6,7 @@ namespace KLS\CreditGuaranty\FEI\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Constant\MathOperator;
 use KLS\Core\Entity\Traits\CloneableTrait;
@@ -72,6 +73,14 @@ class ProgramEligibilityCondition
 
     public const VALUE_TYPE_RATE  = 'rate';
     public const VALUE_TYPE_VALUE = 'value';
+    public const VALUE_TYPE_BOOL  = 'bool';
+    public const VALUE_TYPE_LIST  = 'list';
+
+    public const ALLOWED_VALUE_TYPES_FOR_VALUE = [
+        self::VALUE_TYPE_RATE,
+        self::VALUE_TYPE_VALUE,
+        self::VALUE_TYPE_BOOL,
+    ];
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration", inversedBy="programEligibilityConditions")
@@ -118,34 +127,41 @@ class ProgramEligibilityCondition
     private string $valueType;
 
     /**
-     * It stocks the value to compare if the type is "value", otherwise it stocks the rate.
+     * The value to compare in case of type "value" or "bool",
+     * or the value to calculate for comparison in case of type "rate".
      *
-     * @ORM\Column(type="decimal", precision=15, scale=2)
+     * @ORM\Column(type="string", nullable=true)
      *
-     * @Assert\Expression(
-     *     "(value <= 1 && value >= 0) || constant('KLS\\CreditGuaranty\\FEI\\Entity\\ProgramEligibilityCondition::VALUE_TYPE_VALUE') === this.getValueType()",
-     *     message="CreditGuaranty.ProgramEligibilityCondition.value.outOfRange"
-     * )
+     * @Assert\NotBlank(allowNull=true)
+     * @Assert\Type("numeric")
      *
      * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:write"})
      */
-    private string $value;
+    private ?string $value = null;
+
+    /**
+     * The option to compare in case of type "list".
+     *
+     * @ORM\ManyToOne(targetEntity=ProgramChoiceOption::class)
+     * @ORM\JoinColumn(name="id_program_choice_option")
+     *
+     * @Groups({"creditGuaranty:programEligibilityCondition:read", "creditGuaranty:programEligibilityCondition:write"})
+     */
+    private ?ProgramChoiceOption $programChoiceOption = null;
 
     public function __construct(
         ProgramEligibilityConfiguration $programEligibilityConfiguration,
         Field $leftOperandField,
         ?Field $rightOperandField,
         string $operation,
-        string $valueType,
-        string $value
+        string $valueType
     ) {
         $this->programEligibilityConfiguration = $programEligibilityConfiguration;
         $this->leftOperandField                = $leftOperandField;
         $this->rightOperandField               = $rightOperandField;
         $this->operation                       = $operation;
         $this->valueType                       = $valueType;
-        $this->value                           = $value;
-        $this->added                           = new \DateTimeImmutable();
+        $this->added                           = new DateTimeImmutable();
     }
 
     public function getProgramEligibilityConfiguration(): ProgramEligibilityConfiguration
@@ -153,8 +169,9 @@ class ProgramEligibilityCondition
         return $this->programEligibilityConfiguration;
     }
 
-    public function setProgramEligibilityConfiguration(ProgramEligibilityConfiguration $programEligibilityConfiguration): ProgramEligibilityCondition
-    {
+    public function setProgramEligibilityConfiguration(
+        ProgramEligibilityConfiguration $programEligibilityConfiguration
+    ): ProgramEligibilityCondition {
         $this->programEligibilityConfiguration = $programEligibilityConfiguration;
 
         return $this;
@@ -208,14 +225,26 @@ class ProgramEligibilityCondition
         return $this;
     }
 
-    public function getValue(): string
+    public function getValue(): ?string
     {
         return $this->value;
     }
 
-    public function setValue(string $value): ProgramEligibilityCondition
+    public function setValue(?string $value): ProgramEligibilityCondition
     {
         $this->value = $value;
+
+        return $this;
+    }
+
+    public function getProgramChoiceOption(): ?ProgramChoiceOption
+    {
+        return $this->programChoiceOption;
+    }
+
+    public function setProgramChoiceOption(?ProgramChoiceOption $programChoiceOption): ProgramEligibilityCondition
+    {
+        $this->programChoiceOption = $programChoiceOption;
 
         return $this;
     }
@@ -238,43 +267,169 @@ class ProgramEligibilityCondition
     /**
      * @Assert\Callback
      */
-    public function validateTargetEntity(ExecutionContextInterface $context): void
+    public function validateOperandFields(ExecutionContextInterface $context): void
     {
-        if (false === $this->getLeftOperandField()->isComparable()) {
-            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.operandField.nonComparable')
+        $leftOperandField = $this->getLeftOperandField();
+
+        if (false === $leftOperandField->isComparable()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.operandField.notComparable')
                 ->atPath('leftOperandField')
                 ->addViolation()
             ;
         }
 
-        if ($this->getLeftOperandField() === $this->getRightOperandField()) {
-            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.rightOperandField.selfComparaison')
-                ->atPath('rightOperandField')
-                ->addViolation()
-            ;
-        }
+        $rightOperandField = $this->getRightOperandField();
 
-        if (null === $this->getRightOperandField() && self::VALUE_TYPE_RATE === $this->getValueType()) {
-            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.rightOperandField.empty')
-                ->atPath('rightOperandField')
-                ->addViolation()
-            ;
-        }
-
-        if ($this->getRightOperandField()) {
-            if (self::VALUE_TYPE_VALUE === $this->getValueType()) {
+        if ($rightOperandField instanceof Field) {
+            if (self::VALUE_TYPE_RATE !== $this->getValueType()) {
                 $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.rightOperandField.notEmpty')
                     ->atPath('rightOperandField')
                     ->addViolation()
                 ;
             }
 
-            if (false === $this->getRightOperandField()->isComparable()) {
-                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.operandField.nonComparable')
+            if (false === $rightOperandField->isComparable()) {
+                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.operandField.notComparable')
                     ->atPath('rightOperandField')
                     ->addViolation()
                 ;
             }
+
+            if ($rightOperandField === $leftOperandField) {
+                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.rightOperandField.selfComparaison')
+                    ->atPath('rightOperandField')
+                    ->addViolation()
+                ;
+            }
+
+            if ($rightOperandField->getUnit() !== $leftOperandField->getUnit()) {
+                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.operandField.notComparableUnit')
+                    ->atPath('rightOperandField')
+                    ->addViolation()
+                ;
+            }
+        } elseif (self::VALUE_TYPE_RATE === $this->getValueType()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.rightOperandField.required')
+                ->atPath('rightOperandField')
+                ->addViolation()
+            ;
+        }
+
+        if (self::VALUE_TYPE_BOOL === $this->getValueType() && Field::TYPE_BOOL !== $leftOperandField->getType()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.leftOperandField.notBool')
+                ->atPath('leftOperandField')
+                ->addViolation()
+            ;
+        }
+
+        if (self::VALUE_TYPE_BOOL !== $this->getValueType() && Field::TYPE_BOOL === $leftOperandField->getType()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.valueType.notBool')
+                ->atPath('valueType')
+                ->addViolation()
+            ;
+        }
+
+        if (self::VALUE_TYPE_LIST === $this->getValueType() && Field::TYPE_LIST !== $leftOperandField->getType()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.leftOperandField.notList')
+                ->atPath('leftOperandField')
+                ->addViolation()
+            ;
+        }
+
+        if (self::VALUE_TYPE_LIST !== $this->getValueType() && Field::TYPE_LIST === $leftOperandField->getType()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.valueType.notList')
+                ->atPath('valueType')
+                ->addViolation()
+            ;
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateValue(ExecutionContextInterface $context): void
+    {
+        $valueType = $this->getValueType();
+        $value     = $this->getValue();
+
+        if (false === \in_array($valueType, self::ALLOWED_VALUE_TYPES_FOR_VALUE)) {
+            if (null !== $value) {
+                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.value.notEmpty')
+                    ->atPath('value')
+                    ->addViolation()
+                ;
+            }
+
+            return;
+        }
+
+        if (null === $value) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.value.required')
+                ->atPath('value')
+                ->addViolation()
+            ;
+
+            return;
+        }
+
+        if (self::VALUE_TYPE_RATE === $valueType) {
+            $value = (float) $value;
+
+            if ($value > 1 || $value < 0) {
+                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.value.outOfRange')
+                    ->atPath('value')
+                    ->addViolation()
+                ;
+            }
+        }
+
+        if (self::VALUE_TYPE_BOOL === $valueType) {
+            if (MathOperator::EQUAL !== $this->getOperation()) {
+                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.operation.notEqual')
+                    ->atPath('operation')
+                    ->addViolation()
+                ;
+            }
+            if ('1' !== $value && '0' !== $value) {
+                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.value.boolean')
+                    ->atPath('value')
+                    ->addViolation()
+                ;
+            }
+        }
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateProgramChoiceOption(ExecutionContextInterface $context): void
+    {
+        $valueType           = $this->getValueType();
+        $programChoiceOption = $this->getProgramChoiceOption();
+
+        if (\in_array($valueType, self::ALLOWED_VALUE_TYPES_FOR_VALUE)) {
+            if (null !== $programChoiceOption) {
+                $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.programChoiceOption.notEmpty')
+                    ->atPath('programChoiceOption')
+                    ->addViolation()
+                ;
+            }
+
+            return;
+        }
+
+        if (false === ($programChoiceOption instanceof ProgramChoiceOption)) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.programChoiceOption.required')
+                ->atPath('programChoiceOption')
+                ->addViolation()
+            ;
+        }
+
+        if (MathOperator::EQUAL !== $this->getOperation()) {
+            $context->buildViolation('CreditGuaranty.ProgramEligibilityCondition.operation.notEqual')
+                ->atPath('operation')
+                ->addViolation()
+            ;
         }
     }
 }

@@ -31,16 +31,16 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class ReservationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    private const RESERVATION_DRAFT                              = 'reservation_draft';
-    private const RESERVATION_DRAFT_ELIGIBLE                     = 'reservation_draft_eligible';
-    private const RESERVATION_DRAFT_INELIGIBLE                   = 'reservation_draft_ineligible';
-    private const RESERVATION_SENT                               = 'reservation_sent';
-    private const RESERVATION_WAITING_FOR_FEI                    = 'reservation_waiting_for_fei';
-    private const RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION = 'reservation_request_for_additional_information';
-    private const RESERVATION_ACCEPTED_BY_MANAGING_COMPANY       = 'reservation_accepted_by_managing_company';
-    private const RESERVATION_CONTRACT_FORMALIZED                = 'reservation_contract_formalized';
-    private const RESERVATION_ARCHIVED                           = 'reservation_archived';
-    private const RESERVATION_REFUSED_BY_MANAGING_COMPANY        = 'reservation_refused_by_managing_company';
+    private const RESERVATION_DRAFT                              = 'reservation-draft';
+    private const RESERVATION_DRAFT_ELIGIBLE                     = 'reservation-draft-eligible';
+    private const RESERVATION_DRAFT_INELIGIBLE                   = 'reservation-draft-ineligible';
+    private const RESERVATION_SENT                               = 'reservation-sent';
+    private const RESERVATION_WAITING_FOR_FEI                    = 'reservation-waiting_for_fei';
+    private const RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION = 'reservation-request_for_additional_information';
+    private const RESERVATION_ACCEPTED_BY_MANAGING_COMPANY       = 'reservation-accepted_by_managing_company';
+    private const RESERVATION_CONTRACT_FORMALIZED                = 'reservation-contract_formalized';
+    private const RESERVATION_ARCHIVED                           = 'reservation-archived';
+    private const RESERVATION_REFUSED_BY_MANAGING_COMPANY        = 'reservation-refused_by_managing_company';
 
     private ObjectManager                 $entityManager;
     private FieldRepository               $fieldRepository;
@@ -76,7 +76,15 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     {
         $this->entityManager = $manager;
 
-        foreach ($this->loadData() as $reference => $reservationData) {
+        foreach ($this->loadDataForProgramCommercialized() as $reference => $reservationData) {
+            $reservation = $this->buildReservation($reservationData);
+            $manager->persist($reservation);
+            $this->addReference($reference, $reservation);
+        }
+
+        $manager->flush();
+
+        foreach ($this->loadDataForProgramPaused() as $reference => $reservationData) {
             $reservation = $this->buildReservation($reservationData);
             $manager->persist($reservation);
             $this->addReference($reference, $reservation);
@@ -85,277 +93,359 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $manager->flush();
     }
 
-    private function loadData(): iterable
+    private function loadDataForProgramCommercialized(): iterable
     {
         /** @var Program $program */
         $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
 
         foreach ([ParticipationFixtures::PARTICIPANT_SAVO, ParticipationFixtures::PARTICIPANT_TOUL] as $participationReference) {
             /** @var Participation $participation */
-            $participation  = $this->getReference($participationReference);
-            $staff          = $participation->getParticipant()->getStaff()->current();
-            $referenceParts = \explode('_', $participationReference);
-            $referenceName  = \array_pop($referenceParts);
+            $participation    = $this->getReference($participationReference);
+            $participant      = $participation->getParticipant();
+            $staff            = $participant->getStaff()->current();
+            $companyShortCode = $participant->getShortCode();
 
-            yield self::RESERVATION_DRAFT . '_' . $referenceName => [
-                'name'     => 'Reservation draft by ' . $referenceName,
-                'program'  => $program,
-                'borrower' => [
-                    FieldAlias::CREATION_IN_PROGRESS => true,
-                    FieldAlias::LEGAL_FORM           => LegalForm::SARL,
-                    FieldAlias::EMPLOYEES_NUMBER     => 200,
-                ],
-                'project'          => [],
-                'financingObjects' => [],
-                'addedBy'          => $staff,
-                'currentStatus'    => ReservationStatus::STATUS_DRAFT,
-            ];
-            yield self::RESERVATION_DRAFT_ELIGIBLE . '_' . $referenceName => [
-                'name'     => 'Reservation draft eligible by ' . $referenceName,
-                'program'  => $program,
-                'borrower' => [
-                    FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
-                    FieldAlias::EMPLOYEES_NUMBER     => 200,
-                ],
-                'project' => [
-                    FieldAlias::RECEIVING_GRANT       => true,
-                    FieldAlias::AID_INTENSITY         => '0.60',
-                    FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
-                    FieldAlias::INTANGIBLE_FEI_CREDIT => 500,
-                ],
-                'financingObjects' => [
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                        FieldAlias::LOAN_DURATION                  => 4,
+            for ($i = 1; $i <= 5; ++$i) {
+                yield \sprintf('%s-%s-%s', self::RESERVATION_DRAFT, $companyShortCode, $i) => [
+                    'name'     => \sprintf('Reservation brouillon %s (%s)', $i, $companyShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => true,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SARL,
+                        FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'project'          => [],
+                    'financingObjects' => [],
+                    'addedBy'          => $staff,
+                    'currentStatus'    => ReservationStatus::STATUS_DRAFT,
+                ];
+                yield \sprintf('%s-%s-%s', self::RESERVATION_DRAFT_ELIGIBLE, $companyShortCode, $i) => [
+                    'name'     => \sprintf('Reservation brouillon éligible %s (%s)', $i, $companyShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SA,
+                        FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
-                ],
-                'addedBy'       => $staff,
-                'currentStatus' => ReservationStatus::STATUS_DRAFT,
-            ];
-            yield self::RESERVATION_DRAFT_INELIGIBLE . '_' . $referenceName => [
-                'name'     => 'Reservation draft ineligible by ' . $referenceName,
-                'program'  => $program,
-                'borrower' => [
-                    FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => LegalForm::SAS,
-                    FieldAlias::EMPLOYEES_NUMBER     => 800,
-                ],
-                'project' => [
-                    FieldAlias::RECEIVING_GRANT       => false,
-                    FieldAlias::AID_INTENSITY         => '0.20',
-                    FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
-                    FieldAlias::INTANGIBLE_FEI_CREDIT => 1200,
-                ],
-                'financingObjects' => [
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                        FieldAlias::LOAN_DURATION                  => 6,
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => true,
+                        FieldAlias::AID_INTENSITY         => '0.60',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 500,
                     ],
-                ],
-                'addedBy'       => $staff,
-                'currentStatus' => ReservationStatus::STATUS_DRAFT,
-            ];
-            yield self::RESERVATION_SENT . '_' . $referenceName => [
-                'name'     => 'Reservation sent by ' . $referenceName,
-                'program'  => $program,
-                'borrower' => [
-                    FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
-                    FieldAlias::EMPLOYEES_NUMBER     => 300,
-                ],
-                'project' => [
-                    FieldAlias::RECEIVING_GRANT       => true,
-                    FieldAlias::AID_INTENSITY         => '0.80',
-                    FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
-                    FieldAlias::INTANGIBLE_FEI_CREDIT => 300,
-                ],
-                'financingObjects' => [
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
                     ],
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_DRAFT,
+                ];
+                yield \sprintf('%s-%s-%s', self::RESERVATION_DRAFT_INELIGIBLE, $companyShortCode, $i) => [
+                    'name'     => \sprintf('Reservation brouillon inéligible %s (%s)', $i, $companyShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SAS,
+                        FieldAlias::EMPLOYEES_NUMBER     => 800,
                     ],
-                ],
-                'addedBy'       => $staff,
-                'currentStatus' => ReservationStatus::STATUS_SENT,
-            ];
-            yield self::RESERVATION_WAITING_FOR_FEI . '_' . $referenceName => [
-                'name'     => 'Reservation waiting_for_fei by ' . $referenceName,
-                'program'  => $program,
-                'borrower' => [
-                    FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
-                    FieldAlias::EMPLOYEES_NUMBER     => 300,
-                ],
-                'project' => [
-                    FieldAlias::RECEIVING_GRANT       => true,
-                    FieldAlias::AID_INTENSITY         => '0.80',
-                    FieldAlias::TANGIBLE_FEI_CREDIT   => 100000,
-                    FieldAlias::INTANGIBLE_FEI_CREDIT => 42000,
-                ],
-                'financingObjects' => [
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => false,
+                        FieldAlias::AID_INTENSITY         => '0.20',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 1200,
                     ],
-                ],
-                'addedBy'       => $staff,
-                'currentStatus' => ReservationStatus::STATUS_WAITING_FOR_FEI,
-            ];
-            yield self::RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION . '_' . $referenceName => [
-                'name'     => 'Reservation request_for_additional_information by ' . $referenceName,
-                'program'  => $program,
-                'borrower' => [
-                    FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => LegalForm::SARL,
-                    FieldAlias::EMPLOYEES_NUMBER     => 150,
-                ],
-                'project' => [
-                    FieldAlias::RECEIVING_GRANT       => true,
-                    FieldAlias::AID_INTENSITY         => '0.80',
-                    FieldAlias::TANGIBLE_FEI_CREDIT   => 100,
-                    FieldAlias::INTANGIBLE_FEI_CREDIT => 20,
-                ],
-                'financingObjects' => [
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 6,
+                        ],
                     ],
-                ],
-                'addedBy'       => $staff,
-                'currentStatus' => ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
-            ];
-            yield self::RESERVATION_ACCEPTED_BY_MANAGING_COMPANY . '_' . $referenceName => [
-                'name'     => 'Reservation accepted_by_managing_company by ' . $referenceName,
-                'program'  => $program,
-                'borrower' => [
-                    FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => LegalForm::SAS,
-                    FieldAlias::EMPLOYEES_NUMBER     => 30,
-                ],
-                'project' => [
-                    FieldAlias::RECEIVING_GRANT       => true,
-                    FieldAlias::AID_INTENSITY         => '0.80',
-                    FieldAlias::TANGIBLE_FEI_CREDIT   => 22000,
-                    FieldAlias::INTANGIBLE_FEI_CREDIT => 400,
-                ],
-                'financingObjects' => [
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_DRAFT,
+                ];
+                yield \sprintf('%s-%s-%s', self::RESERVATION_SENT, $companyShortCode, $i) => [
+                    'name'     => \sprintf('Reservation envoyée %s (%s)', $i, $companyShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SA,
+                        FieldAlias::EMPLOYEES_NUMBER     => 300,
                     ],
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => true,
+                        FieldAlias::AID_INTENSITY         => '0.80',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 300,
                     ],
-                ],
-                'addedBy'       => $staff,
-                'currentStatus' => ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
-            ];
-            yield self::RESERVATION_CONTRACT_FORMALIZED . '_' . $referenceName => [
-                'name'     => 'Reservation contract_formalized by ' . $referenceName,
-                'program'  => $program,
-                'borrower' => [
-                    FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
-                    FieldAlias::EMPLOYEES_NUMBER     => 300,
-                ],
-                'project' => [
-                    FieldAlias::RECEIVING_GRANT       => true,
-                    FieldAlias::AID_INTENSITY         => '0.80',
-                    FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
-                    FieldAlias::INTANGIBLE_FEI_CREDIT => 300,
-                ],
-                'financingObjects' => [
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
                     ],
-                ],
-                'addedBy'       => $staff,
-                'currentStatus' => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
-            ];
-            yield self::RESERVATION_ARCHIVED . '_' . $referenceName => [
-                'name'     => 'Reservation archived by ' . $referenceName,
-                'program'  => $program,
-                'borrower' => [
-                    FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
-                    FieldAlias::EMPLOYEES_NUMBER     => 450,
-                ],
-                'project' => [
-                    FieldAlias::RECEIVING_GRANT       => true,
-                    FieldAlias::AID_INTENSITY         => '0.80',
-                    FieldAlias::TANGIBLE_FEI_CREDIT   => 6000,
-                    FieldAlias::INTANGIBLE_FEI_CREDIT => 700,
-                ],
-                'financingObjects' => [
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_SENT,
+                ];
+                yield \sprintf('%s-%s-%s', self::RESERVATION_WAITING_FOR_FEI, $companyShortCode, $i) => [
+                    'name'     => \sprintf('Reservation attente FEI %s (%s)', $i, $companyShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SA,
+                        FieldAlias::EMPLOYEES_NUMBER     => 300,
                     ],
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => true,
+                        FieldAlias::AID_INTENSITY         => '0.80',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 100000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 42000,
                     ],
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
                     ],
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_WAITING_FOR_FEI,
+                ];
+                yield \sprintf('%s-%s-%s', self::RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION, $companyShortCode, $i) => [
+                    'name'     => \sprintf('Reservation information supplémentaire %s (%s)', $i, $companyShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SARL,
+                        FieldAlias::EMPLOYEES_NUMBER     => 150,
                     ],
-                ],
-                'addedBy'       => $staff,
-                'currentStatus' => ReservationStatus::STATUS_ARCHIVED,
-            ];
-            yield self::RESERVATION_REFUSED_BY_MANAGING_COMPANY . '_' . $referenceName => [
-                'name'     => 'Reservation refused_by_managing_company by ' . $referenceName,
-                'program'  => $program,
-                'borrower' => [
-                    FieldAlias::CREATION_IN_PROGRESS => false,
-                    FieldAlias::LEGAL_FORM           => LegalForm::SA,
-                    FieldAlias::EMPLOYEES_NUMBER     => 200,
-                ],
-                'project' => [
-                    FieldAlias::RECEIVING_GRANT       => true,
-                    FieldAlias::AID_INTENSITY         => '0.80',
-                    FieldAlias::TANGIBLE_FEI_CREDIT   => 80000,
-                    FieldAlias::INTANGIBLE_FEI_CREDIT => 100,
-                ],
-                'financingObjects' => [
-                    [
-                        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                        FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                        FieldAlias::LOAN_DURATION                  => 4,
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => true,
+                        FieldAlias::AID_INTENSITY         => '0.80',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 100,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 20,
                     ],
-                ],
-                'addedBy'       => $staff,
-                'currentStatus' => ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY,
-            ];
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                    ],
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
+                ];
+                yield \sprintf('%s-%s-%s', self::RESERVATION_ACCEPTED_BY_MANAGING_COMPANY, $companyShortCode, $i) => [
+                    'name'     => \sprintf('Reservation acceptée %s (%s)', $i, $companyShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SAS,
+                        FieldAlias::EMPLOYEES_NUMBER     => 30,
+                    ],
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => true,
+                        FieldAlias::AID_INTENSITY         => '0.80',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 22000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 400,
+                    ],
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                    ],
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
+                ];
+                yield \sprintf('%s-%s-%s', self::RESERVATION_ARCHIVED, $companyShortCode, $i) => [
+                    'name'     => \sprintf('Reservation archivée/annulée %s (%s)', $i, $companyShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SA,
+                        FieldAlias::EMPLOYEES_NUMBER     => 450,
+                    ],
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => true,
+                        FieldAlias::AID_INTENSITY         => '0.80',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 6000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 700,
+                    ],
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                    ],
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_ARCHIVED,
+                ];
+                yield \sprintf('%s-%s-%s', self::RESERVATION_REFUSED_BY_MANAGING_COMPANY, $companyShortCode, $i) => [
+                    'name'     => \sprintf('Reservation refusée %s (%s)', $i, $companyShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SA,
+                        FieldAlias::EMPLOYEES_NUMBER     => 200,
+                    ],
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => true,
+                        FieldAlias::AID_INTENSITY         => '0.80',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 80000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 100,
+                    ],
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                    ],
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY,
+                ];
+            }
+
+            for ($i = 1; $i <= 20; ++$i) {
+                yield \sprintf('%s-%s-%s', self::RESERVATION_CONTRACT_FORMALIZED, $companyShortCode, $i) => [
+                    'name'     => \sprintf('Reservation contractualisée %s (%s)', $i, $companyShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SA,
+                        FieldAlias::EMPLOYEES_NUMBER     => 300,
+                    ],
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => true,
+                        FieldAlias::AID_INTENSITY         => '0.80',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 300,
+                    ],
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 6,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
+                            FieldAlias::LOAN_DURATION                  => 1,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
+                            FieldAlias::LOAN_DURATION                  => 5,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::STAND_BY,
+                            FieldAlias::LOAN_DURATION                  => 2,
+                        ],
+                    ],
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
+                ];
+            }
+        }
+    }
+
+    private function loadDataForProgramPaused(): iterable
+    {
+        /** @var Program $program */
+        $program = $this->getReference(ProgramFixtures::REFERENCE_PAUSED);
+
+        foreach ([ParticipationFixtures::PARTICIPANT_SAVO, ParticipationFixtures::PARTICIPANT_TOUL] as $participationReference) {
+            /** @var Participation $participation */
+            $participation        = $this->getReference($participationReference);
+            $staff                = $participation->getParticipant()->getStaff()->current();
+            $participationParts   = \explode('_', $participationReference);
+            $participantShortCode = \mb_strtolower(\array_pop($participationParts));
+            $referenceSuffix      = \sprintf('%s_%s', $program->getId(), $participantShortCode);
+
+            foreach (\range(1, 10) as $index) {
+                yield \sprintf('%s_%s_%s', self::RESERVATION_CONTRACT_FORMALIZED, $referenceSuffix, $index) => [
+                    'name'     => \sprintf('Reservation contractualisée %s (%s)', $index, $participantShortCode),
+                    'program'  => $program,
+                    'borrower' => [
+                        FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SA,
+                        FieldAlias::EMPLOYEES_NUMBER     => 300,
+                    ],
+                    'project' => [
+                        FieldAlias::RECEIVING_GRANT       => true,
+                        FieldAlias::AID_INTENSITY         => '0.80',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 300,
+                    ],
+                    'financingObjects' => [
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
+                            FieldAlias::LOAN_DURATION                  => 4,
+                        ],
+                    ],
+                    'addedBy'       => $staff,
+                    'currentStatus' => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
+                ];
+            }
         }
     }
 
@@ -413,7 +503,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
-            ->setAddressDepartment('department')
+            ->setAddressDepartment($this->findProgramChoiceOption($program, FieldAlias::ACTIVITY_DEPARTMENT))
             ->setAddressCountry($this->findProgramChoiceOption($program, FieldAlias::ACTIVITY_COUNTRY))
             ->setEmployeesNumber($data[FieldAlias::EMPLOYEES_NUMBER])
             ->setExploitationSize($this->findProgramChoiceOption($program, FieldAlias::EXPLOITATION_SIZE))
@@ -433,12 +523,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setInvestmentType($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence))
             ->setDetail($this->faker->sentence)
             ->setAidIntensity($this->findProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $data[FieldAlias::AID_INTENSITY]))
-            ->setAdditionalGuaranty($this->findProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->sentence(3)))
+            ->setAdditionalGuaranty($this->findProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->unique()->sentence(3)))
             ->setAgriculturalBranch($this->findProgramChoiceOption($program, FieldAlias::AGRICULTURAL_BRANCH, 'Branch N: ' . $this->faker->sentence))
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
-            ->setAddressDepartment('department')
+            ->setAddressDepartment($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_DEPARTMENT))
             ->setAddressCountry($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_COUNTRY))
             ->setFundingMoney(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setContribution(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
@@ -460,7 +550,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $program   = $reservation->getProgram();
         $loanMoney = new Money('EUR', (string) $this->faker->randomNumber(4));
 
-        return (new FinancingObject($reservation, $loanMoney, $this->faker->boolean))
+        return (new FinancingObject($reservation, $loanMoney, $this->faker->boolean, $this->faker->sentence(3, true)))
             ->setSupportingGenerationsRenewal($data[FieldAlias::SUPPORTING_GENERATIONS_RENEWAL])
             ->setFinancingObjectType($this->findProgramChoiceOption($program, FieldAlias::FINANCING_OBJECT_TYPE, $this->faker->sentence))
             ->setLoanNafCode($this->findProgramChoiceOption($program, FieldAlias::LOAN_NAF_CODE))

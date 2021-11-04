@@ -82,11 +82,13 @@ class ReservationStatus implements StatusInterface
             self::STATUS_REFUSED_BY_MANAGING_COMPANY,
         ],
         self::STATUS_WAITING_FOR_FEI => [
+            self::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
             self::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
             self::STATUS_ARCHIVED,
             self::STATUS_REFUSED_BY_MANAGING_COMPANY,
         ],
         self::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION => [
+            self::STATUS_WAITING_FOR_FEI,
             self::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
             self::STATUS_ARCHIVED,
             self::STATUS_REFUSED_BY_MANAGING_COMPANY,

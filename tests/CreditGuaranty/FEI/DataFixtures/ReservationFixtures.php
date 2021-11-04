@@ -89,7 +89,6 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         /** @var Staff $addedBy */
         $addedBy = $participation->getParticipant()->getStaff()->current();
 
-        $this->createCompanyGroup($program, $addedBy);
         $this->loginStaff($addedBy);
 
         yield self::RESERVATION_DRAFT_1 => [
@@ -216,7 +215,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
-            ->setAddressDepartment('department')
+            ->setAddressDepartment($this->findProgramChoiceOption($program, 'field-activity_department', 'department'))
             ->setAddressCountry($this->findProgramChoiceOption($program, 'field-activity_country', 'FR'))
             ->setSiret('11111111111111')
             ->setTaxNumber('12 23 45 678 987')
@@ -245,7 +244,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
-            ->setAddressDepartment('department')
+            ->setAddressDepartment($this->findProgramChoiceOption($program, 'field-investment_department', 'department'))
             ->setAddressCountry($this->findProgramChoiceOption($program, 'field-investment_country', 'FR'))
             ->setFundingMoney(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setContribution(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
@@ -267,7 +266,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $program   = $reservation->getProgram();
         $loanMoney = new Money('EUR', '200');
 
-        return (new FinancingObject($reservation, $loanMoney, $data['mainLoan']))
+        return (new FinancingObject($reservation, $loanMoney, $data['mainLoan'], $this->faker->sentence(3, true)))
             ->setSupportingGenerationsRenewal(true)
             ->setFinancingObjectType($this->findProgramChoiceOption($program, 'field-financing_object_type', $this->faker->text(255)))
             ->setLoanNafCode($this->findProgramChoiceOption($program, 'field-loan_naf_code', '0001A'))
@@ -350,19 +349,5 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
 
         return $programChoiceOption;
-    }
-
-    private function createCompanyGroup(Program $program, Staff $addedBy): void
-    {
-        $company = $addedBy->getCompany();
-
-        foreach ($company->getStaff() as $staff) {
-            if (false === $staff->isManager()) {
-                continue;
-            }
-
-            $staff->addCompanyGroupTag($program->getCompanyGroupTag());
-            $this->entityManager->persist($staff);
-        }
     }
 }

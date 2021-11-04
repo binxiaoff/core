@@ -41,7 +41,7 @@ class HubspotCompany
     private string $hubspotCompanyId;
 
     /**
-     * @ORM\Column(type="datetime_immutable")
+     * @ORM\Column(type="datetime_immutable", nullable=true)
      */
     private \DateTimeImmutable $synchronized;
 
@@ -50,7 +50,6 @@ class HubspotCompany
         $this->company          = $company;
         $this->hubspotCompanyId = $companyId;
         $this->added            = new DateTimeImmutable();
-        $this->synchronized     = new DateTimeImmutable();
     }
 
     public function getId(): int

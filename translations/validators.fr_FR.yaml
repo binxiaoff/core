@@ -199,6 +199,12 @@ CreditGuaranty:
             notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
             greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
             draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.
+        reportingTemplate:
+            name:
+                unique: Le nom d'un template de reporting doit être unique.
+        reportingTemplateField:
+            field:
+                unique: Un champ ne peut être associé qu'à un seul template de reporting
     ProgramChoiceOption:
         invalid: La description du nouveau programChoiceOption doit exister dans les éléments prédéfinis.
     ProgramEligibilityConfiguration:
@@ -221,14 +227,30 @@ CreditGuaranty:
             type:
                 onlyList: Vous ne pouvez que créer une configuration du type "list" pour l'éligibilité.
     ProgramEligibilityCondition:
-        value:
-            outOfRange: Merci de mettre un chiffre entre 0 et 1 pour une comparaison de type "rate".
+        leftOperandField:
+            notBool: leftOperandField doit être de type bool pour correspondre au valueType "bool".
+            notList: leftOperandField doit être de type list pour correspondre au valueType "list".
         operandField:
-            nonComparable: Le champ choisi n'est pas comparable.
+            notComparable: Le champ choisi n'est pas comparable.
+            notComparableUnit: Les champs choisis n'ont pas le même unit.
+        operation:
+            notEqual: L'operation doit être un égal pour une comparaison de type "bool" ou "list".
+        programChoiceOption:
+            notEmpty: programChoiceOption doit être vide si ce n'est pas une comparaison de type "list".
+            required: Merci de remplir un programChoiceOption pour une comparaison de type "list".
         rightOperandField:
+            notEmpty: rightOperandField doit être vide pour une comparaison de type "value", "bool" ou "list".
+            required: rightOperandField doit être requis pour une comparaison de type "rate".
             selfComparaison: Vous ne pouvez pas comparer un champ à lui-même.
-            empty: rightOperandField est requis pour une comparaison de type "rate".
-            notEmpty: rightOperandField doit être vide pour une comparaison de type "value".
+        value:
+            boolean: Merci de mettre une valeur "1" ou "0" pour une comparaison de type "bool".
+            outOfRange: Merci de mettre un chiffre entre 0 et 1 pour une comparaison de type "rate".
+            notEmpty: value doit être vide si ce n'est pas une comparaison de type "rate", "value" ou "bool".
+            numeric: Merci de mettre une valeur numérique pour une comparaison de type "rate", "value" ou "bool".
+            required: Merci de remplir une valeur numérique pour une comparaison de type "rate", "value" ou "bool".
+        valueType:
+            notBool: valueType doit être de type "bool" pour correspondre au type du leftOperandField.
+            notList: valueType doit être de type "list" pour correspondre au type du leftOperandField.
     Borrower:
         grade:
             invalid: Le grade choisi n'est pas valable.
@@ -255,7 +277,7 @@ CreditGuaranty:
             required: La réservation ne peut être envoyée, au moins un objet de financement doit être défini.
             loanDuration:
                 requiredForEsb: La durée du prêt de l'objet de financement doit être renseignée pour calculer l'équivalent subvention brute.
-        financingObjectUnblocking:
+        financingObjectRelease:
             invoiceMoney:
                 requiredForLoanReleasedOnInvoice: Le montant des factures du déblocage de l'objet de financement doit être renseigné car les prêts sont débloqués sur facture dans ce programme.
             achievementMoney:

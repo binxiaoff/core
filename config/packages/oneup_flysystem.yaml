@@ -2,12 +2,9 @@ services:
     kls.s3_client:
         class: Aws\S3\S3Client
         arguments:
-            -
-                version: latest
-                region: '%env(AWS_S3_REGION)%'
-                credentials:
-                    key: '%env(AWS_API_KEY)%'
-                    secret: '%env(AWS_API_SECRET)%'
+            # On AWS, credentials are managed using an EC2 instance profile
+            - version: latest
+              region: '%env(AWS_S3_REGION)%'
 
 oneup_flysystem:
     adapters:

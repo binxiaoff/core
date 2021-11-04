@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace KLS\CreditGuaranty\FEI\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
-use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
@@ -43,20 +42,6 @@ class ProgramChoiceOptionDataPersister implements DataPersisterInterface
      */
     public function remove($data): void
     {
-        if ($data->isArchived()) {
-            return;
-        }
-
-        try {
-            $this->programChoiceOptionRepository->remove($data);
-        } catch (ForeignKeyConstraintViolationException $exception) {
-            // we have to reset registry manager because it closes on exception
-            $this->programChoiceOptionRepository->resetManager();
-
-            // we use find() instead of merge() because it will be deprecated
-            $data = $this->programChoiceOptionRepository->find($data->getId());
-            $data->archive();
-            $this->programChoiceOptionRepository->save($data);
-        }
+        $this->programChoiceOptionRepository->remove($data);
     }
 }

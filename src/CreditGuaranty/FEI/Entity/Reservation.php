@@ -186,7 +186,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObject", mappedBy="reservation", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObject", mappedBy="reservation", cascade={"remove"}, orphanRemoval=true, fetch="EXTRA_LAZY")
      */
     private Collection $financingObjects;
 
@@ -214,7 +214,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *
      * @Assert\Valid
      *
-     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReservationStatus", mappedBy="reservation", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReservationStatus", mappedBy="reservation", cascade={"persist"}, fetch="EAGER")
      *
      * @ORM\OrderBy({"added": "ASC"})
      *
@@ -386,6 +386,11 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     public function getAcceptedByManagingCompanyDate(): ?DateTimeImmutable
     {
         return $this->getDateByStatus(ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY);
+    }
+
+    public function getRefusedByManagingCompanyDate(): ?DateTimeImmutable
+    {
+        return $this->getDateByStatus(ReservationStatus::STATUS_REFUSED_BY_MANAGING_COMPANY);
     }
 
     public function getSigningDate(): ?DateTimeImmutable

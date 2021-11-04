@@ -9,7 +9,7 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use KLS\Core\DataFixtures\AbstractFixtures;
-use KLS\Core\DataFixtures\CompanyGroupFixture;
+use KLS\Core\DataFixtures\CompanyGroupFixtures;
 use KLS\Core\DataFixtures\StaffFixtures;
 use KLS\Core\Entity\CompanyGroupTag;
 use KLS\Core\Entity\Constant\CARatingType;
@@ -22,16 +22,19 @@ use KLS\CreditGuaranty\FEI\Entity\ProgramStatus;
 class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     public const ALL_PROGRAMS = [
-        self::REFERENCE_CANCELLED,
-        self::REFERENCE_COMMERCIALIZED,
         self::REFERENCE_DRAFT,
         self::REFERENCE_PAUSED,
+        self::REFERENCE_COMMERCIALIZED,
+        self::REFERENCE_CANCELLED_CORPORATE,
+        self::REFERENCE_CANCELLED_AGRICULTURE,
     ];
 
-    public const REFERENCE_COMMERCIALIZED = 'commercialized_program';
-    private const REFERENCE_DRAFT         = 'draft_program';
-    private const REFERENCE_CANCELLED     = 'cancelled_program';
-    private const REFERENCE_PAUSED        = 'paused_program';
+    public const REFERENCE_COMMERCIALIZED         = 'program-commercialized';
+    public const REFERENCE_PAUSED                 = 'program-paused';
+    private const REFERENCE_DRAFT                 = 'program-draft';
+    private const REFERENCE_CANCELLED             = 'program-cancelled';
+    private const REFERENCE_CANCELLED_CORPORATE   = self::REFERENCE_CANCELLED . '-' . CompanyGroupFixtures::CORPORATE;
+    private const REFERENCE_CANCELLED_AGRICULTURE = self::REFERENCE_CANCELLED . '-' . CompanyGroupFixtures::AGRICULTURE;
 
     /**
      * @return string[]
@@ -39,7 +42,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     public function getDependencies(): array
     {
         return [
-            CompanyGroupFixture::class,
+            CompanyGroupFixtures::class,
             StaffFixtures::class,
         ];
     }
@@ -49,62 +52,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function load(ObjectManager $manager): void
     {
-        $programData = [
-            self::REFERENCE_DRAFT => [
-                'name'                 => 'Programme en brouillon',
-                'companyGroupTag'      => CompanyGroupFixture::CORPORATE,
-                'funds'                => ['currency' => 'EUR', 'amount' => '100000000'],
-                'addedBy'              => StaffFixtures::CASA,
-                'currentStatus'        => ProgramStatus::STATUS_DRAFT,
-                'cappedAt'             => \random_int(10, 40) / 100,
-                'description'          => 'La description pour le programme en brouillon',
-                'distributionDeadline' => new DateTimeImmutable(),
-            ],
-            self::REFERENCE_CANCELLED => [
-                'name'            => 'Programme annulée',
-                'companyGroupTag' => CompanyGroupFixture::AGRICULTURE,
-                'funds'           => ['currency' => 'EUR', 'amount' => '200000000'],
-                'addedBy'         => StaffFixtures::CASA,
-                'currentStatus'   => ProgramStatus::STATUS_ARCHIVED,
-                'cappedAt'        => \random_int(10, 40) / 100,
-            ],
-            self::REFERENCE_COMMERCIALIZED => [
-                'name'                 => 'Programme commercialisée',
-                'companyGroupTag'      => CompanyGroupFixture::AGRICULTURE,
-                'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
-                'addedBy'              => StaffFixtures::CASA,
-                'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
-                'cappedAt'             => \random_int(10, 40) / 100,
-                'description'          => 'La description pour le programme en distribution',
-                'distributionDeadline' => new DateTimeImmutable(),
-                'distributionProcess'  => [
-                    'Création d’un dossier emprunteur',
-                    'Vérification de l’éligibilité',
-                    'Réservation validée par FIN BO',
-                    'Edition de l’offre de prêt et de ses annexes',
-                    'Signature du client et contractualisation',
-                    'Renseignement du N° de prêt et montant des réalisations',
-                ],
-                'guarantyDuration'        => 240,
-                'guarantyCoverage'        => '0.07',
-                'guarantyCost'            => ['currency' => 'EUR', 'amount' => '1000'],
-                'maxFeiCredit'            => ['currency' => 'EUR', 'amount' => '20000'],
-                'reservationDuration'     => 2,
-                'esbCalculationActivated' => $this->faker->boolean,
-                'loanReleasedOnInvoice'   => $this->faker->boolean,
-            ],
-            self::REFERENCE_PAUSED => [
-                'name'                    => 'Programme en pause',
-                'companyGroupTag'         => CompanyGroupFixture::CORPORATE,
-                'funds'                   => ['currency' => 'EUR', 'amount' => '400000000'],
-                'addedBy'                 => StaffFixtures::CASA,
-                'currentStatus'           => ProgramStatus::STATUS_PAUSED,
-                'esbCalculationActivated' => $this->faker->boolean,
-                'loanReleasedOnInvoice'   => $this->faker->boolean,
-            ],
-        ];
-
-        foreach ($programData as $reference => $programDatum) {
+        foreach ($this->loadData() as $reference => $programDatum) {
             $program = $this->buildProgram($programDatum);
             $manager->persist($program);
 
@@ -125,6 +73,66 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
         }
 
         $manager->flush();
+    }
+
+    private function loadData(): iterable
+    {
+        yield self::REFERENCE_DRAFT => [
+            'name'                 => 'Programme en brouillon',
+            'companyGroupTag'      => CompanyGroupFixtures::CORPORATE,
+            'funds'                => ['currency' => 'EUR', 'amount' => '100000000'],
+            'addedBy'              => StaffFixtures::CASA,
+            'currentStatus'        => ProgramStatus::STATUS_DRAFT,
+            'cappedAt'             => \random_int(10, 40) / 100,
+            'description'          => 'La description pour le programme en brouillon',
+            'distributionDeadline' => new DateTimeImmutable(),
+        ];
+        yield self::REFERENCE_COMMERCIALIZED => [
+            'name'                 => 'Programme commercialisé',
+            'companyGroupTag'      => CompanyGroupFixtures::AGRICULTURE,
+            'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
+            'addedBy'              => StaffFixtures::CASA,
+            'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
+            'cappedAt'             => \random_int(10, 40) / 100,
+            'description'          => 'La description pour le programme en distribution',
+            'distributionDeadline' => new DateTimeImmutable(),
+            'distributionProcess'  => [
+                'Création d’un dossier emprunteur',
+                'Vérification de l’éligibilité',
+                'Réservation validée par FIN BO',
+                'Edition de l’offre de prêt et de ses annexes',
+                'Signature du client et contractualisation',
+                'Renseignement du N° de prêt et montant des réalisations',
+            ],
+            'guarantyDuration'        => 240,
+            'guarantyCoverage'        => '0.07',
+            'guarantyCost'            => '0.10',
+            'maxFeiCredit'            => ['currency' => 'EUR', 'amount' => '20000'],
+            'reservationDuration'     => 2,
+            'esbCalculationActivated' => $this->faker->boolean,
+            'loanReleasedOnInvoice'   => $this->faker->boolean,
+        ];
+        yield self::REFERENCE_PAUSED => [
+            'name'                    => 'Programme en pause',
+            'companyGroupTag'         => CompanyGroupFixtures::CORPORATE,
+            'funds'                   => ['currency' => 'EUR', 'amount' => '400000000'],
+            'addedBy'                 => StaffFixtures::CASA,
+            'currentStatus'           => ProgramStatus::STATUS_PAUSED,
+            'esbCalculationActivated' => $this->faker->boolean,
+            'loanReleasedOnInvoice'   => $this->faker->boolean,
+        ];
+
+        // we create a cancelled program for only this two companyGroupTags because these are valid (cf Program::isCompanyGroupTagValid)
+        foreach ([CompanyGroupFixtures::CORPORATE, CompanyGroupFixtures::AGRICULTURE] as $index => $companyGroupTageReference) {
+            yield \sprintf('%s-%s', self::REFERENCE_CANCELLED, $companyGroupTageReference) => [
+                'name'            => \sprintf('Programme annulé %s', $index + 1),
+                'companyGroupTag' => $companyGroupTageReference,
+                'funds'           => ['currency' => 'EUR', 'amount' => '200000000'],
+                'addedBy'         => StaffFixtures::CASA,
+                'currentStatus'   => ProgramStatus::STATUS_ARCHIVED,
+                'cappedAt'        => \random_int(10, 40) / 100,
+            ];
+        }
     }
 
     private function buildProgram(array $programDatum): Program
@@ -161,7 +169,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
         }
 
         if (false === empty($programDatum['guarantyCost'])) {
-            $program->setGuarantyCost(new NullableMoney($programDatum['guarantyCost']['currency'], $programDatum['guarantyCost']['amount']));
+            $program->setGuarantyCost($programDatum['guarantyCost']);
         }
 
         if (false === empty($programDatum['maxFeiCredit'])) {

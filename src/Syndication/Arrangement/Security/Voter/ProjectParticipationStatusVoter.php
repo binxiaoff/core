@@ -6,6 +6,7 @@ namespace KLS\Syndication\Arrangement\Security\Voter;
 
 use DateTimeImmutable;
 use KLS\Core\Entity\Company;
+use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\Core\Security\Voter\AbstractEntityVoter;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
@@ -20,6 +21,11 @@ class ProjectParticipationStatusVoter extends AbstractEntityVoter
 
         if (null === $company) {
             return false;
+        }
+
+        // Check if the participation can be unarchived by the arranger
+        if ($this->canBeUnarchivedByArranger($projectParticipationStatus, $company)) {
+            return true;
         }
 
         $projectParticipation = $projectParticipationStatus->getProjectParticipation();
@@ -72,5 +78,22 @@ class ProjectParticipationStatusVoter extends AbstractEntityVoter
     private function isArranger(ProjectParticipation $participation, Company $currentConnectedCompany): bool
     {
         return $participation->getProject()->getSubmitterCompany() === $currentConnectedCompany;
+    }
+
+    private function canBeUnarchivedByArranger(ProjectParticipationStatus $projectParticipationStatus, Company $company): bool
+    {
+        $projectParticipation = $projectParticipationStatus->getProjectParticipation();
+
+        if (
+            null === $projectParticipation->getCurrentStatus()
+            || false === $this->isArranger($projectParticipation, $company)
+            || ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER !== $projectParticipation->getCurrentStatus()->getStatus()
+        ) {
+            return false;
+        }
+
+        $lastStatusBeforeArchiving = $projectParticipation->getLastStatusBeforeArchiving();
+
+        return $lastStatusBeforeArchiving && $lastStatusBeforeArchiving->getStatus() === $projectParticipationStatus->getStatus();
     }
 }

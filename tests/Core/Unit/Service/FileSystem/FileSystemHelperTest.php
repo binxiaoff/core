@@ -10,6 +10,7 @@ use KLS\Core\Service\FileSystem\FileSystemHelper;
 use League\Flysystem\FilesystemOperator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use RuntimeException;
 
@@ -20,14 +21,16 @@ use RuntimeException;
  */
 class FileSystemHelperTest extends TestCase
 {
+    use ProphecyTrait;
+
     private string $destPath;
     private string $srcPath;
     /** @var FilesystemOperator|ObjectProphecy */
-    private ObjectProphecy $userAttachmentFilesystem;
+    private $userAttachmentFilesystem;
     /** @var FilesystemOperator|ObjectProphecy */
-    private ObjectProphecy $generatedDocumentFilesystem;
+    private $generatedDocumentFilesystem;
     /** @var FileCrypto|ObjectProphecy */
-    private ObjectProphecy $fileCrypto;
+    private $fileCrypto;
 
     private string $encryptedFilePath;
 

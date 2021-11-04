@@ -8,7 +8,6 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
@@ -208,16 +207,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $this->added               = new DateTimeImmutable();
     }
 
-    public function getReservation(): Reservation
-    {
-        return $this->reservation;
-    }
-
-    public function getProgram(): Program
-    {
-        return $this->getReservation()->getProgram();
-    }
-
     public function getInvestmentThematic(): ?ProgramChoiceOption
     {
         return $this->investmentThematic;
@@ -282,14 +271,104 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this;
     }
 
-    public function getAidIntensity(): ?ProgramChoiceOption
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAddressStreet(): ?string
     {
-        return $this->aidIntensity;
+        return $this->addressStreet;
     }
 
-    public function setAidIntensity(?ProgramChoiceOption $aidIntensity): Project
+    /**
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    public function setAddressStreet(?string $street): Project
     {
-        $this->aidIntensity = $aidIntensity;
+        $this->addressStreet = $street;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAddressPostCode(): ?string
+    {
+        return $this->addressPostCode;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    public function setAddressPostCode(?string $postCode): Project
+    {
+        $this->addressPostCode = $postCode;
+
+        return $this;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAddressCity(): ?string
+    {
+        return $this->addressCity;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    public function setAddressCity(?string $city): Project
+    {
+        $this->addressCity = $city;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("addressDepartment")
+     *
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAddressDepartmentDescription(): ?string
+    {
+        if ($this->addressDepartment instanceof ProgramChoiceOption) {
+            return $this->addressDepartment->getDescription();
+        }
+
+        return null;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    public function setAddressDepartment(?ProgramChoiceOption $department): Project
+    {
+        $this->addressDepartment = $department;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("addressCountry")
+     *
+     * @Groups({"creditGuaranty:project:read"})
+     */
+    public function getAddressCountryDescription(): ?string
+    {
+        if ($this->addressCountry instanceof ProgramChoiceOption) {
+            return $this->addressCountry->getDescription();
+        }
+
+        return null;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:project:write"})
+     */
+    public function setAddressCountry(?ProgramChoiceOption $country): Project
+    {
+        $this->addressCountry = $country;
 
         return $this;
     }
@@ -360,18 +439,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return null;
     }
 
-    public function getFundingMoney(): NullableMoney
-    {
-        return $this->fundingMoney;
-    }
-
-    public function setFundingMoney(NullableMoney $fundingMoney): Project
-    {
-        $this->fundingMoney = $fundingMoney;
-
-        return $this;
-    }
-
     public function getContribution(): NullableMoney
     {
         return $this->contribution;
@@ -392,18 +459,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     public function setEligibleFeiCredit(NullableMoney $eligibleFeiCredit): Project
     {
         $this->eligibleFeiCredit = $eligibleFeiCredit;
-
-        return $this;
-    }
-
-    public function getTotalFeiCredit(): NullableMoney
-    {
-        return $this->totalFeiCredit;
-    }
-
-    public function setTotalFeiCredit(NullableMoney $totalFeiCredit): Project
-    {
-        $this->totalFeiCredit = $totalFeiCredit;
 
         return $this;
     }
@@ -440,18 +495,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     public function setCreditExcludingFei(NullableMoney $creditExcludingFei): Project
     {
         $this->creditExcludingFei = $creditExcludingFei;
-
-        return $this;
-    }
-
-    public function getGrant(): NullableMoney
-    {
-        return $this->grant;
-    }
-
-    public function setGrant(NullableMoney $grant): Project
-    {
-        $this->grant = $grant;
 
         return $this;
     }
@@ -500,13 +543,69 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
             return new NullableMoney();
         }
 
-        $publicAidLimit      = MoneyCalculator::multiply($this->getTotalFeiCredit(), (float) $this->getAidIntensity()->getDescription());
+        $publicAidLimit = MoneyCalculator::multiply(
+            $this->getTotalFeiCredit(),
+            (float) $this->getAidIntensity()->getDescription()
+        );
         $remainingGrantLimit = MoneyCalculator::subtract($publicAidLimit, $this->getGrant());
-        $maxFeiCredit        = MoneyCalculator::multiply($remainingGrantLimit, (float) $this->getProgram()->getGuarantyCoverage());
-        $duration            = \bcmul((string) $this->getProgram()->getGuarantyDuration(), (string) GrossSubsidyEquivalent::FACTOR, 4);
-        $maxFeiCredit        = MoneyCalculator::multiply($maxFeiCredit, (float) $duration);
+        $maxFeiCredit        = MoneyCalculator::multiply(
+            $remainingGrantLimit,
+            (float) $this->getProgram()->getGuarantyCoverage()
+        );
+        $duration = \bcmul(
+            (string) $this->getProgram()->getGuarantyDuration(),
+            (string) GrossSubsidyEquivalent::FACTOR,
+            4
+        );
+        $maxFeiCredit = MoneyCalculator::multiply($maxFeiCredit, (float) $duration);
 
         return MoneyCalculator::max($programMaxFeiCredit, $maxFeiCredit);
+    }
+
+    public function getProgram(): Program
+    {
+        return $this->getReservation()->getProgram();
+    }
+
+    public function getReservation(): Reservation
+    {
+        return $this->reservation;
+    }
+
+    public function getAidIntensity(): ?ProgramChoiceOption
+    {
+        return $this->aidIntensity;
+    }
+
+    public function setAidIntensity(?ProgramChoiceOption $aidIntensity): Project
+    {
+        $this->aidIntensity = $aidIntensity;
+
+        return $this;
+    }
+
+    public function getTotalFeiCredit(): NullableMoney
+    {
+        return $this->totalFeiCredit;
+    }
+
+    public function setTotalFeiCredit(NullableMoney $totalFeiCredit): Project
+    {
+        $this->totalFeiCredit = $totalFeiCredit;
+
+        return $this;
+    }
+
+    public function getGrant(): NullableMoney
+    {
+        return $this->grant;
+    }
+
+    public function setGrant(NullableMoney $grant): Project
+    {
+        $this->grant = $grant;
+
+        return $this;
     }
 
     /**
@@ -520,7 +619,10 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
             return new NullableMoney();
         }
 
-        $grossSubsidyEquivalents = $financingObjects->map(static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent())->toArray();
+        $grossSubsidyEquivalents = $financingObjects->map(
+            static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent()
+        )->toArray()
+        ;
 
         return MoneyCalculator::sum($grossSubsidyEquivalents);
     }
@@ -531,6 +633,18 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $totalFunds = $this->getTotalFunds($program);
 
         return MoneyCalculator::compare($totalFunds, $program->getFunds()) <= 0;
+    }
+
+    public function getFundingMoney(): NullableMoney
+    {
+        return $this->fundingMoney;
+    }
+
+    public function setFundingMoney(NullableMoney $fundingMoney): Project
+    {
+        $this->fundingMoney = $fundingMoney;
+
+        return $this;
     }
 
     public function checkQuota(): bool
@@ -572,10 +686,9 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     {
         $program      = $this->reservation->getProgram();
         $borrowerType = $this->reservation->getBorrower()->getBorrowerType();
-        if (false === $borrowerType instanceof ProgramChoiceOption) {
+        if (false === ($borrowerType instanceof ProgramChoiceOption)) {
             throw new RuntimeException(\sprintf(
-                'Cannot find the borrower type %d for reservation %d. Please check the data.',
-                $borrowerType->getId(),
+                'Cannot find the borrower type for reservation %d. Please check the data.',
                 $this->reservation->getId()
             ));
         }
@@ -590,7 +703,8 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private function getTotalFunds(Program $program, array $filters = []): MoneyInterface
     {
         // Since the current project can be in the "total" or not according to its status,
-        // we exclude it from the "total", then add it back manually to the "total", so that we get always the same "total" all the time.
+        // we exclude it from the "total", then add it back manually to the "total",
+        // so that we get always the same "total" all the time.
         $filters = \array_merge(['exclude' => $this->getId()], $filters);
 
         return MoneyCalculator::add($program->getTotalProjectFunds($filters), $this->getFundingMoney());

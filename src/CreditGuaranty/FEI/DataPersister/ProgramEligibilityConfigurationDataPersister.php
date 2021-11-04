@@ -32,9 +32,7 @@ class ProgramEligibilityConfigurationDataPersister implements DataPersisterInter
 
     public function supports($data): bool
     {
-        return $data instanceof ProgramEligibilityConfiguration
-            && $data->getProgramChoiceOption()
-            && FieldAlias::BORROWER_TYPE === $data->getProgramChoiceOption()->getField()->getFieldAlias();
+        return $data instanceof ProgramEligibilityConfiguration && $data->getProgramChoiceOption();
     }
 
     /**
@@ -45,12 +43,27 @@ class ProgramEligibilityConfigurationDataPersister implements DataPersisterInter
      */
     public function persist($data): void
     {
+        $programChoiceOption = $data->getProgramChoiceOption();
+        $fieldAlias          = $programChoiceOption->getField()->getFieldAlias();
+
+        $programChoiceOption->setArchived(null);
+
+        if (FieldAlias::BORROWER_TYPE !== $fieldAlias) {
+            $this->programEligibilityConfigurationRepository->save($data);
+
+            return;
+        }
+
         $programEligibility = $data->getProgramEligibility();
         $program            = $programEligibility->getProgram();
-        //Add ProgramBorrowerTypeAllocation and ProgramEligibility to the Program (instead of saving themselves separately),
-        //so that we can check in the add() their existence and save both of them by saving the Program.
+
+        // Add ProgramBorrowerTypeAllocation and ProgramEligibility to the Program
+        // (instead of saving themselves separately),
+        // so that we can check in the add() their existence and save both of them by saving the Program.
         $programEligibility->addProgramEligibilityConfiguration($data);
-        $program->addProgramBorrowerTypeAllocation(new ProgramBorrowerTypeAllocation($program, $data->getProgramChoiceOption(), '1'));
+        $program->addProgramBorrowerTypeAllocation(
+            new ProgramBorrowerTypeAllocation($program, $data->getProgramChoiceOption(), '1')
+        );
 
         $this->programRepository->save($program);
     }
@@ -64,24 +77,29 @@ class ProgramEligibilityConfigurationDataPersister implements DataPersisterInter
     {
         $programEligibility = $data->getProgramEligibility();
         $program            = $programEligibility->getProgram();
-        //remove all
-        //todo: or if choice option is not used by any project
-        if ($program->isInDraft()) {
-            //By removing ProgramChoiceOption, the related ProgramEligibilityConfiguration and ProgramBorrowerTypeAllocation will also be (cascade) removed.
-            $this->programChoiceOptionRepository->remove($data->getProgramChoiceOption());
-        //remove only ProgramBorrowerTypeAllocation and ProgramEligibilityConfiguration
-        //todo: archive ProgramChoiceOption
-        } else {
-            $this->programEligibilityConfigurationRepository->remove($data);
-            $programBorrowerTypeAllocations = $program->getProgramBorrowerTypeAllocations()->filter(
-                fn (ProgramBorrowerTypeAllocation $item) => $item->getProgramChoiceOption() === $data->getProgramChoiceOption()
-            );
+        $fieldAlias         = $data->getProgramChoiceOption()->getField()->getFieldAlias();
 
-            if (1 === $programBorrowerTypeAllocations->count()) {
-                $programBorrowerTypeAllocation = $programBorrowerTypeAllocations->current();
-                $program->removeProgramBorrowerTypeAllocation($programBorrowerTypeAllocation);
-                $this->programRepository->save($program);
-            }
+        // Normally by removing ProgramChoiceOption, the related ProgramEligibilityConfiguration and
+        // ProgramBorrowerTypeAllocation will also be (cascade) removed.
+        // But in case of the ProgramChoiceOption archiving (instead of deleting), the deleting cascade configured in
+        // the ProgramEligibilityConfiguration doesn't work,
+        // we need to remove "manually" the ProgramEligibilityConfiguration.
+        $this->programEligibilityConfigurationRepository->remove($data);
+        $this->programChoiceOptionRepository->remove($data->getProgramChoiceOption());
+
+        if (FieldAlias::BORROWER_TYPE !== $fieldAlias) {
+            return;
+        }
+
+        // remove only ProgramBorrowerTypeAllocation and ProgramEligibilityConfiguration
+        $programBorrowerTypeAllocations = $program->getProgramBorrowerTypeAllocations()->filter(
+            fn (ProgramBorrowerTypeAllocation $item) => $item->getProgramChoiceOption() === $data->getProgramChoiceOption()
+        );
+
+        if (1 === $programBorrowerTypeAllocations->count()) {
+            $programBorrowerTypeAllocation = $programBorrowerTypeAllocations->current();
+            $program->removeProgramBorrowerTypeAllocation($programBorrowerTypeAllocation);
+            $this->programRepository->save($program);
         }
     }
 }

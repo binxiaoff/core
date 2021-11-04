@@ -68,7 +68,11 @@ class HubspotCompanyManager
     {
         $content = $this->fetchCompanies($lastCompanyId);
 
-        if (false === \array_key_exists('results', $content) || ((isset($content['results'])) && 0 === \count($content['results']))) {
+        if (
+            false === \array_key_exists('results', $content)
+            || ((isset($content['results']))
+                && 0 === \count($content['results']))
+        ) {
             $this->logger->info('There is an error on the request URI or no company found on Hubspot');
 
             return [
@@ -80,13 +84,18 @@ class HubspotCompanyManager
         $companiesAddedNb = 0;
 
         foreach ($content['results'] as $companyProperties) {
-            $userHubspotCompany = $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => (int) $companyProperties['id']]);
+            $userHubspotCompany = $this->hubspotCompanyRepository->findOneBy([
+                'hubspotCompanyId' => (int) $companyProperties['id'],
+            ]);
 
-            if (true === $userHubspotCompany instanceof HubspotCompany) { // if the company found has already a company id
+            // if the company found has already a company id
+            if (true === $userHubspotCompany instanceof HubspotCompany) {
                 continue;
             }
 
-            $company = $this->companyRepository->findOneBy(['shortCode' => $companyProperties['properties']['kls_short_code']]);
+            $company = $this->companyRepository->findOneBy([
+                'shortCode' => $companyProperties['properties']['kls_short_code'],
+            ]);
 
             if (false === $company instanceof Company) { //If the company does not exist in our database
                 continue;
@@ -100,8 +109,9 @@ class HubspotCompanyManager
 
         $this->hubspotCompanyRepository->flush();
 
+        $lastCompanyId = 0;
         if (\array_key_exists('paging', $content)) {
-            $lastCompanyId = $content['paging']['next']['after'];
+            $lastCompanyId = (int) $content['paging']['next']['after'];
         }
 
         return [
@@ -206,6 +216,7 @@ class HubspotCompanyManager
         $content = \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         $hubspotCompany = new HubspotCompany($company, (string) $content['id']);
+        $hubspotCompany->synchronize();
         $this->hubspotCompanyRepository->persist($hubspotCompany);
 
         return true;
@@ -263,12 +274,13 @@ class HubspotCompanyManager
 
         return [
             'properties' => [
-                'name'                     => $company->getDisplayName(),
-                'domain'                   => $company->getEmailDomain(),
-                'kls_short_code'           => $company->getShortCode(),
-                'kls_bank_group'           => $company->getCompanyGroup() ? $company->getCompanyGroup()->getName() : null,
+                'name'           => $company->getDisplayName(),
+                'domain'         => $company->getEmailDomain(),
+                'kls_short_code' => $company->getShortCode(),
+                'kls_bank_group' => $company->getCompanyGroup()
+                                    ? $company->getCompanyGroup()->getName() : null,
                 'kls_company_status'       => $status,
-                'kls_user_init_percentage' => $activeUsersPercentage['kls_user_init_percentage'] ?? null,
+                'kls_user_init_percentage' => $activeUsersPercentage['user_init_percentage'] ?? null,
                 'kls_active_modules'       => \implode(', ', $company->getActivatedModules()),
                 'kls_agency_projects'      => $this->projectAgencyRepository->countProjectsByCompany($company),
                 'kls_arrangement_projects' => $this->projectArrangementRepository->countProjectsByCompany($company),

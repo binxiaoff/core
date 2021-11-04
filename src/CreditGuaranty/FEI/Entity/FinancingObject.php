@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Embeddable\Money;
@@ -93,11 +94,11 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?bool $supportingGenerationsRenewal = null;
 
     /**
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string")
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
-    private ?string $name;
+    private string $name;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
@@ -207,6 +208,13 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
+    private NullableMoney $loanMoneyAfterContractualisation;
+
+    /**
+     * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
     private NullableMoney $bfrValue;
 
     /**
@@ -229,27 +237,60 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?ProgramChoiceOption $investmentLocation = null;
 
     /**
-     * @var Collection|FinancingObjectUnblocking[]
+     * @ORM\Column(type="date_immutable", nullable=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?DateTimeImmutable $firstReleaseDate = null;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?DateTimeImmutable $reportingFirstDate = null;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?DateTimeImmutable $reportingLastDate = null;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?DateTimeImmutable $reportingValidationDate = null;
+
+    /**
+     * @var Collection|FinancingObjectRelease[]
      *
      * @ApiSubresource
      *
      * @ORM\OneToMany(
-     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObjectUnblocking",
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObjectRelease",
      *     mappedBy="financingObject", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
      * )
      */
-    private Collection $financingObjectUnblockings;
+    private Collection $financingObjectReleases;
 
     public function __construct(
         Reservation $reservation,
         Money $loanMoney,
-        bool $mainLoan
+        bool $mainLoan,
+        string $name
     ) {
-        $this->reservation = $reservation;
-        $this->loanMoney   = $loanMoney;
-        $this->bfrValue    = new NullableMoney();
-        $this->mainLoan    = $mainLoan;
-        $this->added       = new DateTimeImmutable();
+        $this->reservation                      = $reservation;
+        $this->mainLoan                         = $mainLoan;
+        $this->loanMoney                        = $loanMoney;
+        $this->name                             = $name;
+        $this->loanMoneyAfterContractualisation = new NullableMoney();
+        $this->bfrValue                         = new NullableMoney();
+        $this->remainingCapital                 = new NullableMoney();
+        $this->financingObjectReleases          = new ArrayCollection();
+        $this->added                            = new DateTimeImmutable();
     }
 
     public function getReservation(): Reservation
@@ -286,12 +327,12 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function setName(?string $name): FinancingObject
+    public function setName(string $name): FinancingObject
     {
         $this->name = $name;
 
@@ -486,6 +527,18 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return $this;
     }
 
+    public function getLoanMoneyAfterContractualisation(): NullableMoney
+    {
+        return $this->loanMoneyAfterContractualisation;
+    }
+
+    public function setLoanMoneyAfterContractualisation(NullableMoney $loanMoneyAfterContractualisation): FinancingObject
+    {
+        $this->loanMoneyAfterContractualisation = $loanMoneyAfterContractualisation;
+
+        return $this;
+    }
+
     public function getRemainingCapital(): NullableMoney
     {
         return $this->remainingCapital;
@@ -524,12 +577,60 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return null;
     }
 
-    /**
-     * @return Collection|FinancingObjectUnblocking[]
-     */
-    public function getFinancingObjectUnblockings(): Collection
+    public function getFirstReleaseDate(): ?DateTimeImmutable
     {
-        return $this->financingObjectUnblockings;
+        return $this->firstReleaseDate;
+    }
+
+    public function setFirstReleaseDate(?DateTimeImmutable $firstReleaseDate): FinancingObject
+    {
+        $this->firstReleaseDate = $firstReleaseDate;
+
+        return $this;
+    }
+
+    public function getReportingFirstDate(): ?DateTimeImmutable
+    {
+        return $this->reportingFirstDate;
+    }
+
+    public function setReportingFirstDate(?DateTimeImmutable $reportingFirstDate): self
+    {
+        $this->reportingFirstDate = $reportingFirstDate;
+
+        return $this;
+    }
+
+    public function getReportingLastDate(): ?DateTimeImmutable
+    {
+        return $this->reportingLastDate;
+    }
+
+    public function setReportingLastDate(?DateTimeImmutable $reportingLastDate): self
+    {
+        $this->reportingLastDate = $reportingLastDate;
+
+        return $this;
+    }
+
+    public function getReportingValidationDate(): ?DateTimeImmutable
+    {
+        return $this->reportingValidationDate;
+    }
+
+    public function setReportingValidationDate(?DateTimeImmutable $reportingValidationDate): self
+    {
+        $this->reportingValidationDate = $reportingValidationDate;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|FinancingObjectRelease[]
+     */
+    public function getFinancingObjectReleases(): Collection
+    {
+        return $this->financingObjectReleases;
     }
 
     /**

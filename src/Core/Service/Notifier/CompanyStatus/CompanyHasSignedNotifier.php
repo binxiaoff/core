@@ -47,7 +47,7 @@ class CompanyHasSignedNotifier
         }
 
         return $this->slack->createMessage()->enableMarkdown()
-            ->setText('L\'entité ' . $company->getDisplayName() . 'est maintenant cliente de la plateforme')
+            ->setText('L\'entité ' . $company->getDisplayName() . ' est maintenant cliente de la plateforme')
             ->attach(
                 (new Attachment())
                     ->addField(new AttachmentField(

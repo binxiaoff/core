@@ -7,8 +7,8 @@ namespace KLS\Core\Service;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Exception;
-use KLS\Core\Entity\User;
 use KLS\Core\Entity\TemporaryToken;
+use KLS\Core\Entity\User;
 use KLS\Core\Repository\TemporaryTokenRepository;
 
 class TemporaryTokenGenerator

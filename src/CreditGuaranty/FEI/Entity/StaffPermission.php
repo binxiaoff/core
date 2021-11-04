@@ -6,6 +6,7 @@ namespace KLS\CreditGuaranty\FEI\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -43,6 +44,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  * )
  *
+ * @ApiFilter(SearchFilter::class, properties={"staff.publicId": "exact"})
  * @ApiFilter(
  *     filterClass=GroupFilter::class,
  *     arguments={
@@ -70,6 +72,8 @@ class StaffPermission
     public const PERMISSION_CREATE_RESERVATION = 1 << 4;
     public const PERMISSION_EDIT_RESERVATION   = 1 << 5;
 
+    public const PERMISSION_REPORTING = 1 << 6;
+
     // The grant permission is in the same position as the corresponding permission to grant, so that we can easily check if a staff can grant a given permission.
     public const PERMISSION_GRANT_READ_PROGRAM   = 1 << 0;
     public const PERMISSION_GRANT_CREATE_PROGRAM = 1 << 1;
@@ -78,11 +82,15 @@ class StaffPermission
     public const PERMISSION_GRANT_READ_RESERVATION   = 1 << 3;
     public const PERMISSION_GRANT_CREATE_RESERVATION = 1 << 4;
     public const PERMISSION_GRANT_EDIT_RESERVATION   = 1 << 5;
-    // A typical admin of program managing company (CASA) has 1111 (or 15 in decimal).
+
+    public const PERMISSION_GRANT_REPORTING = 1 << 6;
+
+    // A typical admin of program managing company (CASA) has 1001111 (or 79 in decimal).
     public const MANAGING_COMPANY_ADMIN_PERMISSIONS = self::PERMISSION_GRANT_READ_PROGRAM
     | self::PERMISSION_GRANT_EDIT_PROGRAM
     | self::PERMISSION_GRANT_CREATE_PROGRAM
-    | self::PERMISSION_GRANT_READ_RESERVATION;
+    | self::PERMISSION_GRANT_READ_RESERVATION
+    | self::PERMISSION_GRANT_REPORTING;
     // A typical admin of participant has 111001 (or 57 in decimal)
     public const PARTICIPANT_ADMIN_PERMISSIONS = self::PERMISSION_GRANT_READ_PROGRAM
     | self::PERMISSION_GRANT_READ_RESERVATION

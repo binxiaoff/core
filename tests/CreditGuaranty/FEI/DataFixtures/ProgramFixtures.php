@@ -21,6 +21,7 @@ use KLS\Test\Core\DataFixtures\CompanyGroups\FooCompanyGroupFixtures;
 class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
     public const REFERENCE_COMMERCIALIZED = 'program:commercialized';
+    public const REFERENCE_PAUSED         = 'program:paused';
 
     /**
      * @return string[]
@@ -43,6 +44,19 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
             $this->setPublicId($program, $reference);
             $this->addReference($reference, $program);
 
+            /** @var Staff $addedBy */
+            $addedBy = $this->getReference($programData['addedBy']);
+
+            if (ProgramStatus::STATUS_PAUSED === $programData['currentStatus']) {
+                $status = new ProgramStatus($program, ProgramStatus::STATUS_DISTRIBUTED, $addedBy);
+                $manager->persist($status);
+            }
+
+            if (ProgramStatus::STATUS_DRAFT !== $programData['currentStatus']) {
+                $status = new ProgramStatus($program, $programData['currentStatus'], $addedBy);
+                $manager->persist($status);
+            }
+
             $manager->persist($program);
         }
 
@@ -53,7 +67,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
     {
         yield self::REFERENCE_COMMERCIALIZED => [
             'name'                 => 'Programme commercialisée',
-            'addedBy'              => 'staff_company:foo_user-a',
+            'addedBy'              => 'staff_company:bar_user-a',
             'companyGroupTag'      => 'companyGroup:foo_tag:agriculture',
             'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
             'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
@@ -70,10 +84,19 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
             ],
             'guarantyDuration'        => 240,
             'guarantyCoverage'        => '0.07',
-            'guarantyCost'            => ['currency' => 'EUR', 'amount' => '1000'],
+            'guarantyCost'            => '0.10',
             'maxFeiCredit'            => ['currency' => 'EUR', 'amount' => '20000'],
             'reservationDuration'     => 2,
             'esbCalculationActivated' => true,
+            'loanReleasedOnInvoice'   => false,
+        ];
+        yield self::REFERENCE_PAUSED => [
+            'name'                    => 'Programme en pause',
+            'companyGroupTag'         => 'companyGroup:foo_tag:agriculture',
+            'funds'                   => ['currency' => 'EUR', 'amount' => '400000000'],
+            'addedBy'                 => 'staff_company:bar_user-a',
+            'currentStatus'           => ProgramStatus::STATUS_PAUSED,
+            'esbCalculationActivated' => false,
             'loanReleasedOnInvoice'   => false,
         ];
     }
@@ -112,7 +135,7 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
         }
 
         if (false === empty($programData['guarantyCost'])) {
-            $program->setGuarantyCost(new NullableMoney($programData['guarantyCost']['currency'], $programData['guarantyCost']['amount']));
+            $program->setGuarantyCost($programData['guarantyCost']);
         }
 
         if (false === empty($programData['maxFeiCredit'])) {

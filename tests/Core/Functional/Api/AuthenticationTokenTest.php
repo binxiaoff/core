@@ -57,9 +57,8 @@ class AuthenticationTokenTest extends ApiTestCase
             self::ENDPOINT_AUTH_TOKEN,
             [
                 'json' => [
-                    'username'     => $user->getEmail(),
-                    'password'     => UserFixtures::DEFAULT_PASSWORD,
-                    'captchaValue' => 'ignored in test',
+                    'username' => $user->getEmail(),
+                    'password' => UserFixtures::DEFAULT_PASSWORD,
                 ],
             ]
         );
@@ -77,7 +76,8 @@ class AuthenticationTokenTest extends ApiTestCase
         foreach ($decodedTokens as $decodedToken) {
             static::assertSame(VersionSubscriber::JWT_VERSION, $decodedToken['version']);
             static::assertSame($iriConverter->getIriFromItem($user), $decodedToken['user']);
-            static::assertObjectHasAttribute('credit_guaranty', $decodedToken['permissions']);
+            static::assertArrayHasKey('credit_guaranty', $decodedToken['permissions']);
+            static::assertArrayHasKey('syndication', $decodedToken['permissions']);
 
             if (\in_array('staff', \array_values($decodedToken))) {
                 static::assertSame('staff', $decodedToken['@scope']);
@@ -110,31 +110,12 @@ class AuthenticationTokenTest extends ApiTestCase
             self::ENDPOINT_AUTH_TOKEN,
             [
                 'json' => [
-                    'username'     => $user->getEmail(),
-                    'password'     => $password,
-                    'captchaValue' => 'ignored in test',
+                    'username' => $user->getEmail(),
+                    'password' => $password,
                 ],
             ]
         );
 
         static::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
-    }
-
-    public function testAuthenticationTokenWithoutCaptchaValue(): void
-    {
-        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => 'user-1']);
-
-        $response = static::createClient()->request(
-            Request::METHOD_POST,
-            self::ENDPOINT_AUTH_TOKEN,
-            [
-                'json' => [
-                    'username' => $user->getEmail(),
-                    'password' => UserFixtures::DEFAULT_PASSWORD,
-                ],
-            ]
-        );
-
-        static::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 }

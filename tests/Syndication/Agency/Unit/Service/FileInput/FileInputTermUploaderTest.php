@@ -21,6 +21,7 @@ use KLS\Test\Syndication\Agency\Unit\Traits\TermTrait;
 use KLS\Test\Syndication\Arrangement\Unit\Traits\ArrangementProjectSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
@@ -39,6 +40,7 @@ class FileInputTermUploaderTest extends TestCase
     use TermTrait;
     use AgencyProjectTrait;
     use ArrangementProjectSetTrait;
+    use ProphecyTrait;
 
     /** @var Security|ObjectProphecy */
     private $security;

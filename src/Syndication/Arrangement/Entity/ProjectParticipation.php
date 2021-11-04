@@ -710,6 +710,23 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
         return $this->ndaSignatures;
     }
 
+    public function getLastStatusBeforeArchiving(): ?ProjectParticipationStatus
+    {
+        if (null === $this->getCurrentStatus() || $this->statuses->isEmpty() || false === $this->isArchived()) {
+            return null;
+        }
+
+        return $this->getStatuses()->get($this->getStatuses()->count() - 2);
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->getCurrentStatus()
+            && (\in_array($this->getCurrentStatus()->getStatus(), [
+                ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER, ProjectParticipationStatus::STATUS_ARCHIVED_BY_PARTICIPANT,
+            ], true));
+    }
+
     /**
      * @Assert\Callback
      */

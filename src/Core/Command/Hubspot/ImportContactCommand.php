@@ -54,7 +54,7 @@ class ImportContactCommand extends Command
         $lastContactId = 0;
 
         do {
-            $data = $this->hubspotManager->synchronizeContacts((int) $lastContactId);
+            $data = $this->hubspotManager->importContacts((int) $lastContactId);
             $contactAdded += $data['contactAddedNb'];
             $lastContactId = $data['lastContactId'];
         } while ($contactAdded <= $limit && $lastContactId);

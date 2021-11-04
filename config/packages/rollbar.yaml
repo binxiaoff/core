@@ -1,9 +1,10 @@
 rollbar:
     enabled: false
     access_token: 2aae46c5bee64e9fa47d706a0ee56aac
-    environment: '%kernel.environment%'
+    environment: '%kls.environment%'
     autodetect_branch: true
     local_vars_dump: false
+    capture_email: true
     scrub_fields:
         # default values
         - passwd
@@ -15,8 +16,6 @@ rollbar:
         - csrf_token
         - access_token
         # customised values
-        - google_recaptcha_secret
-        - aws_api_key
         - maxmind_license_key
         - app_secret
         - mailjet_api_key
@@ -24,9 +23,7 @@ rollbar:
         - jwt_secret_key
         - cloudfront_distribution
         - file_encryption_kek_passphrase
-        - aws_api_secret
         - database_url_migration
-        - google_recaptcha_key
         - docusign_user_id
         - docusign_integrator_key
         - slack_webhook_url
@@ -37,4 +34,4 @@ rollbar:
         - psn_public_key
         - authorization
         - http_authorization
-        - enqueue_dsn
+        - hapikey

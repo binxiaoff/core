@@ -16,6 +16,7 @@ use KLS\Syndication\Arrangement\Repository\ProjectRepository as ProjectArrangeme
 use KLS\Test\Core\Unit\Traits\CompanyTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,8 +30,9 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 class HubspotCompanyManagerTest extends TestCase
 {
     use CompanyTrait;
+    use ProphecyTrait;
 
-    /** @var ObjectProphecy|LoggerInterface */
+    /** @var LoggerInterface|ObjectProphecy */
     private $logger;
 
     /** @var HubspotCompanyRepository|ObjectProphecy */
@@ -102,7 +104,10 @@ class HubspotCompanyManagerTest extends TestCase
         $response = $this->prophesize(ResponseInterface::class);
         $this->hubspotClient->fetchAllCompanies(0)->shouldBeCalledOnce()->willReturn($response->reveal());
         $response->getStatusCode()->willReturn(Response::HTTP_OK);
-        $response->getContent()->willReturn(\json_encode($this->getHubspotCompanyCreatedResponse(), JSON_THROW_ON_ERROR));
+        $response->getContent()->willReturn(\json_encode(
+            $this->getHubspotCompanyCreatedResponse(),
+            JSON_THROW_ON_ERROR
+        ));
 
         $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])->shouldBeCalled()
             ->willReturn(new HubspotCompany($this->createCompany(), '6584949386'))
@@ -125,9 +130,13 @@ class HubspotCompanyManagerTest extends TestCase
         $response = $this->prophesize(ResponseInterface::class);
         $this->hubspotClient->fetchAllCompanies(0)->shouldBeCalledOnce()->willReturn($response->reveal());
         $response->getStatusCode()->willReturn(Response::HTTP_OK);
-        $response->getContent()->willReturn(\json_encode($this->getHubspotCompanyCreatedResponse(), JSON_THROW_ON_ERROR));
+        $response->getContent()->willReturn(\json_encode(
+            $this->getHubspotCompanyCreatedResponse(),
+            JSON_THROW_ON_ERROR
+        ));
 
-        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])->shouldBeCalled()->willReturn(null);
+        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])
+            ->shouldBeCalled()->willReturn(null);
         $this->companyRepository->findOneBy(['shortCode' => 'KLS'])->shouldBeCalledOnce()->willReturn(null);
 
         $this->hubspotCompanyRepository->persist(Argument::any())->shouldNotBeCalled();
@@ -149,10 +158,15 @@ class HubspotCompanyManagerTest extends TestCase
         $response = $this->prophesize(ResponseInterface::class);
         $this->hubspotClient->fetchAllCompanies(0)->shouldBeCalledOnce()->willReturn($response->reveal());
         $response->getStatusCode()->willReturn(Response::HTTP_OK);
-        $response->getContent()->willReturn(\json_encode($this->getHubspotCompanyCreatedResponse(), JSON_THROW_ON_ERROR));
+        $response->getContent()->willReturn(\json_encode(
+            $this->getHubspotCompanyCreatedResponse(),
+            JSON_THROW_ON_ERROR
+        ));
 
-        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])->shouldBeCalled()->willReturn(null);
-        $this->companyRepository->findOneBy(['shortCode' => 'KLS'])->shouldBeCalledOnce()->willReturn($this->createCompany());
+        $this->hubspotCompanyRepository->findOneBy(['hubspotCompanyId' => '6584949386'])
+            ->shouldBeCalled()->willReturn(null);
+        $this->companyRepository->findOneBy(['shortCode' => 'KLS'])
+            ->shouldBeCalledOnce()->willReturn($this->createCompany());
 
         $this->hubspotCompanyRepository->persist(Argument::type(HubspotCompany::class));
         $this->hubspotCompanyRepository->flush()->shouldBeCalled();
@@ -168,7 +182,7 @@ class HubspotCompanyManagerTest extends TestCase
     /**
      * @covers ::exportCompaniesToHubspot
      */
-    public function testSynchronizeCompaniesToHubspotWithCompanyToCreate(): void
+    public function testExportCompaniesToHubspotWithCompanyToCreate(): void
     {
         $response     = $this->prophesize(ResponseInterface::class);
         $arrCompanies = [
@@ -191,9 +205,12 @@ class HubspotCompanyManagerTest extends TestCase
             'updatedAt' => '2021-08-31T16:11:09.412Z',
             'archived'  => false,
         ], JSON_THROW_ON_ERROR));
-        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))->shouldBeCalled()->willReturn(['user_init_percentage' => 86]);
-        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
-        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
+        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))
+            ->shouldBeCalled()->willReturn(['user_init_percentage' => 80]);
+        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))
+            ->shouldBeCalledOnce()->willReturn(11);
+        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))
+            ->shouldBeCalledOnce()->willReturn(11);
 
         $this->hubspotClient->postNewCompany($this->getFormatData())->shouldBeCalled()->willReturn($response->reveal());
 
@@ -211,7 +228,7 @@ class HubspotCompanyManagerTest extends TestCase
     /**
      * @covers ::exportCompaniesToHubspot
      */
-    public function testSynchronizeCompaniesToHubspotWithCompanyToCreateWithErrorReponse(): void
+    public function testExportCompaniesToHubspotWithCompanyToCreateWithErrorReponse(): void
     {
         $response     = $this->prophesize(ResponseInterface::class);
         $arrCompanies = [
@@ -224,9 +241,12 @@ class HubspotCompanyManagerTest extends TestCase
         $response->getStatusCode()->shouldBeCalled()->willReturn(Response::HTTP_INTERNAL_SERVER_ERROR);
         $response->getContent(false)->shouldBeCalledOnce();
 
-        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))->shouldBeCalled()->willReturn(['user_init_percentage' => 86]);
-        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
-        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
+        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))
+            ->shouldBeCalled()->willReturn(['user_init_percentage' => 80]);
+        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))
+            ->shouldBeCalledOnce()->willReturn(11);
+        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))
+            ->shouldBeCalledOnce()->willReturn(11);
 
         $this->hubspotClient->postNewCompany($this->getFormatData())->shouldBeCalled()->willReturn($response->reveal());
 
@@ -241,7 +261,7 @@ class HubspotCompanyManagerTest extends TestCase
     /**
      * @covers ::exportCompaniesToHubspot
      */
-    public function testSynchronizeCompaniesToHubspotWithCompanyToUpdate(): void
+    public function testExportCompaniesToHubspotWithCompanyToUpdate(): void
     {
         $response     = $this->prophesize(ResponseInterface::class);
         $arrCompanies = [
@@ -252,16 +272,23 @@ class HubspotCompanyManagerTest extends TestCase
         $this->companyRepository->findCompaniesToUpdateOnHubspot(11)->shouldBeCalledOnce()->willReturn($arrCompanies);
 
         $hubspotCompany = new HubspotCompany($arrCompanies[0], '4802581745');
-        $this->hubspotCompanyRepository->findOneBy(['company' => $arrCompanies[0]])->shouldBeCalledOnce()->willReturn($hubspotCompany);
+        $this->hubspotCompanyRepository->findOneBy([
+            'company' => $arrCompanies[0],
+        ])->shouldBeCalledOnce()->willReturn($hubspotCompany);
 
         $response->getStatusCode()->shouldBeCalled()->willReturn(Response::HTTP_OK);
         $response->getContent()->shouldNotBeCalled();
 
-        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))->shouldBeCalled()->willReturn(['user_init_percentage' => 86]);
-        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
-        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
+        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))
+            ->shouldBeCalled()->willReturn(['user_init_percentage' => 80]);
+        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))
+            ->shouldBeCalledOnce()->willReturn(11);
+        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))
+            ->shouldBeCalledOnce()->willReturn(11);
 
-        $this->hubspotClient->updateCompany('4802581745', $this->getFormatData())->shouldBeCalledOnce()->willReturn($response->reveal());
+        $this->hubspotClient->updateCompany('4802581745', $this->getFormatData())->shouldBeCalledOnce()
+            ->willReturn($response->reveal())
+        ;
 
         $this->hubspotCompanyRepository->flush()->shouldBeCalledOnce();
 
@@ -276,7 +303,7 @@ class HubspotCompanyManagerTest extends TestCase
     /**
      * @covers ::exportCompaniesToHubspot
      */
-    public function testSynchronizeCompaniesToHubspotWithCompanyToUpdateWithErrorResponse(): void
+    public function testExportCompaniesToHubspotWithCompanyToUpdateWithErrorResponse(): void
     {
         $response     = $this->prophesize(ResponseInterface::class);
         $arrCompanies = [
@@ -287,16 +314,22 @@ class HubspotCompanyManagerTest extends TestCase
         $this->companyRepository->findCompaniesToUpdateOnHubspot(11)->shouldBeCalledOnce()->willReturn($arrCompanies);
 
         $hubspotCompany = new HubspotCompany($arrCompanies[0], '4802581745');
-        $this->hubspotCompanyRepository->findOneBy(['company' => $arrCompanies[0]])->shouldBeCalledOnce()->willReturn($hubspotCompany);
+        $this->hubspotCompanyRepository->findOneBy(['company' => $arrCompanies[0]])
+            ->shouldBeCalledOnce()->willReturn($hubspotCompany);
 
         $response->getStatusCode()->shouldBeCalled()->willReturn(Response::HTTP_INTERNAL_SERVER_ERROR);
         $response->getContent(false)->shouldBeCalled();
 
-        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))->shouldBeCalled()->willReturn(['user_init_percentage' => 86]);
-        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
-        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))->shouldBeCalledOnce()->willReturn(11);
+        $this->userRepository->findActiveUsersPerCompany(Argument::type(Company::class))
+            ->shouldBeCalled()->willReturn(['user_init_percentage' => 80]);
+        $this->projectAgencyRepository->countProjectsByCompany(Argument::type(Company::class))
+            ->shouldBeCalledOnce()->willReturn(11);
+        $this->projectArrangementRepository->countProjectsByCompany(Argument::type(Company::class))
+            ->shouldBeCalledOnce()->willReturn(11);
 
-        $this->hubspotClient->updateCompany('4802581745', $this->getFormatData())->shouldBeCalledOnce()->willReturn($response->reveal());
+        $this->hubspotClient->updateCompany('4802581745', $this->getFormatData())->shouldBeCalledOnce()
+            ->willReturn($response->reveal())
+        ;
 
         $this->hubspotCompanyRepository->flush()->shouldBeCalledOnce();
 
@@ -337,7 +370,7 @@ class HubspotCompanyManagerTest extends TestCase
                 'kls_short_code'           => $company->getShortCode(),
                 'kls_bank_group'           => 'group',
                 'kls_company_status'       => 'Signé',
-                'kls_user_init_percentage' => null,
+                'kls_user_init_percentage' => 80,
                 'kls_active_modules'       => '',
                 'kls_agency_projects'      => 11,
                 'kls_arrangement_projects' => 11,

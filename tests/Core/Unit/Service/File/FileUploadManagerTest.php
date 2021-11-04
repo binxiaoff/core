@@ -21,6 +21,7 @@ use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -34,6 +35,8 @@ use Symfony\Component\Messenger\MessageBusInterface;
  */
 class FileUploadManagerTest extends TestCase
 {
+    use ProphecyTrait;
+
     /** @var FilesystemOperator|ObjectProphecy */
     private $userAttachmentFilesystem;
 

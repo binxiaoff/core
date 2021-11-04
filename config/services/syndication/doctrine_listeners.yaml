@@ -20,7 +20,6 @@ services:
       - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Arrangement\Entity\ProjectParticipationMember, method: setArchivedBy }
 
   # Message Dispatcher
-
   KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\Project\ProjectCreatedListener:
     tags:
       - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Arrangement\Entity\Project }
@@ -51,10 +50,6 @@ services:
     tags:
       - { name: doctrine.event_listener, event: onFlush }
 
-  KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher\Agency\AgencyPublishedListener:
-    tags:
-      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Syndication\Agency\Entity\Project }
-
   #
   # Agency
   #
@@ -81,6 +76,9 @@ services:
       - { name: doctrine.event_listener, event: onFlush }
 
   # Message Dispatcher
+  KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher\ProjectCreatedListener:
+      tags:
+          - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Syndication\Agency\Entity\Project }
 
   KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher\ProjectMemberCreatedListener:
     tags:

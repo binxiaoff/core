@@ -32,11 +32,12 @@ trait AddressTrait
     protected ?string $addressCity = null;
 
     /**
-     * @ORM\Column(type="string", length=30, nullable=true)
+     * @ORM\ManyToOne(targetEntity=ProgramChoiceOption::class)
+     * @ORM\JoinColumn(name="id_address_department")
      *
-     * @Assert\NotBlank(allowNull=true)
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      */
-    protected ?string $addressDepartment = null;
+    protected ?ProgramChoiceOption $addressDepartment = null;
 
     /**
      * @ORM\ManyToOne(targetEntity=ProgramChoiceOption::class)
@@ -82,12 +83,12 @@ trait AddressTrait
         return $this;
     }
 
-    public function getAddressDepartment(): ?string
+    public function getAddressDepartment(): ?ProgramChoiceOption
     {
         return $this->addressDepartment;
     }
 
-    public function setAddressDepartment(?string $department): self
+    public function setAddressDepartment(?ProgramChoiceOption $department): self
     {
         $this->addressDepartment = $department;
 

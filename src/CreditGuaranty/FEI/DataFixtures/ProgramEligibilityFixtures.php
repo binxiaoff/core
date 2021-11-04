@@ -7,6 +7,7 @@ namespace KLS\CreditGuaranty\FEI\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use KLS\Core\DataFixtures\AbstractFixtures;
+use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
@@ -35,7 +36,7 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
 
     public function load(ObjectManager $manager): void
     {
-        $fields = $this->fieldRepository->findAll();
+        $fields = $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY]);
 
         /** @var Program $program */
         foreach ($this->getReferences(ProgramFixtures::ALL_PROGRAMS) as $program) {

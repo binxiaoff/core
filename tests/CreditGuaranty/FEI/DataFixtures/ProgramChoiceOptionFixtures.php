@@ -25,8 +25,14 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'Agriculture',
             'Apiculteur',
         ],
+        'field-activity_department' => [
+            'department',
+        ],
         'field-activity_country' => [
             'FR',
+        ],
+        'field-investment_department' => [
+            'department',
         ],
         'field-investment_country' => [
             'FR',

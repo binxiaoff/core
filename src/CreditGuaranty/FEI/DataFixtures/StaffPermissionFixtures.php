@@ -14,19 +14,10 @@ use KLS\Core\Entity\Company;
 use KLS\Core\Entity\User;
 use KLS\Core\Model\Bitmask;
 use KLS\CreditGuaranty\FEI\Entity\StaffPermission;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    private UserPasswordEncoderInterface $passwordEncoder;
     private ObjectManager $manager;
-
-    public function __construct(TokenStorageInterface $tokenStorage, UserPasswordEncoderInterface $passwordEncoder)
-    {
-        parent::__construct($tokenStorage);
-        $this->passwordEncoder = $passwordEncoder;
-    }
 
     /**
      * @return string[]
@@ -35,7 +26,6 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
     {
         return [
             StaffFixtures::class,
-            ParticipationFixtures::class,
         ];
     }
 
@@ -52,20 +42,11 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
         foreach ($company->getStaff() as $staff) {
             $staffPermission = new StaffPermission(
                 $staff,
-                new Bitmask(
-                    StaffPermission::PERMISSION_READ_PROGRAM
-                    | StaffPermission::PERMISSION_EDIT_PROGRAM
-                    | StaffPermission::PERMISSION_CREATE_PROGRAM
-                    | StaffPermission::PERMISSION_READ_RESERVATION
-                )
+                new Bitmask(StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS)
             );
+
             if ($staff->getUser() === $referenceUser) {
-                $staffPermission->setGrantPermissions(
-                    StaffPermission::PERMISSION_GRANT_READ_PROGRAM
-                    | StaffPermission::PERMISSION_GRANT_CREATE_PROGRAM
-                    | StaffPermission::PERMISSION_GRANT_EDIT_PROGRAM
-                    | StaffPermission::PERMISSION_GRANT_READ_RESERVATION
-                );
+                $staffPermission->setGrantPermissions(StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS);
             }
 
             $manager->persist($staffPermission);
@@ -87,12 +68,7 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
         foreach ($company->getStaff() as $staff) {
             $staffPermission = new StaffPermission(
                 $staff,
-                new Bitmask(
-                    StaffPermission::PERMISSION_READ_RESERVATION
-                    | StaffPermission::PERMISSION_EDIT_RESERVATION
-                    | StaffPermission::PERMISSION_CREATE_RESERVATION
-                    | StaffPermission::PERMISSION_READ_PROGRAM
-                )
+                new Bitmask(StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS)
             );
             // In the fixtures, there is only one staff per company, who is the admin
             $staffPermission->setGrantPermissions(StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS);
