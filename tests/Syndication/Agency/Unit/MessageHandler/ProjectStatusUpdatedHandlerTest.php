@@ -71,7 +71,9 @@ class ProjectStatusUpdatedHandlerTest extends TestCase
         $message = new ProjectStatusUpdated(42, Project::STATUS_DRAFT, Project::STATUS_PUBLISHED);
 
         $this->projectRepository->find(42)->shouldBeCalledOnce()->willReturn($project);
-        $this->projectMemberNotifier->notifyProjectPublication(Argument::type(AbstractProjectMember::class))->shouldBeCalledTimes($expectedMembersNb);
+        $this->projectMemberNotifier->notifyProjectPublication(Argument::type(AbstractProjectMember::class))
+            ->shouldBeCalledTimes($expectedMembersNb)
+        ;
 
         $this->projectPublishedNotifier->notify(Argument::type(Project::class))->shouldBeCalledOnce();
         $this->projectClosedNotifier->notify(Argument::type(Project::class))->shouldNotBeCalled();
@@ -110,7 +112,11 @@ class ProjectStatusUpdatedHandlerTest extends TestCase
             5,
         ];
         yield '3 AgentMember + 1 BorrowerMember + 2 ParticipationMember' => [
-            $this->createProjectWithMembers([AgentMember::class => 3, BorrowerMember::class => 1, ParticipationMember::class => 2]),
+            $this->createProjectWithMembers([
+                AgentMember::class         => 3,
+                BorrowerMember::class      => 1,
+                ParticipationMember::class => 2,
+            ]),
             6,
         ];
     }
@@ -122,7 +128,11 @@ class ProjectStatusUpdatedHandlerTest extends TestCase
     {
         $project = $this->createAgencyProject($this->createStaff());
         $this->forcePropertyValue($project, 'id', 42);
-        $message = new ProjectStatusUpdated(42, Project::STATUS_DRAFT, Project::STATUS_PUBLISHED);
+        $message = new ProjectStatusUpdated(
+            42,
+            Project::STATUS_DRAFT,
+            Project::STATUS_PUBLISHED
+        );
 
         $this->projectRepository->find(42)->shouldBeCalledOnce()->willReturn(null);
         $this->projectMemberNotifier->notifyProjectPublication(Argument::any())->shouldNotBeCalled();
@@ -162,10 +172,16 @@ class ProjectStatusUpdatedHandlerTest extends TestCase
     {
         $project = $this->createAgencyProject($this->createStaff());
         $this->forcePropertyValue($project, 'id', 42);
-        $message = new ProjectStatusUpdated(42, Project::STATUS_PUBLISHED, Project::STATUS_FINISHED);
+        $message = new ProjectStatusUpdated(
+            42,
+            Project::STATUS_PUBLISHED,
+            Project::STATUS_ARCHIVED
+        );
 
         $this->projectRepository->find(42)->shouldBeCalledOnce()->willReturn($project);
-        $this->projectMemberNotifier->notifyProjectPublication(Argument::type(AbstractProjectMember::class))->shouldNotBeCalled();
+        $this->projectMemberNotifier->notifyProjectPublication(Argument::type(AbstractProjectMember::class))
+            ->shouldNotBeCalled()
+        ;
 
         $this->projectPublishedNotifier->notify(Argument::type(Project::class))->shouldNotBeCalled();
         $this->projectClosedNotifier->notify(Argument::type(Project::class))->shouldBeCalledOnce();
@@ -176,7 +192,6 @@ class ProjectStatusUpdatedHandlerTest extends TestCase
     public function invalidStatusesProvider(): iterable
     {
         yield 'status draft and draft' => [Project::STATUS_DRAFT, Project::STATUS_DRAFT];
-        yield 'status draft and archived' => [Project::STATUS_DRAFT, Project::STATUS_ARCHIVED];
         yield 'status published and published' => [Project::STATUS_PUBLISHED, Project::STATUS_PUBLISHED];
         yield 'status archived and published' => [Project::STATUS_ARCHIVED, Project::STATUS_PUBLISHED];
         yield 'status finished and published' => [Project::STATUS_FINISHED, Project::STATUS_PUBLISHED];

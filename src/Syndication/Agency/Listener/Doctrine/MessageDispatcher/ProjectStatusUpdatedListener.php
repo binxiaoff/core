@@ -17,7 +17,11 @@ class ProjectStatusUpdatedListener
     {
         if ($args->hasChangedField('currentStatus')) {
             $this->messageBus->dispatch(
-                new ProjectStatusUpdated($project->getId(), $args->getOldValue('currentStatus'), $args->getNewValue('currentStatus'))
+                new ProjectStatusUpdated(
+                    $project->getId(),
+                    $args->getOldValue('currentStatus'),
+                    $args->getNewValue('currentStatus')
+                )
             );
         }
     }

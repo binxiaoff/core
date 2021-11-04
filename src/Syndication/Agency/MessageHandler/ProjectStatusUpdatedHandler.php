@@ -44,14 +44,20 @@ class ProjectStatusUpdatedHandler implements MessageHandlerInterface
         $project = $this->projectRepository->find($projectStatusUpdated->getProjectId());
 
         if (null === $project) {
-            throw new InvalidArgumentException(\sprintf("Project with id %d doesn't exist", $projectStatusUpdated->getProjectId()));
+            throw new InvalidArgumentException(\sprintf(
+                "Project with id %d doesn't exist",
+                $projectStatusUpdated->getProjectId()
+            ));
         }
 
-        if (Project::STATUS_DRAFT === $projectStatusUpdated->getPreviousStatus() && Project::STATUS_PUBLISHED === $projectStatusUpdated->getNextStatus()) {
+        if (
+            Project::STATUS_DRAFT === $projectStatusUpdated->getPreviousStatus()
+            && Project::STATUS_PUBLISHED === $projectStatusUpdated->getNextStatus()
+        ) {
             $this->onProjectPublication($project);
         }
 
-        if (Project::STATUS_FINISHED === $projectStatusUpdated->getNextStatus()) {
+        if (Project::STATUS_ARCHIVED === $projectStatusUpdated->getNextStatus()) {
             $this->notifyProjectClose($project);
         }
     }

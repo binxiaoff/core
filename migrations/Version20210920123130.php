@@ -20,7 +20,7 @@ final class Version20210920123130 extends AbstractMigration
         $this->addSql("UPDATE credit_guaranty_field SET tag = 'eligibility' WHERE TRUE");
 
         $this->addSql(<<<'SQL'
-            INSERT INTO credit_guaranty_field (
+            INSERT IGNORE INTO credit_guaranty_field (
                 public_id, tag, category, type, field_alias, reservation_property_name, property_path, property_type, object_class, comparable, unit, predefined_items
             ) VALUES
             ('a11265ea-983c-4c5d-8518-feb163972288', 'info', 'program', 'other', 'program_currency', 'program', 'funds.currency', 'string', 'KLS\\CreditGuaranty\\FEI\\Entity\\Program', 0, NULL, NULL),
