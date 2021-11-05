@@ -58,6 +58,7 @@ class FieldAlias extends AbstractEnum
     public const LAND_VALUE            = 'land_value';
     public const LOAN_DEFERRAL         = 'loan_deferral';
     public const LOAN_DURATION         = 'loan_duration';
+    public const LOAN_MONEY            = 'loan_money';
     public const PROJECT_CONTRIBUTION  = 'project_contribution';
     public const PROJECT_GRANT         = 'project_grant';
     public const PROJECT_TOTAL_AMOUNT  = 'project_total_amount';
