@@ -11,6 +11,11 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * The class is not testable because we cannot mock the RateLimiterFactory (it's a final class),
+ * and the BypassFinals doesn't work either when we launch it with all the test.
+ * We cannot use the real object, because it's difficult to simulate the rate limit behaviour.
+ */
 class RateLimitSubscriber implements EventSubscriberInterface
 {
     private const ANONYMOUS_API_ENDPOINTS = [
