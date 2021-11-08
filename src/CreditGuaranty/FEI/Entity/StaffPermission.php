@@ -74,7 +74,8 @@ class StaffPermission
 
     public const PERMISSION_REPORTING = 1 << 6;
 
-    // The grant permission is in the same position as the corresponding permission to grant, so that we can easily check if a staff can grant a given permission.
+    // The grant permission is in the same position as the corresponding permission to grant,
+    // so that we can easily check if a staff can grant a given permission.
     public const PERMISSION_GRANT_READ_PROGRAM   = 1 << 0;
     public const PERMISSION_GRANT_CREATE_PROGRAM = 1 << 1;
     public const PERMISSION_GRANT_EDIT_PROGRAM   = 1 << 2;
@@ -85,12 +86,11 @@ class StaffPermission
 
     public const PERMISSION_GRANT_REPORTING = 1 << 6;
 
-    // A typical admin of program managing company (CASA) has 1001111 (or 79 in decimal).
+    // A typical admin of program managing company (CASA) has 1111 (or 15 in decimal).
     public const MANAGING_COMPANY_ADMIN_PERMISSIONS = self::PERMISSION_GRANT_READ_PROGRAM
     | self::PERMISSION_GRANT_EDIT_PROGRAM
     | self::PERMISSION_GRANT_CREATE_PROGRAM
-    | self::PERMISSION_GRANT_READ_RESERVATION
-    | self::PERMISSION_GRANT_REPORTING;
+    | self::PERMISSION_GRANT_READ_RESERVATION;
     // A typical admin of participant has 111001 (or 57 in decimal)
     public const PARTICIPANT_ADMIN_PERMISSIONS = self::PERMISSION_GRANT_READ_PROGRAM
     | self::PERMISSION_GRANT_READ_RESERVATION
@@ -110,7 +110,9 @@ class StaffPermission
      *
      * @ORM\Column(type="bitmask")
      *
-     * @Assert\Expression("(this.getPermissions().get() & this.getGrantPermissions().get()) === this.getGrantPermissions().get()")
+     * @Assert\Expression("
+     *     (this.getPermissions().get() & this.getGrantPermissions().get()) === this.getGrantPermissions().get()
+     * ")
      *
      * @Groups({"creditGuaranty:staffPermission:read"})
      */
