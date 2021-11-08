@@ -62,6 +62,13 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
         'field-loan_type' => [
             'term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment',
         ],
+        'field-product_category_code' => [
+            '1 - ANIMAUX',
+            '6 - PLANTES',
+            '7 - LÉGUMES',
+            '8 - FRUITS',
+            '10 - CÉRÉALES',
+        ],
     ];
 
     /**

@@ -308,6 +308,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setLoanDeferral($this->faker->numberBetween(0, 12))
             ->setLoanPeriodicity($this->findProgramChoiceOption($program, 'field-loan_periodicity', 'monthly'))
             ->setInvestmentLocation($this->findProgramChoiceOption($program, 'field-investment_location', 'Paris'))
+            ->setInvestmentLocation($this->findProgramChoiceOption($program, 'field-product_category_code'))
         ;
     }
 

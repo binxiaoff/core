@@ -267,6 +267,11 @@ class FieldFixtures extends AbstractSQLFixtures
             'investment_location', 'financingObjects', 'investmentLocation', 'ProgramChoiceOption',
             'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, NULL
         ),
+        (
+            '316ba97b-3223-4c72-a147-1ae48a91f7ee', 'eligibility', 'loan', 'list',
+            'product_category_code', 'financingObjects', 'productCategoryCode', 'ProgramChoiceOption',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, NULL
+        ),
 
         (
             'a11265ea-983c-4c5d-8518-feb163972288', 'info', 'program', 'other',
