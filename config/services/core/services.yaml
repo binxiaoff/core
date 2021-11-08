@@ -12,7 +12,7 @@ parameters:
   hubspot.base_integration_uri: '%env(HUBSPOT_BASE_INTEGRATION_URI)%'
   kls.environment: '%env(KLS_ENV)%'
   locale: fr_FR
-  mailer.error_reporting_email: tech@kls-platform.com
+  mailer.error_reporting_email: produit@kls-platform.com
   mailer.sender_address: support@kls-platform.com
   maintenance: '%env(MAINTENANCE_MODE)%'
   psn.base_uri: '%env(PSN_BASE_URI)%'
