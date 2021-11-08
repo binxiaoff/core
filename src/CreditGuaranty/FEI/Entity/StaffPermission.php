@@ -19,6 +19,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * StaffPermission will not be created automatically for all the staff. It is created on demand when needed.
+ * The existence guaranty of StaffPermission for each staff is cumbersome，above all unreliable.
+ *
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {
