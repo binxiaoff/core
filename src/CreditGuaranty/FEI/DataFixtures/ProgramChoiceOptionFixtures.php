@@ -33,6 +33,14 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
 
     // user-defined list type fields
     private const FIELDS = [
+        FieldAlias::ACTIVITY_COUNTRY => [
+            'FR',
+        ],
+        FieldAlias::ACTIVITY_DEPARTMENT => [
+            'Paris',
+            'Seine-et-Marne',
+            'Val-de-Marne',
+        ],
         FieldAlias::AID_INTENSITY => [
             '0.20', '0.40', '0.60', '0.80',
         ],
@@ -44,13 +52,13 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'Apiculteur', 'Exploitant céréalier', 'Ostréiculteur',
             'Producteur de lait', 'Vignoble',
         ],
-        FieldAlias::INVESTMENT_THEMATIC => self::INVESTMENT_THEMATIC_LIST,
-        FieldAlias::ACTIVITY_DEPARTMENT => [
-            'Paris',
-            'Seine-et-Marne',
-            'Val-de-Marne',
+        FieldAlias::COMPANY_NAF_CODE => [
+            '0111Z', '0121Z', '0141Z', '0142Z',
         ],
-        FieldAlias::ACTIVITY_COUNTRY => [
+        FieldAlias::EXPLOITATION_SIZE => [
+            '64', '512', '1024', '2048',
+        ],
+        FieldAlias::INVESTMENT_COUNTRY => [
             'FR',
         ],
         FieldAlias::INVESTMENT_DEPARTMENT => [
@@ -58,20 +66,18 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'Seine-et-Marne',
             'Val-de-Marne',
         ],
-        FieldAlias::INVESTMENT_COUNTRY => [
-            'FR',
-        ],
         FieldAlias::INVESTMENT_LOCATION => [
             'Paris', 'Nantes', 'Lyon', 'Marseille', 'Nice',
         ],
-        FieldAlias::COMPANY_NAF_CODE => [
-            '0111Z', '0121Z', '0141Z', '0142Z',
+        FieldAlias::INVESTMENT_THEMATIC => self::INVESTMENT_THEMATIC_LIST,
+        FieldAlias::LEGAL_FORM          => [
+            'SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS',
         ],
         FieldAlias::LOAN_NAF_CODE => [
             '0111Z', '0121Z', '0141Z', '0142Z',
         ],
-        FieldAlias::EXPLOITATION_SIZE => [
-            '64', '512', '1024', '2048',
+        FieldAlias::LOAN_TYPE => [
+            'term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment',
         ],
     ];
 

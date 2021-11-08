@@ -236,7 +236,7 @@ class FieldFixtures extends AbstractFixtures
             'objectClass'             => Borrower::class,
             'comparable'              => true,
             'unit'                    => null,
-            'predefinedItems'         => ['SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS'],
+            'predefinedItems'         => null,
         ];
         yield 'field-company_naf_code' => [
             'fieldAlias'              => 'company_naf_code',
@@ -626,7 +626,7 @@ class FieldFixtures extends AbstractFixtures
             'objectClass'             => FinancingObject::class,
             'comparable'              => true,
             'unit'                    => null,
-            'predefinedItems'         => ['term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment'],
+            'predefinedItems'         => null,
         ];
         yield 'field-loan_money' => [
             'fieldAlias'              => 'loan_money',
