@@ -35,7 +35,6 @@ cache:
       if [[ "${CI_ENVIRONMENT_NAME}" = "prod" ]]
       then
         export SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY_PROD
-        export ANSIBLE_VAULT_PASS=$ANSIBLE_VAULT_PASS_PROD
         echo "$SSH_KNOWN_HOSTS_PROD" >> ~/.ssh/known_hosts
       elif [[ "${CI_ENVIRONMENT_NAME}" = "preprod" ]]
       then
@@ -46,7 +45,6 @@ cache:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - chmod 644 ~/.ssh/known_hosts
     - git clone -b "${ANSIBLE_BRANCH:-master}" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/ca-lending-services/infra.git
-    - echo "$ANSIBLE_VAULT_PASS" > infra/.vault_pass
     - cd infra/provisioning || exit 1
     - export DEPLOY_USER="${GITLAB_USER_NAME}"
   script:
