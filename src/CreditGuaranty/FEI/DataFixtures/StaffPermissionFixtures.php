@@ -42,7 +42,10 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
         foreach ($company->getStaff() as $staff) {
             $staffPermission = new StaffPermission(
                 $staff,
-                new Bitmask(StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS)
+                new Bitmask(
+                    StaffPermission::MANAGING_COMPANY_ADMIN_PERMISSIONS
+                    | StaffPermission::PERMISSION_REPORTING
+                )
             );
 
             if ($staff->getUser() === $referenceUser) {
@@ -54,7 +57,7 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
 
         // Participant (CR)
         // we create the CG admin for CA banks.
-        foreach (CompanyFixtures::CA_SHORTCODE as $companyName => $companyShortCode) {
+        foreach (CompanyFixtures::CA_SHORTCODE as $companyShortCode) {
             /** @var Company $company */
             $company = $this->getReference('company:' . $companyShortCode);
             $this->createAdminParticipant($company);
@@ -70,6 +73,7 @@ class StaffPermissionFixtures extends AbstractFixtures implements DependentFixtu
                 $staff,
                 new Bitmask(StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS)
             );
+
             // In the fixtures, there is only one staff per company, who is the admin
             $staffPermission->setGrantPermissions(StaffPermission::PARTICIPANT_ADMIN_PERMISSIONS);
             $this->manager->persist($staffPermission);
