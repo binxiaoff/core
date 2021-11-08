@@ -90,6 +90,7 @@ class ReservationRepository extends ServiceEntityRepository
         array $selects,
         array $joins,
         array $clauses,
+        array $orders,
         int $itemsPerPage,
         int $page
     ): Paginator {
@@ -132,6 +133,10 @@ class ReservationRepository extends ServiceEntityRepository
                     ->andWhere($clause['expression'])
                     ->setParameter(...$clause['parameter'])
                 ;
+            }
+
+            foreach ($orders as $orderBy => $orderDirection) {
+                $qb->addOrderBy($orderBy, $orderDirection);
             }
         }
 

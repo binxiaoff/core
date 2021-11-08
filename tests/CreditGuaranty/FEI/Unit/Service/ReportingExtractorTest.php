@@ -55,6 +55,7 @@ class ReportingExtractorTest extends TestCase
             $filters['selects'],
             $filters['joins'],
             $filters['clauses'],
+            [],
             100,
             1
         )
@@ -63,7 +64,7 @@ class ReportingExtractorTest extends TestCase
         ;
 
         $reportingExtractor = $this->createTestObject();
-        $result             = $reportingExtractor->extracts($reportingTemplate, 100, 1, null);
+        $result             = $reportingExtractor->extracts($reportingTemplate, 100, 1, [], null);
 
         static::assertInstanceOf(Paginator::class, $result);
     }
@@ -86,6 +87,7 @@ class ReportingExtractorTest extends TestCase
             $filters['selects'],
             $filters['joins'],
             $filters['clauses'],
+            [],
             100,
             1
         )
@@ -94,7 +96,38 @@ class ReportingExtractorTest extends TestCase
         ;
 
         $reportingExtractor = $this->createTestObject();
-        $result             = $reportingExtractor->extracts($reportingTemplate, 100, 1, 'search');
+        $result             = $reportingExtractor->extracts($reportingTemplate, 100, 1, [], 'search');
+
+        static::assertInstanceOf(Paginator::class, $result);
+    }
+
+    /**
+     * @covers ::extracts
+     */
+    public function testExtractsWithOrders(): void
+    {
+        $reportingTemplate = $this->createReportingTemplate('Template test');
+        $this->withMultipleReportingTemplateFields($reportingTemplate);
+
+        $orders    = ['borrower_type' => 'asc'];
+        $filters   = $this->getFilters();
+        $paginator = $this->prophesize(Paginator::class);
+
+        $this->reservationRepository->findByReportingFilters(
+            $reportingTemplate->getProgram(),
+            $filters['selects'],
+            $filters['joins'],
+            $filters['clauses'],
+            $orders,
+            100,
+            1
+        )
+            ->shouldBeCalledOnce()
+            ->willReturn($paginator)
+        ;
+
+        $reportingExtractor = $this->createTestObject();
+        $result             = $reportingExtractor->extracts($reportingTemplate, 100, 1, $orders, null);
 
         static::assertInstanceOf(Paginator::class, $result);
     }

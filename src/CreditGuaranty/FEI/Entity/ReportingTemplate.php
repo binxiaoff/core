@@ -75,6 +75,17 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                         "description": "The search filter on text values of reporting",
  *                         "required": false,
  *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "order",
+ *                         "schema": {
+ *                             "type": "object",
+ *                         },
+ *                         "style": "deepObject",
+ *                         "explode": true,
+ *                         "description": "The order filter (i.e. order[field_alias]=direction)",
+ *                         "required": false,
+ *                     },
  *                 },
  *             },
  *         },
