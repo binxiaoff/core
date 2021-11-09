@@ -21,7 +21,7 @@ parameters:
   router.request_context.scheme: https
   security.recipients: ['tech@kls-platform.com']
   slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
-  slack.webhook.security: https://hooks.slack.com/services/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
+  slack.webhook.security: '%env(SLACK_WEBHOOK_URL_SECURITY)%'
 
 services:
   _defaults:
