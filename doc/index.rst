@@ -34,3 +34,5 @@ __________
 `Tests <technical/tests.rst>`_
 
 `API Resource <technical/api-resource.rst>`_
+
+`MySQL users <technical/mysql-users.rst>`_
