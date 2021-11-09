@@ -87,7 +87,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             'eef6e5ac-8de6-4084-a06b-dd2974141d94', 'eligibility', 'profile', 'list',
             'legal_form', 'borrower', 'legalForm', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, '["SARL","SAS","SASU","EURL","SA","SELAS"]'
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
             '7cccbd98-6b99-4425-8f29-83a04027740c', 'eligibility', 'profile', 'list',
@@ -239,8 +239,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '675056b4-49bb-40a7-bafe-9bcc86ad7b99', 'eligibility', 'loan', 'list',
             'loan_type', 'financingObjects', 'loanType', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL,
-            '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, NULL
         ),
         (
             'dc41f2c0-0ca6-4ac4-8d92-c9f583b97923', 'eligibility', 'loan', 'other',

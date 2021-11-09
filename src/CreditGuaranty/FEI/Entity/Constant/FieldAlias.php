@@ -25,12 +25,12 @@ class FieldAlias extends AbstractEnum
     public const INVESTMENT_LOCATION   = 'investment_location';
     public const INVESTMENT_THEMATIC   = 'investment_thematic';
     public const INVESTMENT_TYPE       = 'investment_type';
+    public const LEGAL_FORM            = 'legal_form';
     public const LOAN_NAF_CODE         = 'loan_naf_code';
+    public const LOAN_TYPE             = 'loan_type';
 
     // Pre-defined list
-    public const LEGAL_FORM       = 'legal_form';
     public const LOAN_PERIODICITY = 'loan_periodicity';
-    public const LOAN_TYPE        = 'loan_type';
 
     // Boolean
     public const CREATION_IN_PROGRESS           = 'creation_in_progress';

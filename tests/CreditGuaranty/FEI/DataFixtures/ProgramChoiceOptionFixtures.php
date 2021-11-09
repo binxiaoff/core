@@ -16,6 +16,12 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
 {
     // user-defined list type fields
     private const FIELDS = [
+        'field-activity_department' => [
+            'department',
+        ],
+        'field-activity_country' => [
+            'FR',
+        ],
         'field-aid_intensity' => [
             '0.20', '0.40', '0.60', '0.80',
         ],
@@ -25,6 +31,21 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'Agriculture',
             'Apiculteur',
         ],
+        'field-company_naf_code' => [
+            '0001A',
+        ],
+        'field-exploitation_size' => [
+            '42',
+        ],
+        'field-investment_country' => [
+            'FR',
+        ],
+        'field-investment_department' => [
+            'department',
+        ],
+        'field-investment_location' => [
+            'Paris',
+        ],
         'field-investment_thematic' => [
             'Renouvellement et installation',
             'Mieux répondre / renforcer',
@@ -32,29 +53,14 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'Accompagner',
             'Mettre à niveau',
         ],
-        'field-activity_department' => [
-            'department',
-        ],
-        'field-activity_country' => [
-            'FR',
-        ],
-        'field-investment_department' => [
-            'department',
-        ],
-        'field-investment_country' => [
-            'FR',
-        ],
-        'field-investment_location' => [
-            'Paris',
-        ],
-        'field-company_naf_code' => [
-            '0001A',
+        'field-legal_form' => [
+            'SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS',
         ],
         'field-loan_naf_code' => [
             '0001A',
         ],
-        'field-exploitation_size' => [
-            '42',
+        'field-loan_type' => [
+            'term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment',
         ],
     ];
 
