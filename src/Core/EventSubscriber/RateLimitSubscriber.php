@@ -20,6 +20,7 @@ class RateLimitSubscriber implements EventSubscriberInterface
 {
     private const ANONYMOUS_API_ENDPOINTS = [
         '/core/reset_passwords',
+        '/core/user_initializations',
     ];
 
     private RateLimiterFactory  $anonymousApiLimiter;

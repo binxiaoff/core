@@ -42,6 +42,7 @@ security:
         - { path: '^/core/legal_documents', allow_if: "is_authenticated() or is_anonymous()" }
         - { path: '^/core/pulse$', allow_if: "is_anonymous()" }
         - { path: '^/core/reset_passwords$', allow_if: "is_anonymous()" }
+        - { path: '^/core/user_initializations$', allow_if: "is_anonymous()" }
         - { path: '^/core/temporary_tokens', allow_if: "is_anonymous()" }
         - { path: '^/core/token/refresh', allow_if: "is_authenticated() or is_anonymous()" }
         - { path: '^/docs', allow_if: "is_authenticated() or is_anonymous()" }
