@@ -174,8 +174,14 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @Gedmo\Loggable(logEntryClass="KLS\Syndication\Arrangement\Entity\Versioned\VersionedProjectParticipation")
  *
- * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter", properties={"project.currentStatus.status", "currentStatus.status"})
- * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter", properties={"project.currentStatus.status", "currentStatus.status"})
+ * @ApiFilter(
+ *     "ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter",
+ *     properties={"project.currentStatus.status", "currentStatus.status"}
+ * )
+ * @ApiFilter(
+ *     "ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter",
+ *     properties={"project.currentStatus.status", "currentStatus.status"}
+ * )
  * @ApiFilter("ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter", properties={
  *     "project.publicId": "exact",
  *     "projectParticipationMembers.staff.publicId": "exact",
@@ -199,9 +205,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
 
-    // Additional normalizer group that is available for those who have the admin right on the participation (participation owner or arranger)
+    // Additional normalizer group that is available for those who have the admin right
+    // on the participation (participation owner or arranger)
     public const SERIALIZER_GROUP_ADMIN_READ = 'projectParticipation:admin:read';
-    // Additional normalizer group that is available for public visibility project. It's also available for the participation owner and arranger
+    // Additional normalizer group that is available for public visibility project.
+    // It's also available for the participation owner and arranger
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipation:sensitive:read';
 
     public const PROJECT_PARTICIPATION_FILE_TYPE_NDA = 'project_participation_nda';
@@ -310,7 +318,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     /**
      * @var Collection|InterestReplyVersion[]
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Arrangement\Entity\InterestReplyVersion", mappedBy="projectParticipation", orphanRemoval=true)
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Arrangement\Entity\InterestReplyVersion",
+     *     mappedBy="projectParticipation",
+     *     orphanRemoval=true
+     * )
      *
      * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
      */
@@ -325,7 +337,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      *
      * @Gedmo\Versioned
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ, "projectParticipation:arranger:participantReply:write", "projectParticipation:create"})
+     * @Groups({
+     *     ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
+     *     "projectParticipation:arranger:participantReply:write",
+     *     "projectParticipation:create"
+     * })
      */
     private OfferWithFee $invitationRequest;
 
@@ -362,7 +378,12 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     /**
      * @var Collection|ProjectParticipationMember[]
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Arrangement\Entity\ProjectParticipationMember", mappedBy="projectParticipation", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Arrangement\Entity\ProjectParticipationMember",
+     *     mappedBy="projectParticipation",
+     *     cascade={"persist"},
+     *     orphanRemoval=true
+     * )
      *
      * @Assert\Valid
      *
@@ -384,7 +405,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     /**
      * @var Collection|ProjectParticipationStatus[]
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Arrangement\Entity\ProjectParticipationStatus", mappedBy="projectParticipation", cascade={"persist"})
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Arrangement\Entity\ProjectParticipationStatus",
+     *     mappedBy="projectParticipation",
+     *     cascade={"persist"}
+     * )
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"projectParticipation:read"})
@@ -428,7 +453,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
         $this->ndaSignatures                = new ArrayCollection();
         $this->projectParticipationMembers  = new ArrayCollection();
 
-        $this->setCurrentStatus(new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_CREATED, $addedBy));
+        $this->setCurrentStatus(
+            new ProjectParticipationStatus($this, ProjectParticipationStatus::STATUS_CREATED, $addedBy)
+        );
     }
 
     public static function getFileTypes(): array
@@ -578,15 +605,19 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      */
     public function getActiveProjectParticipationMembers(): Collection
     {
-        return $this->projectParticipationMembers->filter(static function (ProjectParticipationMember $projectParticipationMember) {
-            return false === $projectParticipationMember->isArchived();
-        });
+        return $this->projectParticipationMembers->filter(
+            static function (ProjectParticipationMember $projectParticipationMember) {
+                return false === $projectParticipationMember->isArchived();
+            }
+        );
     }
 
-    public function addProjectParticipationMember(ProjectParticipationMember $projectParticipationMember): ProjectParticipation
-    {
+    public function addProjectParticipationMember(
+        ProjectParticipationMember $projectParticipationMember
+    ): ProjectParticipation {
         $callback = function (int $key, ProjectParticipationMember $ppm) use ($projectParticipationMember): bool {
-            return $projectParticipationMember->getProjectParticipation() === $ppm->getProjectParticipation() && $projectParticipationMember->getStaff() === $ppm->getStaff();
+            return $projectParticipationMember->getProjectParticipation() === $ppm->getProjectParticipation()
+                && $projectParticipationMember->getStaff()                === $ppm->getStaff();
         };
 
         if (false === $this->projectParticipationMembers->exists($callback)) {
@@ -624,7 +655,10 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     {
         $totalInvitationReply = new NullableMoney();
         foreach ($this->projectParticipationTranches as $projectParticipationTranche) {
-            $totalInvitationReply = MoneyCalculator::add($totalInvitationReply, $projectParticipationTranche->getInvitationReply()->getMoney());
+            $totalInvitationReply = MoneyCalculator::add(
+                $totalInvitationReply,
+                $projectParticipationTranche->getInvitationReply()->getMoney()
+            );
         }
 
         return $totalInvitationReply;
@@ -637,7 +671,10 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     {
         $totalAllocation = new NullableMoney();
         foreach ($this->projectParticipationTranches as $projectParticipationTranche) {
-            $totalAllocation = MoneyCalculator::add($totalAllocation, $projectParticipationTranche->getAllocation()->getMoney());
+            $totalAllocation = MoneyCalculator::add(
+                $totalAllocation,
+                $projectParticipationTranche->getAllocation()->getMoney()
+            );
         }
 
         return $totalAllocation;
@@ -655,8 +692,9 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
         return $this;
     }
 
-    public function addProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche): ProjectParticipation
-    {
+    public function addProjectParticipationTranche(
+        ProjectParticipationTranche $projectParticipationTranche
+    ): ProjectParticipation {
         if (false === $this->hasProjectParticipationTranche($projectParticipationTranche)) {
             $this->projectParticipationTranches->add($projectParticipationTranche);
         }
@@ -673,7 +711,8 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     public function hasProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche): bool
     {
         $callback = function (int $key, ProjectParticipationTranche $ppt) use ($projectParticipationTranche): bool {
-            return $projectParticipationTranche->getProjectParticipation() === $ppt->getProjectParticipation() && $projectParticipationTranche->getTranche() === $ppt->getTranche();
+            return $projectParticipationTranche->getProjectParticipation() === $ppt->getProjectParticipation()
+                && $projectParticipationTranche->getTranche()              === $ppt->getTranche();
         };
 
         return $this->projectParticipationTranches->exists($callback);
@@ -719,12 +758,26 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
         return $this->getStatuses()->get($this->getStatuses()->count() - 2);
     }
 
+    /**
+     * Attention: this method doesn't check if the participation is refused by the participant (-30).
+     */
     public function isArchived(): bool
     {
         return $this->getCurrentStatus()
-            && (\in_array($this->getCurrentStatus()->getStatus(), [
-                ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER, ProjectParticipationStatus::STATUS_ARCHIVED_BY_PARTICIPANT,
-            ], true));
+            && (\in_array(
+                $this->getCurrentStatus()->getStatus(),
+                [
+                    ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER,
+                    ProjectParticipationStatus::STATUS_ARCHIVED_BY_PARTICIPANT,
+                ],
+                true
+            ));
+    }
+
+    public function isAccepted(): bool
+    {
+        return $this->getCurrentStatus()
+            && ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED === $this->getCurrentStatus()->getStatus();
     }
 
     /**
@@ -756,7 +809,10 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     {
         foreach ($this->projectParticipationTranches as $index => $participationTranche) {
             if ($participationTranche->getProjectParticipation() !== $this) {
-                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationTranches.incorrectParticipation')
+                $context
+                    ->buildViolation(
+                        'Syndication.ProjectParticipation.projectParticipationTranches.incorrectParticipation'
+                    )
                     ->atPath("projectParticipationTranches[{$index}]")
                     ->addViolation()
                 ;
@@ -771,7 +827,10 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     {
         foreach ($this->projectParticipationMembers as $index => $participationMember) {
             if ($participationMember->getProjectParticipation() !== $this) {
-                $context->buildViolation('Syndication.ProjectParticipation.projectParticipationMembers.incorrectParticipation')
+                $context
+                    ->buildViolation(
+                        'Syndication.ProjectParticipation.projectParticipationMembers.incorrectParticipation'
+                    )
                     ->atPath("projectParticipationMembers[{$index}]")
                     ->addViolation()
                 ;
@@ -784,7 +843,10 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      */
     public function validateCommitteeDeadline(ExecutionContextInterface $context): void
     {
-        if (null === $this->committeeDeadline && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $this->currentStatus->getStatus()) {
+        if (
+            null === $this->committeeDeadline
+            && ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $this->currentStatus->getStatus()
+        ) {
             $context->buildViolation('Syndication.ProjectParticipation.committeeDeadline.required')
                 ->atPath('committeeDeadline')
                 ->addViolation()
@@ -834,7 +896,10 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     public function validateMaxMoney(ExecutionContextInterface $context): void
     {
         $interestMaxAmount = $this->interestRequest->getMaxMoney();
-        if (null !== $interestMaxAmount->getAmount() && 1 !== MoneyCalculator::compare($interestMaxAmount, $this->interestRequest->getMoney())) {
+        if (
+            null !== $interestMaxAmount->getAmount()
+            && 1 !== MoneyCalculator::compare($interestMaxAmount, $this->interestRequest->getMoney())
+        ) {
             $context->buildViolation('Core.Money.currency.maxMoney')
                 ->atPath('interestRequest.maxMoney')
                 ->addViolation()
