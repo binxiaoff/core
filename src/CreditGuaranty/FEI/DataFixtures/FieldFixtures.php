@@ -315,7 +315,7 @@ class FieldFixtures extends AbstractSQLFixtures
         ),
         (
             'd35bcf2a-aaaa-4c97-8eba-e7336589049a', 'info', 'reservation', 'other',
-            'reservation_refusal_date', 'refusedByManagingCompanyDate', '', 'DateTimeImmutable',
+            'reservation_exclusion_date', 'refusedByManagingCompanyDate', '', 'DateTimeImmutable',
             '', 0, NULL, NULL
         ),
         (

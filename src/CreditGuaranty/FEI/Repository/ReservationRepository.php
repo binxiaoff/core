@@ -101,9 +101,11 @@ class ReservationRepository extends ServiceEntityRepository
         } else {
             $qb
                 ->select('financingObjects.id AS id_financing_object')
-                ->addSelect('financingObjects.reportingFirstDate AS reporting_first_date')
-                ->addSelect('financingObjects.reportingLastDate AS reporting_last_date')
-                ->addSelect('financingObjects.reportingValidationDate AS reporting_validation_date')
+                ->addSelect('DATE_FORMAT(financingObjects.reportingFirstDate, \'%Y-%m-%d\') AS reporting_first_date')
+                ->addSelect('DATE_FORMAT(financingObjects.reportingLastDate, \'%Y-%m-%d\') AS reporting_last_date')
+                ->addSelect(
+                    'DATE_FORMAT(financingObjects.reportingValidationDate, \'%Y-%m-%d\') AS reporting_validation_date'
+                )
                 ->leftJoin(
                     FinancingObject::class,
                     'financingObjects',

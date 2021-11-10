@@ -22,8 +22,8 @@ class Reporting
     ): Paginator {
         $itemsPerPage = (int) $request->query->get('itemsPerPage', 100);
         $page         = (int) $request->query->get('page', 1);
-        $search       = $request->query->get('search');
         $orders       = (array) $request->query->get('order');
+        $search       = $request->query->get('search');
 
         return $reportingExtractor->extracts($data, $itemsPerPage, $page, $orders, $search);
     }
