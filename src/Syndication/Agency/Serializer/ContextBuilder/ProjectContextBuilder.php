@@ -67,7 +67,9 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
         $arrangementProjectPublicId = $request->get(static::IMPORT_QUERY_PARAMETER);
 
         /** @var ArrangementProject $arrangementProject */
-        $arrangementProject = $this->arrangementProjectRepository->findOneBy(['publicId' => $arrangementProjectPublicId]);
+        $arrangementProject = $this->arrangementProjectRepository->findOneBy(
+            ['publicId' => $arrangementProjectPublicId]
+        );
 
         if (null === $arrangementProject) {
             return $context;
@@ -81,7 +83,8 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
             throw new BadRequestHttpException();
         }
 
-        // Do not hesitate to move the following code (minus the context lines) to the entity should it be need elsewhere
+        // Do not hesitate to move the following code (minus the context lines)
+        // to the entity should it be needed elsewhere.
         $agencyProject = new AgencyProject(
             $staff,
             $arrangementProject->getTitle(),
@@ -96,7 +99,10 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
         $agencyProject->setFundingSpecificity($arrangementProject->getFundingSpecificity());
         $agencyProject->setDescription($arrangementProject->getDescription());
 
-        $agencyProject->getPrimaryParticipationPool()->setParticipationType($arrangementProject->getParticipationType());
+        $agencyProject
+            ->getPrimaryParticipationPool()
+            ->setParticipationType($arrangementProject->getParticipationType())
+        ;
         $agencyProject->getPrimaryParticipationPool()->setSyndicationType($arrangementProject->getSyndicationType());
         $agencyProject->getPrimaryParticipationPool()->setRiskType($arrangementProject->getRiskType());
 
@@ -121,7 +127,10 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
             foreach ($tranche->getProjectParticipationTranches() as $participationTrancheAllocation) {
                 $allocations[] = [
                     'money' => new Money(
-                        $participationTrancheAllocation->getAllocation()->getMoney()->getCurrency() ?? $agencyProject->getGlobalFundingMoney()->getCurrency(),
+                        $participationTrancheAllocation
+                            ->getAllocation()
+                            ->getMoney()
+                            ->getCurrency() ?? $agencyProject->getGlobalFundingMoney()->getCurrency(),
                         $participationTrancheAllocation->getAllocation()->getMoney()->getAmount() ?? '0'
                     ),
                     'tranche'     => $agencyTranche,
@@ -131,25 +140,34 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
         }
 
         foreach ($arrangementProject->getProjectParticipations() as $arrangementParticipation) {
-            $agencyParticipation = $agencyProject->findParticipationByParticipant($arrangementParticipation->getParticipant());
-
-            if (null === $agencyParticipation) {
-                $agencyParticipation = new Participation(
-                    $agencyProject->getPrimaryParticipationPool(),
-                    $arrangementParticipation->getParticipant()
-                );
-
-                $agencyProject->addParticipation($agencyParticipation);
+            if (false === $arrangementParticipation->isAccepted()) {
+                continue;
             }
 
+            $agencyParticipation = new Participation(
+                $agencyProject->getPrimaryParticipationPool(),
+                $arrangementParticipation->getParticipant()
+            );
+            //addParticipation will check if the participant has already been added.
+            $agencyProject->addParticipation($agencyParticipation);
+
             foreach ($arrangementParticipation->getProjectParticipationMembers() as $arrangementMember) {
-                $agencyParticipation->addMember(new ParticipationMember($agencyParticipation, $arrangementMember->getStaff()->getUser()));
+                if ($arrangementMember->isArchived() || $arrangementMember->getStaff()->isArchived()) {
+                    continue;
+                }
+                $agencyParticipation->addMember(
+                    new ParticipationMember($agencyParticipation, $arrangementMember->getStaff()->getUser())
+                );
             }
         }
 
         foreach ($allocations as ['participant' => $participant, 'money' => $allocation, 'tranche' => $agencyTranche]) {
+            $participation = $agencyProject->findParticipationByParticipant($participant);
+            if (null === $participation) {
+                continue;
+            }
             $participationTrancheAllocation = new ParticipationTrancheAllocation(
-                $agencyProject->findParticipationByParticipant($participant),
+                $participation,
                 $agencyTranche,
                 $allocation
             );
