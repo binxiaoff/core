@@ -94,18 +94,13 @@ class ReservationRepository extends ServiceEntityRepository
         int $itemsPerPage,
         int $page
     ): Paginator {
-        $qb = $this->createQueryBuilder('r');
+        $queryBuilder = $this->createQueryBuilder('r');
 
         if (empty($selects) || empty($joins)) {
-            $qb->andWhere('1 = 0');
+            $queryBuilder->andWhere('1 = 0');
         } else {
-            $qb
+            $queryBuilder
                 ->select('financingObjects.id AS id_financing_object')
-                ->addSelect('DATE_FORMAT(financingObjects.reportingFirstDate, \'%Y-%m-%d\') AS reporting_first_date')
-                ->addSelect('DATE_FORMAT(financingObjects.reportingLastDate, \'%Y-%m-%d\') AS reporting_last_date')
-                ->addSelect(
-                    'DATE_FORMAT(financingObjects.reportingValidationDate, \'%Y-%m-%d\') AS reporting_validation_date'
-                )
                 ->leftJoin(
                     FinancingObject::class,
                     'financingObjects',
@@ -115,13 +110,13 @@ class ReservationRepository extends ServiceEntityRepository
             ;
 
             foreach ($selects as $select) {
-                $qb->addSelect($select);
+                $queryBuilder->addSelect($select);
             }
             foreach ($joins as $join) {
-                $qb->leftJoin(...$join);
+                $queryBuilder->leftJoin(...$join);
             }
 
-            $qb
+            $queryBuilder
                 ->innerJoin('r.program', 'program')
                 ->innerJoin('r.currentStatus', 'rcs')
                 ->where('program = :program')
@@ -131,14 +126,15 @@ class ReservationRepository extends ServiceEntityRepository
             ;
 
             foreach ($clauses as $clause) {
-                $qb
-                    ->andWhere($clause['expression'])
-                    ->setParameter(...$clause['parameter'])
-                ;
+                $queryBuilder->andWhere($clause['expression']);
+
+                if (false === empty($clause['parameter'])) {
+                    $queryBuilder->setParameter(...$clause['parameter']);
+                }
             }
 
             foreach ($orders as $orderBy => $orderDirection) {
-                $qb->addOrderBy($orderBy, $orderDirection);
+                $queryBuilder->addOrderBy($orderBy, $orderDirection);
             }
         }
 
@@ -146,9 +142,9 @@ class ReservationRepository extends ServiceEntityRepository
             ->setFirstResult(($page - 1) * $itemsPerPage)
             ->setMaxResults($itemsPerPage)
         ;
-        $qb->addCriteria($criteria);
+        $queryBuilder->addCriteria($criteria);
 
-        $doctrinePaginator = new DoctrinePaginator($qb, false);
+        $doctrinePaginator = new DoctrinePaginator($queryBuilder, false);
         $doctrinePaginator->setUseOutputWalkers(false);
 
         return new Paginator($doctrinePaginator);

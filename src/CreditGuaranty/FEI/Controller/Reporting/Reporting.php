@@ -7,7 +7,8 @@ namespace KLS\CreditGuaranty\FEI\Controller\Reporting;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
 use Exception;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
-use KLS\CreditGuaranty\FEI\Service\ReportingExtractor;
+use KLS\CreditGuaranty\FEI\Repository\ReservationRepository;
+use KLS\CreditGuaranty\FEI\Service\Reporting\ReportingQueryGenerator;
 use Symfony\Component\HttpFoundation\Request;
 
 class Reporting
@@ -18,13 +19,21 @@ class Reporting
     public function __invoke(
         Request $request,
         ReportingTemplate $data,
-        ReportingExtractor $reportingExtractor
+        ReservationRepository $reservationRepository,
+        ReportingQueryGenerator $reportingQueryGenerator
     ): Paginator {
         $itemsPerPage = (int) $request->query->get('itemsPerPage', 100);
         $page         = (int) $request->query->get('page', 1);
-        $orders       = (array) $request->query->get('order');
-        $search       = $request->query->get('search');
+        $queryFilters = $reportingQueryGenerator->generate($request->query->all(), $data);
 
-        return $reportingExtractor->extracts($data, $itemsPerPage, $page, $orders, $search);
+        return $reservationRepository->findByReportingFilters(
+            $data->getProgram(),
+            $queryFilters['selects'] ?? [],
+            $queryFilters['joins'] ?? [],
+            $queryFilters['clauses'] ?? [],
+            $queryFilters['orders'] ?? [],
+            $itemsPerPage,
+            $page
+        );
     }
 }
