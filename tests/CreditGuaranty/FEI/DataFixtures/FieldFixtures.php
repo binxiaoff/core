@@ -693,6 +693,19 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
+        yield 'field-product_category_code' => [
+            'fieldAlias'              => 'product_category_code',
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'loan',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'financingObjects',
+            'propertyPath'            => 'productCategoryCode',
+            'propertyType'            => 'ProgramChoiceOption',
+            'objectClass'             => FinancingObject::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
         yield 'field-program_currency' => [
             'fieldAlias'              => 'program_currency',
             'tag'                     => Field::TAG_INFO,

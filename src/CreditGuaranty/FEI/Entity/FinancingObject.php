@@ -237,6 +237,16 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?ProgramChoiceOption $investmentLocation = null;
 
     /**
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_product_category_code", nullable=true)
+     *
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     */
+    private ?ProgramChoiceOption $productCategoryCode = null;
+
+    /**
      * @ORM\Column(type="date_immutable", nullable=true)
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
@@ -532,8 +542,9 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         return $this->loanMoneyAfterContractualisation;
     }
 
-    public function setLoanMoneyAfterContractualisation(NullableMoney $loanMoneyAfterContractualisation): FinancingObject
-    {
+    public function setLoanMoneyAfterContractualisation(
+        NullableMoney $loanMoneyAfterContractualisation
+    ): FinancingObject {
         $this->loanMoneyAfterContractualisation = $loanMoneyAfterContractualisation;
 
         return $this;
@@ -572,6 +583,32 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     {
         if ($this->investmentLocation instanceof ProgramChoiceOption) {
             return $this->investmentLocation->getDescription();
+        }
+
+        return null;
+    }
+
+    public function getProductCategoryCode(): ?ProgramChoiceOption
+    {
+        return $this->productCategoryCode;
+    }
+
+    public function setProductCategoryCode(?ProgramChoiceOption $productCategoryCode): FinancingObject
+    {
+        $this->productCategoryCode = $productCategoryCode;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("productCategoryCode")
+     *
+     * @Groups({"creditGuaranty:financingObject:read"})
+     */
+    public function getProductCategoryCodeDescription(): ?string
+    {
+        if ($this->productCategoryCode instanceof ProgramChoiceOption) {
+            return $this->productCategoryCode->getDescription();
         }
 
         return null;
@@ -656,8 +693,9 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      */
     public function getGrossSubsidyEquivalent(): MoneyInterface
     {
-        $esb = MoneyCalculator::multiply($this->getLoanMoney(), (float) $this->getProgram()->getGuarantyCoverage());
-
-        return MoneyCalculator::multiply($esb, (float) \bcmul((string) $this->getLoanDuration(), (string) GrossSubsidyEquivalent::FACTOR, 4));
+        return MoneyCalculator::multiply(
+            MoneyCalculator::multiply($this->getLoanMoney(), (float) $this->getProgram()->getGuarantyCoverage()),
+            (float) \bcmul((string) $this->getLoanDuration(), (string) GrossSubsidyEquivalent::FACTOR, 4)
+        );
     }
 }

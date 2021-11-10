@@ -79,6 +79,16 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
         FieldAlias::LOAN_TYPE => [
             'term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment',
         ],
+        FieldAlias::PRODUCT_CATEGORY_CODE => [
+            '1 - ANIMAUX VIVANTS',
+            '6 - PLANTES VIVANTES ET PRODUITS DE LA FLORICULTURE',
+            '7 - LÉGUMES, PLANTES, RACINES ET TUBERCULES ALIMENTAIRES',
+            '8 - FRUITS COMESTIBLES; ÉCORCES D’AGRUMES OU DE MELONS',
+            '10 - CÉRÉALES',
+            '401 - Lait et crème de lait, non concentrés ni additionnés de sucre ou d’autres édulcorants',
+            '406 - Fromages et caillebotte',
+            '8105000 - Kiwis, frais',
+        ],
     ];
 
     private FieldRepository $fieldRepository;
