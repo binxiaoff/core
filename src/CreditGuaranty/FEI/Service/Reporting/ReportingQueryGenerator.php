@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS\CreditGuaranty\FEI\Service\Reporting;
 
 use ArrayIterator;
+use DateTime;
 use Exception;
 use KLS\Core\Entity\Constant\MathOperator;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
@@ -140,7 +141,16 @@ class ReportingQueryGenerator
                 continue;
             }
 
-            // TODO generate filters clauses
+            $clause = $this->generateClauseByFilter($filterKey, $filter);
+
+            if (false === empty($clause)) {
+                $clauses[] = $clause;
+
+                // we do not need to generate joins for these filters like the search filter (from line 129)
+                // because the joins of these filters belonging to Reservation or FinancingObject
+                // already are in the query by default
+                // we should generate them if we add a new filter which the field do not belong to any of these entities
+            }
         }
 
         return [
@@ -158,6 +168,77 @@ class ReportingQueryGenerator
         }
 
         return \sprintf('%s LIKE :search', $this->reportingQueryHelper->getPropertyPath($field));
+    }
+
+    private function generateClauseByFilter(string $fieldAlias, array $filter): array
+    {
+        // we do not return clause for filter[reservation_exclusion_date]
+        // because exclusion ReservationStatus is not created yet
+        // TODO remove this condition once implemented
+        if (FieldAlias::RESERVATION_EXCLUSION_DATE === $fieldAlias) {
+            return [];
+        }
+
+        $filterOperator = \array_keys($filter)[0];
+        $filterValue    = $filter[$filterOperator];
+        $parameterName  = \sprintf('%s_value', $fieldAlias);
+        $parameterValue = $filterValue;
+
+        if (
+            \in_array($fieldAlias, self::DATE_FILTER_KEYS, true)
+            || \in_array($fieldAlias, self::DURATION_FILTER_KEYS, true)
+        ) {
+            if ('null' !== $filterValue) {
+                $parameterValue = (\in_array($fieldAlias, self::DURATION_FILTER_KEYS, true))
+                    ? new DateTime(\sprintf('-%s MONTH', $filterValue))
+                    : new DateTime($filterValue);
+                $parameterValue = $parameterValue->format('Y-m-d');
+            }
+        }
+
+        $propertyPaths = $this->getFilterPropertyPaths($fieldAlias);
+        $expressions   = [];
+
+        foreach ($propertyPaths as $propertyPath) {
+            if (MathOperator::EQUAL === $filterOperator && 'null' === ($filterValue)) {
+                $expressions[] = $propertyPath . ' IS NULL';
+
+                continue;
+            }
+
+            $expressions[] = \sprintf(
+                '%s %s :%s',
+                $propertyPath,
+                self::MAPPING_OPERATORS[$filterOperator],
+                $parameterName
+            );
+        }
+
+        return [
+            'expression' => \implode(' OR ', $expressions),
+            'parameter'  => ('null' === $filterValue) ? [] : [$parameterName, $parameterValue],
+        ];
+    }
+
+    private function getFilterPropertyPaths(string $fieldAlias): array
+    {
+        $propertyPaths = [];
+
+        if (self::FILTER_REPORTING_DATES === $fieldAlias) {
+            return [
+                'DATE_FORMAT(financingObjects.reportingFirstDate, \'%Y-%m-%d\')',
+                'DATE_FORMAT(financingObjects.reportingLastDate, \'%Y-%m-%d\')',
+                'DATE_FORMAT(financingObjects.reportingValidationDate, \'%Y-%m-%d\')',
+            ];
+        }
+
+        $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
+
+        if ($field instanceof Field) {
+            $propertyPaths[] = $this->reportingQueryHelper->getPropertyPath($field);
+        }
+
+        return $propertyPaths;
     }
 
     /**
@@ -193,7 +274,7 @@ class ReportingQueryGenerator
 
         foreach ($filters as $filterKey => $filterValue) {
             // we ignore non-existent filters like API Platform
-            if (false === \in_array($filterKey, self::ALLOWED_FILTER_KEYS)) {
+            if (false === \in_array($filterKey, self::ALLOWED_FILTER_KEYS, true)) {
                 unset($filters[$filterKey]);
             }
 
@@ -220,7 +301,7 @@ class ReportingQueryGenerator
                 }
             }
 
-            if (\in_array($filterKey, self::DATE_FILTER_KEYS)) {
+            if (\in_array($filterKey, self::DATE_FILTER_KEYS, true)) {
                 if (false === \is_array($filterValue)) {
                     unset($filters[$filterKey]);
                 }
@@ -236,7 +317,7 @@ class ReportingQueryGenerator
                 }
             }
 
-            if (\in_array($filterKey, self::DURATION_FILTER_KEYS)) {
+            if (\in_array($filterKey, self::DURATION_FILTER_KEYS, true)) {
                 if (false === \is_array($filterValue)) {
                     unset($filters[$filterKey]);
                 }
