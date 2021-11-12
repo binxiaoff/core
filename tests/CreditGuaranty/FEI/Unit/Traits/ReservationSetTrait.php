@@ -10,18 +10,16 @@ use KLS\Core\Entity\CompanyGroup;
 use KLS\Core\Entity\CompanyGroupTag;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
-use KLS\CreditGuaranty\FEI\Entity\Borrower;
-use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
-use KLS\CreditGuaranty\FEI\Entity\Project;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 
 trait ReservationSetTrait
 {
     use UserStaffTrait;
+    use FieldTrait;
 
     /**
      * @throws Exception
@@ -42,58 +40,10 @@ trait ReservationSetTrait
     {
         $program = $reservation->getProgram();
 
-        $borrowerTypeField = new Field(
-            'borrower_type',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'borrower',
-            'borrowerType',
-            'ProgramChoiceOption',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
-        $legalFormField = new Field(
-            'legal_form',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'borrower',
-            'legalForm',
-            'ProgramChoiceOption',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
-        $activityCountryField = new Field(
-            'activity_country',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'borrower',
-            'addressCountry',
-            'ProgramChoiceOption',
-            Borrower::class,
-            false,
-            null,
-            ['FR']
-        );
-        $activityDepartmentField = new Field(
-            'activity_department',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'borrower',
-            'addressDepartment',
-            'ProgramChoiceOption',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
+        $borrowerTypeField       = $this->createBorrowerTypeField();
+        $legalFormField          = $this->createLegalFormField();
+        $activityCountryField    = $this->createActivityCountryField();
+        $activityDepartmentField = $this->createActivityDepartmentField();
 
         $reservation->getBorrower()
             ->setBeneficiaryName('Borrower Name')
@@ -121,71 +71,11 @@ trait ReservationSetTrait
     {
         $program = $reservation->getProgram();
 
-        $investmentThematicField = new Field(
-            'investment_thematic',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'project',
-            'investmentThematics',
-            'Collection',
-            Project::class,
-            false,
-            null,
-            null
-        );
-        $investmentTypeField = new Field(
-            'investment_type',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'project',
-            'investmentType',
-            'ProgramChoiceOption',
-            Project::class,
-            false,
-            null,
-            null
-        );
-        $aidIntensityField = new Field(
-            'aid_intensity',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'project',
-            'aidIntensity',
-            'ProgramChoiceOption',
-            Project::class,
-            false,
-            null,
-            null
-        );
-        $additionalGuaranty = new Field(
-            'additional_guaranty',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'project',
-            'additionalGuaranty',
-            'ProgramChoiceOption',
-            Project::class,
-            false,
-            null,
-            null
-        );
-        $agriculturalBranch = new Field(
-            'agricultural_branch',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'project',
-            'agriculturalBranch',
-            'ProgramChoiceOption',
-            Project::class,
-            false,
-            null,
-            null
-        );
+        $investmentThematicField = $this->createInvestmentThematicField();
+        $investmentTypeField     = $this->createInvestmentTypeField();
+        $aidIntensityField       = $this->createAidIntensityField();
+        $additionalGuaranty      = $this->createAdditionalGuarantyField();
+        $agriculturalBranch      = $this->createAgriculturalBranchField();
 
         $reservation->getProject()
             ->addInvestmentThematic(new ProgramChoiceOption($program, 'Thématique A', $investmentThematicField))
@@ -205,32 +95,8 @@ trait ReservationSetTrait
     ): FinancingObject {
         $program = $reservation->getProgram();
 
-        $financingObjectTypeField = new Field(
-            'financing_object_type',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'financingObjects',
-            'financingObjectType',
-            'ProgramChoiceOption',
-            FinancingObject::class,
-            false,
-            null,
-            null
-        );
-        $loanTypeField = new Field(
-            'loan_type',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'list',
-            'financingObjects',
-            'loanType',
-            'ProgramChoiceOption',
-            FinancingObject::class,
-            false,
-            null,
-            ['loan type 1', 'loan type 2']
-        );
+        $financingObjectTypeField = $this->createFinancingObjectTypeField();
+        $loanTypeField            = $this->createLoanTypeField();
 
         return (
             new FinancingObject(

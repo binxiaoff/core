@@ -9,6 +9,7 @@ use Exception;
 use KLS\Core\Entity\CompanyGroup;
 use KLS\Core\Entity\CompanyGroupTag;
 use KLS\Core\Entity\Embeddable\Money;
+use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplateField;
@@ -38,18 +39,38 @@ trait ReportingTemplateTrait
     }
 
     /**
+     * @param Field[]|array $fields
+     *
      * @throws ReflectionException
      */
-    protected function withMultipleReportingTemplateFields(ReportingTemplate $reportingTemplate): void
+    protected function withMultipleReportingTemplateFields(ReportingTemplate $reportingTemplate, array $fields): void
     {
         $reportingTemplateFields = new ArrayCollection();
 
-        foreach ($this->createMultipleFields() as $key => $field) {
+        foreach ($fields as $key => $field) {
             $reportingTemplateField = new ReportingTemplateField($reportingTemplate, $field);
-            $reportingTemplateField->setPosition($key);
+            $reportingTemplateField->setPosition((int) $key);
             $reportingTemplateFields->add($reportingTemplateField);
         }
 
         $this->forcePropertyValue($reportingTemplate, 'reportingTemplateFields', $reportingTemplateFields);
+    }
+
+    /**
+     * @return Field[]|array
+     */
+    protected function createFieldsForReportingTemplate(): array
+    {
+        return [
+            $this->createBeneficiaryNameField(),
+            $this->createBorrowerTypeField(),
+            $this->createLoanNafCodeField(),
+            $this->createProgramDurationField(),
+            $this->createProjectTotalAmountField(),
+            $this->createReservationSigningDateField(),
+            $this->createReservationStatusField(),
+            $this->createSupportingGenerationsRenewalField(),
+            $this->createTotalEsbField(),
+        ];
     }
 }
