@@ -247,7 +247,7 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     private ?ProgramChoiceOption $productCategoryCode = null;
 
     /**
-     * @ORM\Column(type="date_immutable", nullable=true)
+     * @ORM\Column(type="datetime_immutable", nullable=true)
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
