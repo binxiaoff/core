@@ -113,9 +113,9 @@ class StaffPermission
      *
      * @ORM\Column(type="bitmask")
      *
-     * @Assert\Expression("
-     *     (this.getPermissions().get() & this.getGrantPermissions().get()) === this.getGrantPermissions().get()
-     * ")
+     * @Assert\Expression(
+     *     "(this.getPermissions().get() & this.getGrantPermissions().get()) === this.getGrantPermissions().get()"
+     * )
      *
      * @Groups({"creditGuaranty:staffPermission:read"})
      */
