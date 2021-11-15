@@ -127,6 +127,12 @@ class FieldAlias extends AbstractEnum
         self::FIRST_RELEASE_DATE,
     ];
 
+    public const REPORTING_DATE_FIELDS = [
+        FieldAlias::REPORTING_FIRST_DATE,
+        FieldAlias::REPORTING_LAST_DATE,
+        FieldAlias::REPORTING_VALIDATION_DATE,
+    ];
+
     // NAF NACE Fields
     public const NAF_NACE_FIELDS = [
         self::COMPANY_NAF_CODE => 'company_nace_code',
