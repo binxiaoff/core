@@ -45,11 +45,14 @@ class PermissionProviderTest extends TestCase
     {
         $user = new User('test@test.com');
 
-        $staff = new Staff($user, (new Company('test', 'test', '514919844'))->getRootTeam());
+        $staff = new Staff($user, (new Company('test', '514919844'))->getRootTeam());
 
         foreach (['no user given' => null, 'a user given' => $user] as $userTest => $userValue) {
             foreach (['no staff given' => null, 'a staff given' => $staff] as $staffTest => $staffValue) {
-                yield 'It should return the correct value with ' . $userTest . ' and ' . $staffTest => [$userValue, $staffValue];
+                yield 'It should return the correct value with ' . $userTest . ' and ' . $staffTest => [
+                    $userValue,
+                    $staffValue,
+                ];
             }
         }
     }

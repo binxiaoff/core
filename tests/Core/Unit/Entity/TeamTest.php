@@ -20,7 +20,7 @@ class TeamTest extends TestCase
      */
     public function testCreateTeam()
     {
-        $company = new Company('company', 'company', '850890666');
+        $company = new Company('company', '850890666');
 
         $name        = 'test';
         $createdTeam = Team::createTeam($name, $company->getRootTeam());
@@ -39,7 +39,7 @@ class TeamTest extends TestCase
      */
     public function testCreateRootTeam()
     {
-        $company = new Company('company', 'company', '850890666');
+        $company = new Company('company', '850890666');
 
         $rootTeam = Team::createRootTeam($company);
 
@@ -72,7 +72,10 @@ class TeamTest extends TestCase
         static::assertEmpty($team['C']->getDescendents());
         static::assertEmpty($team['3']->getDescendents());
         static::assertEqualsCanonicalizing([$team['#'], $team['@']], $team['A']->getDescendents());
-        static::assertEqualsCanonicalizing(\array_map(static fn ($index) => $team[$index], ['A', '#', '@', 'B']), $team['1']->getDescendents());
+        static::assertEqualsCanonicalizing(
+            \array_map(static fn ($index) => $team[$index], ['A', '#', '@', 'B']),
+            $team['1']->getDescendents()
+        );
         static::assertNotContains($team['root'], $team['root']->getDescendents());
     }
 
@@ -101,7 +104,10 @@ class TeamTest extends TestCase
         static::assertEmpty($team['C']->getChildren());
         static::assertEmpty($team['3']->getChildren());
         static::assertEqualsCanonicalizing([$team['#'], $team['@']], $team['A']->getChildren());
-        static::assertEqualsCanonicalizing(\array_map(static fn ($index) => $team[$index], ['A', 'B']), $team['1']->getChildren());
+        static::assertEqualsCanonicalizing(
+            \array_map(static fn ($index) => $team[$index], ['A', 'B']),
+            $team['1']->getChildren()
+        );
         static::assertNotContains($team['root'], $team['root']->getChildren());
     }
 
@@ -150,7 +156,7 @@ class TeamTest extends TestCase
             '3' => [],
         ];
 
-        $company = new Company('team', 'team', '850890666');
+        $company = new Company('team', '850890666');
 
         // Inner function to create tree (use recursion)
         // passing reference to the function to allow recursion
@@ -164,7 +170,10 @@ class TeamTest extends TestCase
 
         $descendents = $company->getRootTeam()->getDescendents();
 
-        $result = \array_combine(\array_map(static fn (Team $team) => $team->getName(), $descendents), $company->getRootTeam()->getDescendents());
+        $result = \array_combine(
+            \array_map(static fn (Team $team) => $team->getName(), $descendents),
+            $company->getRootTeam()->getDescendents()
+        );
 
         $result['root'] = $company->getRootTeam();
 

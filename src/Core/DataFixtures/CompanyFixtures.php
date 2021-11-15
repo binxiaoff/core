@@ -188,7 +188,10 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
         /** @var User $user */
         $user    = $this->getReference(UserFixtures::ADMIN);
         $domain  = \explode('@', $user->getEmail())[1];
-        $company = $this->createCompany('KLS', Company::SHORT_CODE_KLS)->setEmailDomain($domain)->setCompanyGroup($CAGroup);
+        $company = $this->createCompany('KLS', Company::SHORT_CODE_KLS)
+            ->setEmailDomain($domain)
+            ->setCompanyGroup($CAGroup)
+        ;
         $this->addReference(self::KLS, $company);
 
         $company = $this->createCompany('Crédit Agricole SA', Company::SHORT_CODE_CASA)
@@ -231,19 +234,27 @@ class CompanyFixtures extends AbstractFixtures implements DependentFixtureInterf
      * @throws ReflectionException
      * @throws Exception
      */
-    private function createCompany(string $name = null, string $shortcode = null, int $status = CompanyStatus::STATUS_SIGNED): Company
-    {
+    private function createCompany(
+        string $name = null,
+        string $shortcode = null,
+        int $status = CompanyStatus::STATUS_SIGNED
+    ): Company {
         $companyName = $name ?? $this->faker->company;
         $vatTypes    = Company::getPossibleVatTypes();
         // Works because Faker is set to Fr_fr
-        $company = (new Company($companyName, $companyName, $this->faker->siren(false)))
-            ->setBankCode((string) $this->faker->randomNumber(8, true))
+        $company = (new Company($companyName, $this->faker->siren(false)))
+            ->setLegalName($companyName)
+            ->setClientNumber((string) $this->faker->randomNumber(8, true))
             ->setShortCode($shortcode ?: $this->faker->regexify('[A-Za-z0-9]{10}'))
             ->setApplicableVat($vatTypes[\array_rand($vatTypes)])
         ;
 
         $this->forcePublicId($company, Urlizer::urlize(
-            \str_replace(['Banque Populaire', "Caisse d'Epargne", 'Crédit Mutuel', 'Banque Entreprises et Institutionnels'], ['BP', 'CE', 'CM', ''], $companyName)
+            \str_replace(
+                ['Banque Populaire', "Caisse d'Epargne", 'Crédit Mutuel', 'Banque Entreprises et Institutionnels'],
+                ['BP', 'CE', 'CM', ''],
+                $companyName
+            )
         ));
         $companyStatus = new CompanyStatus($company, $status);
         $company->setCurrentStatus($companyStatus);

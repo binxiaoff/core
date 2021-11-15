@@ -33,8 +33,12 @@ class StaffLoginCheckerTest extends TestCase
 
     public function grantedProvider(): iterable
     {
-        yield 'staff CA member and signed' => [$this->createStaff(null, CompanyStatus::STATUS_SIGNED)];
-        yield 'staff not CA member and signed' => [$this->createStaff(new CompanyGroup('Company Group')), CompanyStatus::STATUS_SIGNED];
+        yield 'staff CA member and signed' => [
+            $this->createStaff(null, CompanyStatus::STATUS_SIGNED),
+        ];
+        yield 'staff not CA member and signed' => [
+            $this->createStaff(new CompanyGroup('Company Group'), CompanyStatus::STATUS_SIGNED),
+        ];
     }
 
     /**
@@ -49,7 +53,7 @@ class StaffLoginCheckerTest extends TestCase
 
     private function createStaff(?CompanyGroup $companyGroup = null, ?int $companyStatus = null): Staff
     {
-        $company = new Company('Company', 'Company', '');
+        $company = new Company('Company', '');
         $company->setCompanyGroup($companyGroup ?? new CompanyGroup(CompanyGroup::COMPANY_GROUP_CA));
 
         if (null !== $companyStatus) {
