@@ -29,12 +29,12 @@ class ReportingQueryGenerator
      */
     public function generate(array $filters, ?ReportingTemplate $reportingTemplate = null): array
     {
-        $fields = ($reportingTemplate instanceof ReportingTemplate)
+        $searchableFields = ($reportingTemplate instanceof ReportingTemplate)
             ? $this->getOrderedFields($reportingTemplate)
             : $this->fieldRepository->findAll() // we retrieve all fields to be able to search or to filter
         ;
 
-        $queryFilters = $this->generateFilters($fields, $filters);
+        $queryFilters = $this->generateFilters($searchableFields, $filters);
 
         $selects = [];
         $joins   = $queryFilters['joins']   ?? [];
@@ -48,7 +48,7 @@ class ReportingQueryGenerator
             ];
 
             /** @var Field $field */
-            foreach ($fields as $field) {
+            foreach ($searchableFields as $field) {
                 $selects[] = \sprintf(
                     '%s AS %s',
                     $this->reportingQueryHelper->getPropertyPath($field),
