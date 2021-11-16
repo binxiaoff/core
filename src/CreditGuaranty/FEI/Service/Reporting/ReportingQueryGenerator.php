@@ -6,6 +6,7 @@ namespace KLS\CreditGuaranty\FEI\Service\Reporting;
 
 use ArrayIterator;
 use Exception;
+use KLS\CreditGuaranty\FEI\DTO\Query;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Constant\ReportingFilter;
 use KLS\CreditGuaranty\FEI\Entity\Field;
@@ -14,6 +15,12 @@ use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
 
 class ReportingQueryGenerator
 {
+    private const INIT_SELECTS = [
+        FieldAlias::REPORTING_FIRST_DATE      => 'financingObjects.reportingFirstDate',
+        FieldAlias::REPORTING_LAST_DATE       => 'financingObjects.reportingLastDate',
+        FieldAlias::REPORTING_VALIDATION_DATE => 'financingObjects.reportingValidationDate',
+    ];
+
     private FieldRepository $fieldRepository;
     private ReportingQueryHelper $reportingQueryHelper;
 
@@ -26,61 +33,50 @@ class ReportingQueryGenerator
     /**
      * @throws Exception
      */
-    public function generate(array $filters, ?ReportingTemplate $reportingTemplate = null): array
+    public function generate(array $filters, ?ReportingTemplate $reportingTemplate = null): Query
     {
         $searchableFields = ($reportingTemplate instanceof ReportingTemplate)
             ? $this->getOrderedFields($reportingTemplate)
             : $this->fieldRepository->findAll() // we retrieve all fields to be able to search or to filter
         ;
 
-        $queryFilters = $this->generateFilters($searchableFields, $filters);
-
-        $selects = [];
-        $joins   = $queryFilters['joins']   ?? [];
-        $clauses = $queryFilters['clauses'] ?? [];
+        $query = new Query();
 
         if ($reportingTemplate instanceof ReportingTemplate) {
-            $selects = [
-                'DATE_FORMAT(financingObjects.reportingFirstDate, \'%Y-%m-%d\') AS reporting_first_date',
-                'DATE_FORMAT(financingObjects.reportingLastDate, \'%Y-%m-%d\') AS reporting_last_date',
-                'DATE_FORMAT(financingObjects.reportingValidationDate, \'%Y-%m-%d\') AS reporting_validation_date',
-            ];
+            foreach (self::INIT_SELECTS as $fieldAlias => $propertyPath) {
+                $query->addSelect(\sprintf('DATE_FORMAT(%s, %s) AS %s', $propertyPath, '\'%Y-%m-%d\'', $fieldAlias));
+            }
 
             /** @var Field $field */
             foreach ($searchableFields as $field) {
-                $selects[] = \sprintf(
+                $query->addSelect(\sprintf(
                     '%s AS %s',
                     $this->reportingQueryHelper->getPropertyPath($field),
                     $field->getFieldAlias()
-                );
+                ));
 
                 foreach ($this->reportingQueryHelper->generateJoinByField($field) as $key => $join) {
-                    $joins[$key] = $join;
+                    $query->addJoin([$key => $join]);
                 }
             }
         }
 
-        return [
-            'selects' => $selects,
-            'joins'   => $joins,
-            'clauses' => $clauses,
-            'orders'  => $queryFilters['orders'] ?? [],
-        ];
+        $this->generateFilters($query, $searchableFields, $filters);
+
+        return $query;
     }
 
     /**
      * @throws Exception
      */
-    private function generateFilters(array $fields, array $filters): array
+    private function generateFilters(Query $query, array $fields, array $filters): void
     {
         $this->cleanFilters($fields, $filters);
 
-        $joins   = [];
-        $clauses = [];
-
         foreach ($filters as $filterKey => $filter) {
-            // we exclude order filters because they can already be passed as they are to query
             if (ReportingFilter::FILTER_ORDER === $filterKey) {
+                $query->addOrder($filter);
+
                 continue;
             }
 
@@ -94,38 +90,29 @@ class ReportingQueryGenerator
                         $searchExpressions[] = $searchExpression;
 
                         foreach ($this->reportingQueryHelper->generateJoinByField($field) as $key => $join) {
-                            $joins[$key] = $join;
+                            $query->addJoin([$key => $join]);
                         }
                     }
                 }
 
                 if (false === empty($searchExpressions)) {
-                    $clauses[] = [
+                    $query->addClause([
                         'expression' => \implode(' OR ', $searchExpressions),
                         'parameter'  => ['search', '%' . $filters['search'] . '%'], // @todo be careful of special chars
-                    ];
+                    ]);
                 }
 
                 continue;
             }
 
             $clause = $this->reportingQueryHelper->generateClauseByFilter($filterKey, $filter);
+            $query->addClause($clause);
 
-            if (false === empty($clause)) {
-                $clauses[] = $clause;
-
-                // we do not need to generate joins for these filters like the search filter (from line 129)
-                // because the joins of these filters belonging to Reservation or FinancingObject
-                // already are in the query by default
-                // we should generate them if we add a new filter which the field do not belong to any of these entities
-            }
+            // we do not need to generate joins for these filters like the search filter (from line 129)
+            // because the joins of these filters belonging to Reservation or FinancingObject
+            // already are in the query by default
+            // we should generate them if we add a new filter which the field do not belong to any of these entities
         }
-
-        return [
-            'joins'   => $joins,
-            'clauses' => $clauses,
-            'orders'  => $filters['order'] ?? [],
-        ];
     }
 
     /**

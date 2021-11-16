@@ -24,16 +24,8 @@ class Reporting
     ): Paginator {
         $itemsPerPage = (int) $request->query->get('itemsPerPage', 100);
         $page         = (int) $request->query->get('page', 1);
-        $queryFilters = $reportingQueryGenerator->generate($request->query->all(), $data);
+        $query        = $reportingQueryGenerator->generate($request->query->all(), $data);
 
-        return $reservationRepository->findByReportingFilters(
-            $data->getProgram(),
-            $queryFilters['selects'] ?? [],
-            $queryFilters['joins'] ?? [],
-            $queryFilters['clauses'] ?? [],
-            $queryFilters['orders'] ?? [],
-            $itemsPerPage,
-            $page
-        );
+        return $reservationRepository->findByReportingFilters($data->getProgram(), $query, $itemsPerPage, $page);
     }
 }
