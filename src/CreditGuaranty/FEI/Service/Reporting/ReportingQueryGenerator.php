@@ -51,7 +51,7 @@ class ReportingQueryGenerator
             foreach ($searchableFields as $field) {
                 $query->addSelect(\sprintf(
                     '%s AS %s',
-                    $this->reportingQueryHelper->getPropertyPath($field),
+                    $this->reportingQueryHelper->getPropertyPath($field, true),
                     $field->getFieldAlias()
                 ));
 

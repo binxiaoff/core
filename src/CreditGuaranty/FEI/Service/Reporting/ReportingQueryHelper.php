@@ -36,14 +36,17 @@ class ReportingQueryHelper
             return ReportingFilter::MAPPING_DATE_OPERATORS;
         }
 
-        if (\in_array($key, ReportingFilter::DURATION_FILTER_KEYS, true)) {
+        if (
+            \in_array($key, ReportingFilter::DURATION_FILTER_KEYS, true)
+            || \in_array($key, ReportingFilter::AMOUNT_FILTER_KEYS, true)
+        ) {
             return ReportingFilter::MAPPING_RANGE_OPERATORS;
         }
 
         return [];
     }
 
-    public function getPropertyPath(Field $field): string
+    public function getPropertyPath(Field $field, bool $isFormatted = false): string
     {
         $fieldAlias        = $field->getFieldAlias();
         $fieldPropertyPath = $field->getPropertyPath();
@@ -79,11 +82,15 @@ class ReportingQueryHelper
         $propertyPath .= (false === empty($fieldPropertyPath)) ? '.' . $fieldPropertyPath : '';
 
         if (\in_array($field->getPropertyType(), ['MoneyInterface', 'Money', 'NullableMoney'])) {
-            return \sprintf('CONCAT(%s.amount, \' \', %s.currency)', $propertyPath, $propertyPath);
+            if ($isFormatted) {
+                return \sprintf('CONCAT(%s.amount, \' \', %s.currency)', $propertyPath, $propertyPath);
+            }
+
+            return $propertyPath . '.amount';
         }
 
-        if (\in_array($fieldAlias, FieldAlias::DATE_FIELDS)) {
-            $propertyPath = \sprintf('DATE_FORMAT(%s, %s)', $propertyPath, '\'%Y-%m-%d\'');
+        if (\in_array($fieldAlias, FieldAlias::DATE_FIELDS) && $isFormatted) {
+            return \sprintf('DATE_FORMAT(%s, %s)', $propertyPath, '\'%Y-%m-%d\'');
         }
 
         return $propertyPath;
@@ -263,7 +270,10 @@ class ReportingQueryHelper
         $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
 
         if ($field instanceof Field) {
-            $propertyPaths[] = $this->getPropertyPath($field);
+            $propertyPaths[] = $this->getPropertyPath(
+                $field,
+                !\in_array($fieldAlias, ReportingFilter::AMOUNT_FILTER_KEYS, true)
+            );
         }
 
         return $propertyPaths;
@@ -279,7 +289,10 @@ class ReportingQueryHelper
         }
 
         if (
-            \in_array($key, ReportingFilter::DURATION_FILTER_KEYS, true)
+            (
+                \in_array($key, ReportingFilter::DURATION_FILTER_KEYS, true)
+                || \in_array($key, ReportingFilter::AMOUNT_FILTER_KEYS, true)
+            )
             && $this->isNullableNumeric($value, $nullable)
         ) {
             return true;

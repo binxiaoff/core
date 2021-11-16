@@ -29,9 +29,14 @@ class ReportingFilter extends AbstractEnum
         FieldAlias::RESERVATION_SIGNING_DATE,
     ];
 
+    public const AMOUNT_FILTER_KEYS = [
+        FieldAlias::LOAN_REMAINING_CAPITAL,
+    ];
+
     public const FIELD_ALIAS_FILTER_KEYS = [
         ...self::DATE_FILTER_KEYS,
         ...self::DURATION_FILTER_KEYS,
+        ...self::AMOUNT_FILTER_KEYS,
     ];
 
     public const ALLOWED_FILTER_KEYS = [
