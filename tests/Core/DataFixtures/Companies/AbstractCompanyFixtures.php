@@ -37,10 +37,11 @@ abstract class AbstractCompanyFixtures extends AbstractFixtures implements Depen
 
         $manager->getConnection()->getConfiguration()->setSQLLogger(null);
         // Works because Faker is set to Fr_fr
-        $company = new Company($this->getName(), $this->getName(), $faker->siren(false));
+        $company = new Company($this->getName(), $faker->siren(false));
         $manager->persist($company->getRootTeam());
+        $company->setLegalName($this->getName());
         $company->setShortCode($this->getShortCode());
-        $company->setBankCode($this->getBankCode());
+        $company->setClientNumber($this->getClientNumber());
         $company->setCompanyGroup($this->getCompanyGroup());
         $company->getModule(CompanyModule::MODULE_AGENCY)->setActivated(true);
         $company->getModule(CompanyModule::MODULE_ARRANGEMENT)->setActivated(true);
@@ -87,7 +88,7 @@ abstract class AbstractCompanyFixtures extends AbstractFixtures implements Depen
         return static::getName();
     }
 
-    protected function getBankCode(): string
+    protected function getClientNumber(): string
     {
         return static::getName();
     }

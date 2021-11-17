@@ -21,7 +21,7 @@ trait UserStaffTrait
      */
     private function createStaff(): Staff
     {
-        $teamRoot = Team::createRootTeam(new Company('Company', 'Company', ''));
+        $teamRoot = Team::createRootTeam(new Company('Company', ''));
         $team     = Team::createTeam('Team', $teamRoot);
 
         $user  = new User('user@mail.com');

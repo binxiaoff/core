@@ -26,7 +26,7 @@ class ProjectTest extends TestCase
     {
         // We need a mocked staff since we can't construct Staff by itself
         $mockedStaff = $this->getMockBuilder(Staff::class)->disableOriginalConstructor()->getMock();
-        $company     = new Company('Company 1', 'Company 1', '850890666');
+        $company     = new Company('Company 1', '850890666');
         $user        = new User('contact@demo.fr');
         $user->setFirstName('Firstname');
         $user->setLastName('Lastname');
@@ -52,7 +52,7 @@ class ProjectTest extends TestCase
     public function testProjectParticipationMember(): void
     {
         $rootStaff = $this->getMockBuilder(Staff::class)->disableOriginalConstructor()->getMock();
-        $company   = new Company('Company', 'company', '850890666');
+        $company   = new Company('Company', '850890666');
         $user      = new User('email@email.fr');
         $staff     = new Staff($user, $company->getRootTeam(), $rootStaff);
         $user->setCurrentStaff($staff);
