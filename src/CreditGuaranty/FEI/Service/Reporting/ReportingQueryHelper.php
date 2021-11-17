@@ -271,23 +271,45 @@ class ReportingQueryHelper
 
     private function isFilterValueValid(string $key, string $value, bool $nullable = false): bool
     {
-        $dateFormat  = ($nullable) ? '/^(\d{4}\-\d{2}\-\d{2}|null)$/' : '/^\d{4}\-\d{2}\-\d{2}$/';
-        $digitFormat = ($nullable) ? '/^(\d+|null)$/' : '/^\d+$/';
-
         if (
             \in_array($key, ReportingFilter::DATE_FILTER_KEYS, true)
-            && 1 === \preg_match($dateFormat, $value)
+            && $this->isNullableDate($value, $nullable)
         ) {
             return true;
         }
 
         if (
             \in_array($key, ReportingFilter::DURATION_FILTER_KEYS, true)
-            && 1 === \preg_match($digitFormat, $value)
+            && $this->isNullableNumeric($value, $nullable)
         ) {
             return true;
         }
 
         return false;
+    }
+
+    private function isNullableDate(string $value, bool $nullable): bool
+    {
+        try {
+            $date   = new DateTime($value);
+            $isDate = true;
+        } catch (Exception $exception) {
+            $isDate = false;
+        }
+
+        if ($nullable && 'null' === $value) {
+            $isDate = true;
+        }
+
+        return $isDate;
+    }
+
+    private function isNullableNumeric(string $value, bool $nullable): bool
+    {
+        if ($nullable) {
+            return \is_numeric($value) || 'null' === $value;
+        }
+
+        return \is_numeric($value);
     }
 }
