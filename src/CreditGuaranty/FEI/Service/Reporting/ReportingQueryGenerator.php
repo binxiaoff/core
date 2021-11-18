@@ -6,14 +6,20 @@ namespace KLS\CreditGuaranty\FEI\Service\Reporting;
 
 use ArrayIterator;
 use Exception;
+use KLS\CreditGuaranty\FEI\DTO\Query;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
+use KLS\CreditGuaranty\FEI\Entity\Constant\ReportingFilter;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
 
 class ReportingQueryGenerator
 {
-    private const FILTER_SEARCH = 'search';
-    private const FILTER_ORDER  = 'order';
+    private const INIT_SELECTS = [
+        FieldAlias::REPORTING_FIRST_DATE      => 'financingObjects.reportingFirstDate',
+        FieldAlias::REPORTING_LAST_DATE       => 'financingObjects.reportingLastDate',
+        FieldAlias::REPORTING_VALIDATION_DATE => 'financingObjects.reportingValidationDate',
+    ];
 
     private FieldRepository $fieldRepository;
     private ReportingQueryHelper $reportingQueryHelper;
@@ -27,102 +33,86 @@ class ReportingQueryGenerator
     /**
      * @throws Exception
      */
-    public function generate(array $filters, ?ReportingTemplate $reportingTemplate = null): array
+    public function generate(array $filters, ?ReportingTemplate $reportingTemplate = null): Query
     {
         $searchableFields = ($reportingTemplate instanceof ReportingTemplate)
             ? $this->getOrderedFields($reportingTemplate)
             : $this->fieldRepository->findAll() // we retrieve all fields to be able to search or to filter
         ;
 
-        $queryFilters = $this->generateFilters($searchableFields, $filters);
-
-        $selects = [];
-        $joins   = $queryFilters['joins']   ?? [];
-        $clauses = $queryFilters['clauses'] ?? [];
+        $query = new Query();
 
         if ($reportingTemplate instanceof ReportingTemplate) {
-            $selects = [
-                'DATE_FORMAT(financingObjects.reportingFirstDate, \'%Y-%m-%d\') AS reporting_first_date',
-                'DATE_FORMAT(financingObjects.reportingLastDate, \'%Y-%m-%d\') AS reporting_last_date',
-                'DATE_FORMAT(financingObjects.reportingValidationDate, \'%Y-%m-%d\') AS reporting_validation_date',
-            ];
+            foreach (self::INIT_SELECTS as $fieldAlias => $propertyPath) {
+                $query->addSelect(\sprintf('DATE_FORMAT(%s, %s) AS %s', $propertyPath, '\'%Y-%m-%d\'', $fieldAlias));
+            }
 
             /** @var Field $field */
             foreach ($searchableFields as $field) {
-                $selects[] = \sprintf(
+                $query->addSelect(\sprintf(
                     '%s AS %s',
                     $this->reportingQueryHelper->getPropertyPath($field),
                     $field->getFieldAlias()
-                );
+                ));
 
                 foreach ($this->reportingQueryHelper->generateJoinByField($field) as $key => $join) {
-                    $joins[$key] = $join;
+                    $query->addJoin([$key => $join]);
                 }
             }
         }
 
-        return [
-            'selects' => $selects,
-            'joins'   => $joins,
-            'clauses' => $clauses,
-            'orders'  => $queryFilters['orders'] ?? [],
-        ];
+        $this->generateFilters($query, $searchableFields, $filters);
+
+        return $query;
     }
 
-    private function generateFilters(array $fields, array $filters): array
+    /**
+     * @throws Exception
+     */
+    private function generateFilters(Query $query, array $fields, array $filters): void
     {
-        $joins   = [];
-        $clauses = [];
+        $this->cleanFilters($fields, $filters);
 
         foreach ($filters as $filterKey => $filter) {
-            // we exclude order filters because they can already be passed as they are to query
-            if (self::FILTER_ORDER === $filterKey) {
+            if (ReportingFilter::FILTER_ORDER === $filterKey) {
+                $query->addOrder($filter);
+
                 continue;
             }
 
-            if (self::FILTER_SEARCH === $filterKey) {
+            if (ReportingFilter::FILTER_SEARCH === $filterKey) {
                 $searchExpressions = [];
 
                 foreach ($fields as $field) {
-                    $searchExpression = $this->generateSearchExpressionByField($field);
+                    $searchExpression = $this->reportingQueryHelper->generateSearchExpressionByField($field);
 
                     if (null !== $searchExpression) {
                         $searchExpressions[] = $searchExpression;
 
                         foreach ($this->reportingQueryHelper->generateJoinByField($field) as $key => $join) {
-                            $joins[$key] = $join;
+                            $query->addJoin([$key => $join]);
                         }
                     }
                 }
 
                 if (false === empty($searchExpressions)) {
-                    $clauses[] = [
+                    $query->addClause([
                         'expression' => \implode(' OR ', $searchExpressions),
                         'parameter'  => ['search', '%' . $filters['search'] . '%'], // @todo be careful of special chars
-                    ];
+                    ]);
                 }
 
                 continue;
             }
 
-            // TODO generate filters clauses
+            $clause = $this->reportingQueryHelper->generateClauseByFilter($filterKey, $filter);
+            $query->addClause($clause);
+
+            // we do not need to generate joins for these filters like the search filter (from line 129)
+            // because the joins of these filters belonging to Reservation or FinancingObject
+            // already are in the query by default
+            // we should generate them if we add a new filter which the field do not belong to any of these entities
         }
-
-        return [
-            'joins'   => $joins,
-            'clauses' => $clauses,
-            'orders'  => $filters['order'] ?? [],
-        ];
-    }
-
-    private function generateSearchExpressionByField(Field $field): ?string
-    {
-        // we search only on textual fields
-        if (false === \in_array($field->getPropertyType(), ['string', 'ProgramChoiceOption'], true)) {
-            return null;
-        }
-
-        return \sprintf('%s LIKE :search', $this->reportingQueryHelper->getPropertyPath($field));
     }
 
     /**
@@ -146,5 +136,71 @@ class ReportingQueryGenerator
         \array_walk_recursive($fields, fn (&$item) => $item = $item->getField());
 
         return $fields;
+    }
+
+    /**
+     * @param Field[]|array $fields
+     */
+    private function cleanFilters(array $fields, array &$filters): void
+    {
+        // field aliases of reportingTemplateFields
+        $fieldAliases = \array_map(static fn ($item) => $item->getFieldAlias(), $fields);
+
+        foreach ($filters as $filterKey => $filterValue) {
+            // we ignore non-existent filters like API Platform
+            if (false === \in_array($filterKey, ReportingFilter::ALLOWED_FILTER_KEYS, true)) {
+                unset($filters[$filterKey]);
+
+                continue;
+            }
+
+            // we ignore invalid format of existent filters like API Platform
+
+            if (ReportingFilter::FILTER_SEARCH === $filterKey) {
+                if (false === \is_string($filterValue)) {
+                    unset($filters[$filterKey]);
+                }
+
+                continue;
+            }
+
+            if (ReportingFilter::FILTER_ORDER === $filterKey) {
+                if (false === \is_array($filterValue)) {
+                    unset($filters[$filterKey]);
+                }
+                if (empty($filterValue)) {
+                    unset($filters[$filterKey]);
+                }
+
+                foreach ($filterValue as $filterFieldAlias => $filterFieldValue) {
+                    // we remove the order filter item
+                    // if field_alias does not belong to reportingTemplateFields aliases and to reporting dates aliases
+                    // or if value is invalid
+                    if (
+                        false === \in_array($filterFieldAlias, $fieldAliases)
+                        && false === \in_array($filterFieldAlias, FieldAlias::REPORTING_DATE_FIELDS)
+                    ) {
+                        unset($filters[$filterKey][$filterFieldAlias]);
+                    }
+                    if (
+                        false === \is_string($filterFieldValue)
+                        || false === \in_array(
+                            \mb_strtolower($filterFieldValue),
+                            ReportingFilter::ALLOWED_ORDER_VALUES,
+                            true
+                        )
+                    ) {
+                        unset($filters[$filterKey][$filterFieldAlias]);
+                    }
+                }
+
+                continue;
+            }
+
+            // we ignore field_alias filter if it does not respect the good format
+            if (false === $this->reportingQueryHelper->isFieldAliasFilterValid($filterKey, $filterValue)) {
+                unset($filters[$filterKey]);
+            }
+        }
     }
 }

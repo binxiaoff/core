@@ -13,6 +13,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use Doctrine\Persistence\ManagerRegistry;
 use KLS\Core\Entity\Staff;
+use KLS\CreditGuaranty\FEI\DTO\Query;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramStatus;
@@ -85,18 +86,11 @@ class ReservationRepository extends ServiceEntityRepository
         ;
     }
 
-    public function findByReportingFilters(
-        Program $program,
-        array $selects,
-        array $joins,
-        array $clauses,
-        array $orders,
-        int $itemsPerPage,
-        int $page
-    ): Paginator {
+    public function findByReportingFilters(Program $program, Query $query, int $itemsPerPage, int $page): Paginator
+    {
         $queryBuilder = $this->createQueryBuilder('r');
 
-        if (empty($selects) || empty($joins)) {
+        if (empty($query->getJoins())) {
             $queryBuilder->andWhere('1 = 0');
         } else {
             $queryBuilder
@@ -109,10 +103,10 @@ class ReservationRepository extends ServiceEntityRepository
                 )
             ;
 
-            foreach ($selects as $select) {
+            foreach ($query->getSelects() as $select) {
                 $queryBuilder->addSelect($select);
             }
-            foreach ($joins as $join) {
+            foreach ($query->getJoins() as $join) {
                 $queryBuilder->leftJoin(...$join);
             }
 
@@ -125,7 +119,7 @@ class ReservationRepository extends ServiceEntityRepository
                 ->setParameter('reservationStatus', ReservationStatus::STATUS_CONTRACT_FORMALIZED)
             ;
 
-            foreach ($clauses as $clause) {
+            foreach ($query->getClauses() as $clause) {
                 $queryBuilder->andWhere($clause['expression']);
 
                 if (false === empty($clause['parameter'])) {
@@ -133,7 +127,7 @@ class ReservationRepository extends ServiceEntityRepository
                 }
             }
 
-            foreach ($orders as $orderBy => $orderDirection) {
+            foreach ($query->getOrders() as $orderBy => $orderDirection) {
                 $queryBuilder->addOrderBy($orderBy, $orderDirection);
             }
         }
