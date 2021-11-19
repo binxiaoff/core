@@ -97,6 +97,8 @@ class FieldAlias extends AbstractEnum
     // Reporting field aliases
     //
 
+    public const LOAN_REMAINING_CAPITAL = 'loan_remaining_capital';
+
     // Calcul
     public const TOTAL_GROSS_SUBSIDY_EQUIVALENT = 'total_gross_subsidy_equivalent';
 
