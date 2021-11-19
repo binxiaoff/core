@@ -13,3 +13,4 @@ framework:
             # In some cases (like when binding handlers to different transports), it's easier or more flexible to handle this explicitly:
             # by creating a sync transport and "sending" messages there to be handled immediately.
             'KLS\Core\Entity\Request\ResetPassword': sync
+            'KLS\Core\Entity\Request\UserInitialization': sync

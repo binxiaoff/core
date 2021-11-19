@@ -51,7 +51,10 @@ class StaffNotifier
 
         $token = $this->temporaryTokenGenerator->generateUltraLongToken($user)->getToken();
 
-        $translatedCompanyGroupTags = \array_map(fn (string $tag) => $this->translator->trans('market-segment.' . $tag), $staff->getCompanyGroupTags());
+        $translatedCompanyGroupTags = \array_map(
+            fn (string $tag) => $this->translator->trans('market-segment.' . $tag),
+            $staff->getCompanyGroupTags()
+        );
 
         $message = (new MailjetMessage())
             ->setTo($user->getEmail())
