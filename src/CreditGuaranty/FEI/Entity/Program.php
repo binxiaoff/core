@@ -33,6 +33,7 @@ use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
 use KLS\Core\Validator\Constraints\PreviousValue;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Download;
+use KLS\CreditGuaranty\FEI\Controller\Reporting\FinancingObject\BulkUpdate;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Update;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\DeepCloneInterface;
 use KLS\CreditGuaranty\FEI\Validator\Constraints\IsGrossSubsidyEquivalentConfigured;
@@ -136,6 +137,13 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('reporting', object)",
  *             "input_formats": { "xlsx" },
  *             "deserialize": false,
+ *         },
+ *         "bulk_update_financing_objects": {
+ *             "method": "PATCH",
+ *             "controller": BulkUpdate::class,
+ *             "path": "/credit_guaranty/programs/{publicId}/financing_objects",
+ *             "security": "is_granted('reporting', object)",
+ *             "output": false,
  *         },
  *     },
  *     collectionOperations={
