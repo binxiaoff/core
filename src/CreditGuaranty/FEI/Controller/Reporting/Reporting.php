@@ -26,6 +26,11 @@ class Reporting
         $page         = (int) $request->query->get('page', 1);
         $query        = $reportingQueryGenerator->generate($request->query->all(), $data);
 
-        return $reservationRepository->findByReportingFilters($data->getProgram(), $query, $itemsPerPage, $page);
+        return $reservationRepository->getPaginatorByReportingFilters(
+            $data->getProgram(),
+            $query,
+            ($page - 1) * $itemsPerPage,
+            $itemsPerPage
+        );
     }
 }

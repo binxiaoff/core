@@ -113,7 +113,7 @@ class ReportingQueryHelper
         $fieldPropertyName = $field->getReservationPropertyName();
 
         // we do not need to generate join for FinancingObject nor Program because they already in query by default
-        // cf ReservationRepository::findByReportingFilters
+        // cf ReservationRepository::getReportingQueryBuilder
         if (
             false === empty($fieldObjectClass)
             && FinancingObject::class !== $fieldObjectClass

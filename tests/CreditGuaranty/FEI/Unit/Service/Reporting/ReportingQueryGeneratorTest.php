@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace KLS\Test\CreditGuaranty\FEI\Unit\Service\Reporting;
 
 use ApiPlatform\Core\Bridge\Doctrine\Common\Filter\DateFilterInterface;
+use KLS\Core\DTO\Query;
 use KLS\Core\Entity\Constant\MathOperator;
-use KLS\CreditGuaranty\FEI\DTO\Query;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Constant\ReportingFilter;
 use KLS\CreditGuaranty\FEI\Entity\Field;

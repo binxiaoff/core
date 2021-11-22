@@ -137,10 +137,11 @@ class FieldAlias extends AbstractEnum
         self::RESERVATION_CREATION_DATE,
         self::RESERVATION_SIGNING_DATE,
     ];
-    public const REPORTING_DATE_FIELDS = [
-        FieldAlias::REPORTING_FIRST_DATE,
-        FieldAlias::REPORTING_LAST_DATE,
-        FieldAlias::REPORTING_VALIDATION_DATE,
+
+    public const MAPPING_REPORTING_DATES = [
+        FieldAlias::REPORTING_FIRST_DATE      => 'reportingFirstDate',
+        FieldAlias::REPORTING_LAST_DATE       => 'reportingLastDate',
+        FieldAlias::REPORTING_VALIDATION_DATE => 'reportingValidationDate',
     ];
 
     // Imported

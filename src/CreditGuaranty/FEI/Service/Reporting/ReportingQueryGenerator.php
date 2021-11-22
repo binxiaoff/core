@@ -6,7 +6,7 @@ namespace KLS\CreditGuaranty\FEI\Service\Reporting;
 
 use ArrayIterator;
 use Exception;
-use KLS\CreditGuaranty\FEI\DTO\Query;
+use KLS\Core\DTO\Query;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Constant\ReportingFilter;
 use KLS\CreditGuaranty\FEI\Entity\Field;
@@ -15,12 +15,6 @@ use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
 
 class ReportingQueryGenerator
 {
-    private const INIT_SELECTS = [
-        FieldAlias::REPORTING_FIRST_DATE      => 'financingObjects.reportingFirstDate',
-        FieldAlias::REPORTING_LAST_DATE       => 'financingObjects.reportingLastDate',
-        FieldAlias::REPORTING_VALIDATION_DATE => 'financingObjects.reportingValidationDate',
-    ];
-
     private FieldRepository $fieldRepository;
     private ReportingQueryHelper $reportingQueryHelper;
 
@@ -43,8 +37,10 @@ class ReportingQueryGenerator
         $query = new Query();
 
         if ($reportingTemplate instanceof ReportingTemplate) {
-            foreach (self::INIT_SELECTS as $fieldAlias => $propertyPath) {
-                $query->addSelect(\sprintf('DATE_FORMAT(%s, %s) AS %s', $propertyPath, '\'%Y-%m-%d\'', $fieldAlias));
+            foreach (FieldAlias::MAPPING_REPORTING_DATES as $fieldAlias => $property) {
+                $query->addSelect(
+                    \sprintf('DATE_FORMAT(financingObjects.%s, %s) AS %s', $property, '\'%Y-%m-%d\'', $fieldAlias)
+                );
             }
 
             /** @var Field $field */
@@ -178,7 +174,7 @@ class ReportingQueryGenerator
                     // or if value is invalid
                     if (
                         false === \in_array($filterFieldAlias, $fieldAliases)
-                        && false === \in_array($filterFieldAlias, FieldAlias::REPORTING_DATE_FIELDS)
+                        && false === \in_array($filterFieldAlias, \array_keys(FieldAlias::MAPPING_REPORTING_DATES))
                     ) {
                         unset($filters[$filterKey][$filterFieldAlias]);
                     }
