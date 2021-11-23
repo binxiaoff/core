@@ -28,21 +28,33 @@ class ProgramContactExtension implements QueryCollectionExtensionInterface
         $this->staffPermissionManager = $staffPermissionManager;
     }
 
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         if (ProgramContact::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
 
         $token = $this->security->getToken();
         /** @var Staff|null $staff */
-        $staff              = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
         $programAlias       = 'p';
         $participationAlias = 'pa';
         $rootAlias          = $queryBuilder->getRootAliases()[0];
+
         $queryBuilder
+            // add distinct() if results are missing
             ->innerJoin("{$rootAlias}.program", $programAlias)
-            ->leftJoin(Participation::class, $participationAlias, Join::WITH, "{$participationAlias}.program = {$programAlias}.id")
+            ->leftJoin(
+                Participation::class,
+                $participationAlias,
+                Join::WITH,
+                "{$participationAlias}.program = {$programAlias}.id"
+            )
         ;
 
         $this->applyProgramManagerOrParticipantFilter($staff, $queryBuilder, $programAlias, $participationAlias);
