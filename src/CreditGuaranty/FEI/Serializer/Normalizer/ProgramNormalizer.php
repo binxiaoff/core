@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace KLS\CreditGuaranty\FEI\Serializer\Normalizer;
 
-use KLS\Core\Entity\Staff;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use KLS\Core\Service\MoneyCalculator;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 use KLS\CreditGuaranty\FEI\Repository\ProgramRepository;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
@@ -21,12 +21,10 @@ class ProgramNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
-    private Security              $security;
     private ProgramRepository $programRepository;
 
-    public function __construct(Security $security, ProgramRepository $programRepository)
+    public function __construct(ProgramRepository $programRepository)
     {
-        $this->security          = $security;
         $this->programRepository = $programRepository;
     }
 
@@ -39,20 +37,16 @@ class ProgramNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
      * @param Program $object
      *
      * @throws ExceptionInterface
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
     public function normalize($object, string $format = null, array $context = []): array
     {
         $context[static::ALREADY_CALLED] = true;
-
-        $token = $this->security->getToken();
-        /** @var Staff|null $staff */
-        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
-
         /** @var array $data */
         $data = $this->normalizer->normalize($object, $format, $context);
 
-        $data['reservationCount'] = $this->programRepository->countByStaffAndProgramAndStatuses(
-            $staff,
+        $data['reservationCount'] = $this->programRepository->countReservations(
             $object,
             [
                 ReservationStatus::STATUS_SENT,
@@ -62,13 +56,11 @@ class ProgramNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
                 ReservationStatus::STATUS_CONTRACT_FORMALIZED,
             ]
         );
-        $data['acceptedReservationCount'] = $this->programRepository->countByStaffAndProgramAndStatuses(
-            $staff,
+        $data['acceptedReservationCount'] = $this->programRepository->countReservations(
             $object,
             [ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY]
         );
-        $data['contractualizedReservationCount'] = $this->programRepository->countByStaffAndProgramAndStatuses(
-            $staff,
+        $data['contractualizedReservationCount'] = $this->programRepository->countReservations(
             $object,
             [ReservationStatus::STATUS_CONTRACT_FORMALIZED]
         );

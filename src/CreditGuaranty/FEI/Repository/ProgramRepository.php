@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace KLS\CreditGuaranty\FEI\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use KLS\Core\Entity\Embeddable\NullableMoney;
-use KLS\Core\Entity\Staff;
 use KLS\CreditGuaranty\FEI\Entity\Program;
-use KLS\CreditGuaranty\FEI\Entity\ProgramStatus;
 
 /**
  * @method Program|null find($id, $lockMode = null, $lockVersion = null)
@@ -36,29 +36,24 @@ class ProgramRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
-    public function countByStaffAndProgramAndStatuses(Staff $staff, Program $program, array $statuses): int
+    /**
+     * @throws NonUniqueResultException
+     * @throws NoResultException
+     */
+    public function countReservations(Program $program, array $reservationStatuses): int
     {
         $queryBuilder = $this->createQueryBuilder('p');
 
-        return (int) $queryBuilder
-            ->select('COUNT(r)')
+        $queryBuilder->select('COUNT(r)')
             ->innerJoin('p.reservations', 'r')
             ->innerJoin('r.currentStatus', 'rs')
-            ->innerJoin('p.currentStatus', 'ps')
-            ->leftJoin('p.participations', 'pp')
             ->where('p = :program')
-            ->andWhere($queryBuilder->expr()->orX(
-                'p.managingCompany = :staffCompany',
-                'pp.participant = :staffCompany AND ps.status <> :draft'
-            ))
             ->andWhere('rs.status IN (:statuses)')
             ->setParameter('program', $program)
-            ->setParameter('staffCompany', $staff->getCompany())
-            ->setParameter('draft', ProgramStatus::STATUS_DRAFT)
-            ->setParameter('statuses', $statuses)
-            ->getQuery()
-            ->getSingleScalarResult()
-            ;
+            ->setParameter('statuses', $reservationStatuses)
+        ;
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     public function sumProjectsAmounts(Program $program, array $reservationStatus): NullableMoney
