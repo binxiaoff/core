@@ -20,7 +20,7 @@ class ProgramGradeAllocationExtension implements QueryCollectionExtensionInterfa
 {
     use ProgramPermissionTrait;
 
-    private Security               $security;
+    private Security $security;
 
     public function __construct(Security $security, StaffPermissionManager $staffPermissionManager)
     {
@@ -28,8 +28,12 @@ class ProgramGradeAllocationExtension implements QueryCollectionExtensionInterfa
         $this->staffPermissionManager = $staffPermissionManager;
     }
 
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         if (ProgramGradeAllocation::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
@@ -40,9 +44,19 @@ class ProgramGradeAllocationExtension implements QueryCollectionExtensionInterfa
 
         $programAlias       = 'p';
         $participationAlias = 'pa';
+
         $queryBuilder
+            // distinct keyword allows retrieving expected results
+            // otherwise it can return a part of results
+            // because of the left join (duplicates) and the limit by default to 60
+            ->distinct()
             ->innerJoin("{$queryBuilder->getRootAliases()[0]}.program", $programAlias)
-            ->leftJoin(Participation::class, $participationAlias, Join::WITH, "{$participationAlias}.program = {$programAlias}.id")
+            ->leftJoin(
+                Participation::class,
+                $participationAlias,
+                Join::WITH,
+                "{$participationAlias}.program = {$programAlias}.id"
+            )
         ;
         $this->applyProgramManagerOrParticipantFilter($staff, $queryBuilder, $programAlias, $participationAlias);
     }
