@@ -16,6 +16,7 @@ use KLS\Core\Entity\Traits\CloneableTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\CreditGuaranty\FEI\DTO\ProgramEligibilityConfigurationInput;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\DeepCloneInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -74,7 +75,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * @UniqueEntity({"programChoiceOption", "programEligibility"})
  * @UniqueEntity({"value", "programEligibility"})
  */
-class ProgramEligibilityConfiguration
+class ProgramEligibilityConfiguration implements DeepCloneInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -91,7 +92,8 @@ class ProgramEligibilityConfiguration
     private ProgramEligibility $programEligibility;
 
     /**
-     * When its value is not null, it means that we configure the eligibility based on the user's choice of the target field.
+     * When its value is not null, it means that we configure the eligibility
+     * based on the user's choice of the target field.
      * $programChoiceOption and $value cannot be both filed at the same time.
      *
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
@@ -123,13 +125,19 @@ class ProgramEligibilityConfiguration
      *
      * @ORM\OneToMany(
      *     targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityCondition",
-     *     mappedBy="programEligibilityConfiguration", orphanRemoval=true, fetch="EXTRA_LAZY", cascade={"persist", "remove"}
+     *     mappedBy="programEligibilityConfiguration",
+     *     orphanRemoval=true, fetch="EXTRA_LAZY",
+     *     cascade={"persist", "remove"}
      * )
      */
     private Collection $programEligibilityConditions;
 
-    public function __construct(ProgramEligibility $programEligibility, ?ProgramChoiceOption $programChoiceOption, ?string $value, bool $eligible)
-    {
+    public function __construct(
+        ProgramEligibility $programEligibility,
+        ?ProgramChoiceOption $programChoiceOption,
+        ?string $value,
+        bool $eligible
+    ) {
         $this->programEligibility           = $programEligibility;
         $this->programChoiceOption          = $programChoiceOption;
         $this->value                        = $value;
@@ -263,15 +271,19 @@ class ProgramEligibilityConfiguration
         }
     }
 
-    protected function onClone(): void
+    public function deepClone(): ProgramEligibilityConfiguration
     {
-        $clonedProgramEligibilityConditions = new ArrayCollection();
+        $clonedProgramEligibilityConfiguration = clone $this;
+        $clonedProgramEligibilityConditions    = new ArrayCollection();
         foreach ($this->programEligibilityConditions as $item) {
+            // no need to do the deep clone for ProgramEligibilityCondition
             $clonedItem = clone $item;
-            $clonedItem->setProgramEligibilityConfiguration($this);
+            $clonedItem->setProgramEligibilityConfiguration($clonedProgramEligibilityConfiguration);
             $clonedProgramEligibilityConditions->add($clonedItem);
         }
 
-        $this->programEligibilityConditions = $clonedProgramEligibilityConditions;
+        $clonedProgramEligibilityConfiguration->programEligibilityConditions = $clonedProgramEligibilityConditions;
+
+        return $clonedProgramEligibilityConfiguration;
     }
 }

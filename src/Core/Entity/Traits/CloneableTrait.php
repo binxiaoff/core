@@ -7,6 +7,12 @@ namespace KLS\Core\Entity\Traits;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 
+/**
+ * API platform clones the object and put it in "previous_data" of request attributes
+ * EVERYTIME we do the "GET" (see ApiPlatform\Core\EventListener\ReadListener).
+ *
+ * Keep in mind that the modifications done here will modify the "previous_data".
+ */
 trait CloneableTrait
 {
     public function __clone()
@@ -27,11 +33,5 @@ trait CloneableTrait
         if (\property_exists($this, 'statuses')) {
             $this->statuses = new ArrayCollection();
         }
-
-        $this->onClone();
-    }
-
-    protected function onClone(): void
-    {
     }
 }

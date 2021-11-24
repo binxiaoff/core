@@ -23,7 +23,6 @@ use KLS\Core\Entity\Drive;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
-use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Entity\Interfaces\StatusInterface;
 use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use KLS\Core\Entity\Staff;
@@ -35,6 +34,7 @@ use KLS\Core\Service\MoneyCalculator;
 use KLS\Core\Validator\Constraints\PreviousValue;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Download;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Update;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\DeepCloneInterface;
 use LogicException;
 use RuntimeException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -1007,45 +1007,9 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         return $totalProjectFunds;
     }
 
-    /**
-     * @Groups({"creditGuaranty:program:list", "creditGuaranty:program:read"})
-     */
-    public function getAmountAvailable(): MoneyInterface
-    {
-        return MoneyCalculator::subtract($this->getFunds(), $this->getTotalProjectFunds());
-    }
-
-    /**
-     * @Groups({"creditGuaranty:program:read"})
-     */
-    public function getReservedAmountsSum(): MoneyInterface
-    {
-        $callbackReservation  = static fn (Reservation $item) => $item->isSent() && false === $item->isFormalized();
-        $callbackFundingMoney = static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney();
-
-        $reservations  = $this->getReservations()->filter($callbackReservation);
-        $fundingMoneys = $reservations->map($callbackFundingMoney)->toArray();
-
-        return MoneyCalculator::sum($fundingMoneys);
-    }
-
-    /**
-     * @Groups({"creditGuaranty:program:read"})
-     */
-    public function getContractualizedAmountsSum(): MoneyInterface
-    {
-        $callbackFundingMoney = static fn (Reservation $reservation) => $reservation->getProject()->getFundingMoney();
-
-        $reservations  = $this->getReservations()->filter(static fn (Reservation $item) => $item->isFormalized());
-        $fundingMoneys = $reservations->map($callbackFundingMoney)->toArray();
-
-        return MoneyCalculator::sum($fundingMoneys);
-    }
-
     public function duplicate(Staff $duplicatedBy): Program
     {
-        $duplicatedProgram          = clone $this;
-        $duplicatedProgram->drive   = new Drive();
+        $duplicatedProgram          = $this->deepClone();
         $duplicatedProgram->addedBy = $duplicatedBy->getUser();
         $duplicatedProgram->setCurrentStatus(
             new ProgramStatus($duplicatedProgram, ProgramStatus::STATUS_DRAFT, $duplicatedBy)
@@ -1054,15 +1018,19 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         return $duplicatedProgram;
     }
 
-    protected function onClone(): Program
+    private function deepClone(): Program
     {
-        $this
-            ->setProgramContacts($this->cloneCollection($this->programContacts))
-            ->setProgramChoiceOptions($this->cloneCollection($this->programChoiceOptions))
-            ->setProgramEligibilities($this->cloneCollection($this->programEligibilities))
-            ->setProgramGradeAllocations($this->cloneCollection($this->programGradeAllocations))
-            ->setProgramBorrowerTypeAllocations($this->cloneCollection($this->programBorrowerTypeAllocations))
-            ->setParticipations($this->cloneCollection($this->participations))
+        $duplicatedProgram        = clone $this;
+        $duplicatedProgram->drive = new Drive();
+        $duplicatedProgram
+            ->setProgramContacts($duplicatedProgram->cloneCollection($this->programContacts))
+            ->setProgramChoiceOptions($duplicatedProgram->cloneCollection($this->programChoiceOptions))
+            ->setProgramEligibilities($duplicatedProgram->cloneCollection($this->programEligibilities))
+            ->setProgramGradeAllocations($duplicatedProgram->cloneCollection($this->programGradeAllocations))
+            ->setProgramBorrowerTypeAllocations(
+                $duplicatedProgram->cloneCollection($this->programBorrowerTypeAllocations)
+            )
+            ->setParticipations($duplicatedProgram->cloneCollection($this->participations))
         ;
 
         // Replace the ProgramChoiceOption (if not null)
@@ -1073,7 +1041,9 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
             foreach ($programEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
                 $originalProgramChoiceOption = $programEligibilityConfiguration->getProgramChoiceOption();
                 if ($originalProgramChoiceOption) {
-                    $duplicatedProgramChoiceOption = $this->findProgramChoiceOption($originalProgramChoiceOption);
+                    $duplicatedProgramChoiceOption = $duplicatedProgram
+                        ->findProgramChoiceOption($originalProgramChoiceOption)
+                    ;
                     $programEligibilityConfiguration->setProgramChoiceOption($duplicatedProgramChoiceOption);
                 }
             }
@@ -1081,12 +1051,14 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         foreach ($this->getProgramBorrowerTypeAllocations() as $programBorrowerTypeAllocation) {
             $originalProgramChoiceOption = $programBorrowerTypeAllocation->getProgramChoiceOption();
             if ($originalProgramChoiceOption) {
-                $duplicatedProgramChoiceOption = $this->findProgramChoiceOption($originalProgramChoiceOption);
+                $duplicatedProgramChoiceOption = $duplicatedProgram
+                    ->findProgramChoiceOption($originalProgramChoiceOption)
+                ;
                 $programBorrowerTypeAllocation->setProgramChoiceOption($duplicatedProgramChoiceOption);
             }
         }
 
-        return $this;
+        return $duplicatedProgram;
     }
 
     private function applyTotalProjectFundsFilters(Reservation $reservation, array $filter): bool
@@ -1129,7 +1101,11 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     {
         $clonedArrayCollection = new ArrayCollection();
         foreach ($collectionToDuplicate as $item) {
-            $clonedItem = clone $item;
+            if ($item instanceof DeepCloneInterface) {
+                $clonedItem = $item->deepClone();
+            } else {
+                $clonedItem = clone $item;
+            }
             if (false === \method_exists($clonedItem, 'setProgram')) {
                 throw new LogicException(
                     \sprintf(

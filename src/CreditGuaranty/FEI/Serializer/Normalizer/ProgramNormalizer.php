@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace KLS\CreditGuaranty\FEI\Serializer\Normalizer;
 
 use KLS\Core\Entity\Staff;
+use KLS\Core\Service\MoneyCalculator;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
-use KLS\CreditGuaranty\FEI\Repository\ReservationRepository;
+use KLS\CreditGuaranty\FEI\Repository\ProgramRepository;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
@@ -20,13 +21,13 @@ class ProgramNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
 
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
-    private Security $security;
-    private ReservationRepository $reservationRepository;
+    private Security              $security;
+    private ProgramRepository $programRepository;
 
-    public function __construct(Security $security, ReservationRepository $reservationRepository)
+    public function __construct(Security $security, ProgramRepository $programRepository)
     {
-        $this->security              = $security;
-        $this->reservationRepository = $reservationRepository;
+        $this->security          = $security;
+        $this->programRepository = $programRepository;
     }
 
     public function supportsNormalization($data, string $format = null, array $context = []): bool
@@ -50,7 +51,7 @@ class ProgramNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         /** @var array $data */
         $data = $this->normalizer->normalize($object, $format, $context);
 
-        $data['reservationCount'] = $this->reservationRepository->countByStaffAndProgramAndStatuses(
+        $data['reservationCount'] = $this->programRepository->countByStaffAndProgramAndStatuses(
             $staff,
             $object,
             [
@@ -61,15 +62,44 @@ class ProgramNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
                 ReservationStatus::STATUS_CONTRACT_FORMALIZED,
             ]
         );
-        $data['acceptedReservationCount'] = $this->reservationRepository->countByStaffAndProgramAndStatuses(
+        $data['acceptedReservationCount'] = $this->programRepository->countByStaffAndProgramAndStatuses(
             $staff,
             $object,
             [ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY]
         );
-        $data['contractualizedReservationCount'] = $this->reservationRepository->countByStaffAndProgramAndStatuses(
+        $data['contractualizedReservationCount'] = $this->programRepository->countByStaffAndProgramAndStatuses(
             $staff,
             $object,
             [ReservationStatus::STATUS_CONTRACT_FORMALIZED]
+        );
+
+        $data['contractualizedAmountsSum'] = $this->normalizer->normalize(
+            $this->programRepository->sumProjectsAmounts($object, [ReservationStatus::STATUS_CONTRACT_FORMALIZED]),
+            $format
+        )
+        ;
+        $data['reservedAmountsSum'] = $this->normalizer->normalize(
+            $this->programRepository->sumProjectsAmounts($object, [
+                ReservationStatus::STATUS_SENT,
+                ReservationStatus::STATUS_WAITING_FOR_FEI,
+                ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
+                ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
+            ]),
+            $format
+        )
+        ;
+        $data['amountAvailable'] = $this->normalizer->normalize(
+            MoneyCalculator::subtract(
+                $object->getFunds(),
+                $this->programRepository->sumProjectsAmounts($object, [
+                    ReservationStatus::STATUS_SENT,
+                    ReservationStatus::STATUS_WAITING_FOR_FEI,
+                    ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
+                    ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
+                    ReservationStatus::STATUS_CONTRACT_FORMALIZED,
+                ])
+            ),
+            $format
         );
 
         return $data;
