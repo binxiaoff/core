@@ -12,7 +12,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use Doctrine\Persistence\ManagerRegistry;
-use KLS\CreditGuaranty\FEI\DTO\Query;
+use KLS\Core\DTO\Query;
 use KLS\Core\Repository\Traits\QueryHandlerTrait;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\Program;
