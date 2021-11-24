@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace KLS\Test\CreditGuaranty\FEI\Unit\Service;
 
 use KLS\CreditGuaranty\FEI\Entity\Borrower;
-use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Service\ReservationAccessor;
+use KLS\Test\Core\Unit\Traits\PropertyValueTrait;
 use KLS\Test\CreditGuaranty\FEI\Unit\Traits\ReservationSetTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -23,8 +23,9 @@ use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
  */
 class ReservationAccessorTest extends TestCase
 {
-    use ReservationSetTrait;
     use ProphecyTrait;
+    use PropertyValueTrait;
+    use ReservationSetTrait;
 
     /** @var PropertyAccessorInterface|ObjectProphecy */
     private $propertyAccessor;
@@ -51,21 +52,12 @@ class ReservationAccessorTest extends TestCase
     {
         $this->withBorrower($this->reservation);
 
-        $field = new Field(
-            'company_name',
-            Field::TAG_ELIGIBILITY,
-            'category',
-            'type',
-            'borrower',
-            'companyName',
-            'string',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
+        $field = $this->createCompanyNameField();
 
-        $this->propertyAccessor->getValue($this->reservation, 'borrower')->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower());
+        $this->propertyAccessor->getValue($this->reservation, 'borrower')
+            ->shouldBeCalledOnce()
+            ->willReturn($this->reservation->getBorrower())
+        ;
 
         $reservationAccessor = $this->createTestObject();
         $result              = $reservationAccessor->getEntity($this->reservation, $field);
@@ -76,23 +68,15 @@ class ReservationAccessorTest extends TestCase
     /**
      * @covers ::getEntity
      */
-    public function testGetEntityExceptionWithUnexistedPath(): void
+    public function testGetEntityExceptionWithNonExistentPath(): void
     {
-        $field = new Field(
-            'company_name',
-            Field::TAG_ELIGIBILITY,
-            'category',
-            'type',
-            'borrow',
-            'companyName',
-            'string',
-            'Name\\Class\\Borrow',
-            false,
-            null,
-            null
-        );
+        $field = $this->createCompanyNameField();
+        $this->forcePropertyValue($field, 'reservationPropertyName', 'borrow');
 
-        $this->propertyAccessor->getValue($this->reservation, 'borrow')->shouldBeCalledOnce()->willThrow(AccessException::class);
+        $this->propertyAccessor->getValue($this->reservation, 'borrow')
+            ->shouldBeCalledOnce()
+            ->willThrow(AccessException::class)
+        ;
 
         static::expectException(AccessException::class);
 
@@ -108,9 +92,12 @@ class ReservationAccessorTest extends TestCase
         $this->withBorrower($this->reservation);
 
         $entity = $this->reservation->getBorrower();
-        $field  = new Field('beneficiary_name', Field::TAG_ELIGIBILITY, 'profile', 'other', 'borrower', 'beneficiaryName', 'string', Borrower::class, false, null, null);
+        $field  = $this->createBeneficiaryNameField();
 
-        $this->propertyAccessor->getValue($entity, 'beneficiaryName')->shouldBeCalledOnce()->willReturn('Borrower Name');
+        $this->propertyAccessor->getValue($entity, 'beneficiaryName')
+            ->shouldBeCalledOnce()
+            ->willReturn('Borrower Name')
+        ;
 
         $reservationAccessor = $this->createTestObject();
         $result              = $reservationAccessor->getValue($this->reservation->getBorrower(), $field);
@@ -126,9 +113,12 @@ class ReservationAccessorTest extends TestCase
         $this->withBorrower($this->reservation);
 
         $entity = $this->reservation->getBorrower();
-        $field  = new Field('turnover', Field::TAG_ELIGIBILITY, 'profile', 'other', 'borrower', 'turnover', 'MoneyInterface', Borrower::class, true, 'money', null);
+        $field  = $this->createTurnoverField();
 
-        $this->propertyAccessor->getValue($entity, 'turnover')->shouldBeCalledOnce()->willReturn($this->reservation->getBorrower()->getTurnover());
+        $this->propertyAccessor->getValue($entity, 'turnover')
+            ->shouldBeCalledOnce()
+            ->willReturn($this->reservation->getBorrower()->getTurnover())
+        ;
 
         $reservationAccessor = $this->createTestObject();
         $result              = $reservationAccessor->getValue($entity, $field);
@@ -143,23 +133,14 @@ class ReservationAccessorTest extends TestCase
     {
         $this->withBorrower($this->reservation);
 
-        $entity = $this->reservation->getBorrower();
-        $field  = new Field(
-            'borrower_type',
-            Field::TAG_ELIGIBILITY,
-            'profile',
-            'list',
-            'borrower',
-            'borrowerType',
-            'ProgramChoiceOption',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
+        $entity              = $this->reservation->getBorrower();
+        $field               = $this->createBorrowerTypeField();
         $programChoiceOption = new ProgramChoiceOption($this->reservation->getProgram(), 'borrower type', $field);
 
-        $this->propertyAccessor->getValue($entity, 'borrowerType')->shouldBeCalledOnce()->willReturn($programChoiceOption);
+        $this->propertyAccessor->getValue($entity, 'borrowerType')
+            ->shouldBeCalledOnce()
+            ->willReturn($programChoiceOption)
+        ;
 
         $reservationAccessor = $this->createTestObject();
         $result              = $reservationAccessor->getValue($this->reservation->getBorrower(), $field);
