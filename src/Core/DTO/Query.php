@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\CreditGuaranty\FEI\DTO;
+namespace KLS\Core\DTO;
 
 class Query
 {
@@ -40,10 +40,6 @@ class Query
         }
 
         foreach ($join as $key => $joinParts) {
-            if (\in_array($key, \array_keys($this->joins))) {
-                return;
-            }
-
             $this->joins[$key] = $joinParts;
         }
     }
