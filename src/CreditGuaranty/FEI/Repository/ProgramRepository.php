@@ -72,8 +72,8 @@ class ProgramRepository extends ServiceEntityRepository
 
         $sum = $queryBuilder->getQuery()->getScalarResult();
 
-        return isset($sum[0]['amount'], $sum[0]['currency']) ?
-            new NullableMoney($sum[0]['currency'], $sum[0]['amount'])
+        return isset($sum[0]['amount'], $sum[0]['currency'])
+            ? new NullableMoney($sum[0]['currency'], $sum[0]['amount'])
             : new NullableMoney(null, null);
     }
 }

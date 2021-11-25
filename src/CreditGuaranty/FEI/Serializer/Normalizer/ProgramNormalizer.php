@@ -68,8 +68,7 @@ class ProgramNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
         $data['contractualizedAmountsSum'] = $this->normalizer->normalize(
             $this->programRepository->sumProjectsAmounts($object, [ReservationStatus::STATUS_CONTRACT_FORMALIZED]),
             $format
-        )
-        ;
+        );
         $data['reservedAmountsSum'] = $this->normalizer->normalize(
             $this->programRepository->sumProjectsAmounts($object, [
                 ReservationStatus::STATUS_SENT,
@@ -78,8 +77,7 @@ class ProgramNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
                 ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
             ]),
             $format
-        )
-        ;
+        );
         $data['amountAvailable'] = $this->normalizer->normalize(
             MoneyCalculator::subtract(
                 $object->getFunds(),
