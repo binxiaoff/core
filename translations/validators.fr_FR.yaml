@@ -199,6 +199,10 @@ CreditGuaranty:
             notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
             greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
             draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.
+        programEligibilities:
+            empty: Vous devez configurer au moins un champ d'éligibilité pour pouvoir publier le programme.
+            missingEligibilityForCategory: Une catégorie (Bénéficiaire/Projet/Objet de financement) ne contient aucune information d'éligibilité, vous ne pouvez donc pas publier le programme.
+            missingOptionForListTypeField: Un champ de type liste a été configuré sans aucune option, vous devez configurer au moins une option pour pouvoir publier votre programme.
         reportingTemplate:
             name:
                 unique: Le nom d'un template de reporting doit être unique.
