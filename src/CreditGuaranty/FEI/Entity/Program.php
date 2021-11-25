@@ -228,11 +228,11 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private CompanyGroupTag $companyGroupTag;
 
     /**
-     * @ORM\Column(type="decimal", precision=3, scale=2, nullable=true)
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
-     * @Assert\Range(min="0", max="0.99")
+     * @Assert\Range(min="0", max="0.9999")
      * @Assert\AtLeastOneOf({
      *     @Assert\Expression("this.isInDraft()", message="CreditGuaranty.Program.cappedAt.draft"),
      *     @Assert\Sequentially({
