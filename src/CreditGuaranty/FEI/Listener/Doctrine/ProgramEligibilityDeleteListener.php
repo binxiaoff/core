@@ -9,7 +9,7 @@ use Doctrine\ORM\ORMException;
 use Exception;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class ProgramEligibilityDeleteListener
 {
@@ -38,7 +38,7 @@ class ProgramEligibilityDeleteListener
                 $message = 'Impossible to delete this ProgramEligibility, ' .
                     'the related Field (%s) is needed to the gross subsidy equivalent calculation which is activated.';
 
-                throw new Exception(\sprintf($message, $fieldAlias), Response::HTTP_NOT_ACCEPTABLE);
+                throw new BadRequestHttpException(\sprintf($message, $fieldAlias));
             }
 
             $em->remove($entity);
