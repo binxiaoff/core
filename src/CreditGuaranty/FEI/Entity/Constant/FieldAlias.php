@@ -29,6 +29,7 @@ class FieldAlias extends AbstractEnum
     public const LOAN_NAF_CODE         = 'loan_naf_code';
     public const LOAN_TYPE             = 'loan_type';
     public const PRODUCT_CATEGORY_CODE = 'product_category_code';
+    public const TARGET_TYPE           = 'target_type';
 
     // Pre-defined list
     public const LOAN_PERIODICITY = 'loan_periodicity';
@@ -91,6 +92,7 @@ class FieldAlias extends AbstractEnum
         self::LOAN_NAF_CODE,
         self::LOAN_PERIODICITY,
         self::LOAN_TYPE,
+        self::TARGET_TYPE,
     ];
 
     public const NAF_NACE_FIELDS = [

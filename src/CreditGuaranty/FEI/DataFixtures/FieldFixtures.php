@@ -114,6 +114,11 @@ class FieldFixtures extends AbstractSQLFixtures
             'total_assets', 'borrower', 'totalAssets', 'MoneyInterface',
             'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, 'money', NULL
         ),
+        (
+            'f5536d91-d870-4012-ba38-34c0c18cc304', 'eligibility', 'profile', 'list',
+            'target_type', 'borrower', 'targetType', 'ProgramChoiceOption',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
 
         (
             '386f841e-3771-4a35-a54a-e4169fd80d63', 'eligibility', 'project', 'bool',
@@ -350,8 +355,8 @@ class FieldFixtures extends AbstractSQLFixtures
         ),
         (
             '91c636cc-cb6a-48f2-ad4a-589b588ad441', 'info', 'loan', 'other',
-            'loan_money_after_contractualisation', 'financingObjects', 'loanMoneyAfterContractualisation', 'NullableMoney',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
+            'loan_money_after_contractualisation', 'financingObjects', 'loanMoneyAfterContractualisation',
+            'NullableMoney', 'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 0, NULL, NULL
         ),
         (
             '6a5fb99d-60cc-483b-a39f-bb3a7a7825f1', 'info', 'loan', 'bool',

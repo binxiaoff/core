@@ -303,6 +303,19 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
+        yield 'field-target_type' => [
+            'fieldAlias'              => 'target_type',
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'targetType',
+            'propertyType'            => 'ProgramChoiceOption',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
         yield 'field-receiving_grant' => [
             'fieldAlias'              => 'receiving_grant',
             'tag'                     => Field::TAG_ELIGIBILITY,

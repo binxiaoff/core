@@ -554,9 +554,10 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     private function withBorrower(Reservation $reservation, array $data): void
     {
         $program = $reservation->getProgram();
-        $grades  = $program->getProgramGradeAllocations()->map(
-            fn (ProgramGradeAllocation $item) => $item->getGrade()
-        )->toArray();
+        $grades  = $program->getProgramGradeAllocations()
+            ->map(fn (ProgramGradeAllocation $item) => $item->getGrade())
+            ->toArray()
+        ;
 
         $reservation->getBorrower()
             ->setBeneficiaryName($this->faker->name)
@@ -581,6 +582,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setExploitationSize($this->findProgramChoiceOption($program, FieldAlias::EXPLOITATION_SIZE))
             ->setTurnover(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setTotalAssets(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setTargetType($this->findProgramChoiceOption($program, FieldAlias::TARGET_TYPE))
             ->setGrade($grades[\array_rand($grades)])
         ;
     }

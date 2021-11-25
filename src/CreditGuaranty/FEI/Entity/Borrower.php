@@ -200,6 +200,16 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private NullableMoney $totalAssets;
 
     /**
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_target_type")
+     *
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     */
+    private ?ProgramChoiceOption $targetType = null;
+
+    /**
      * @ORM\Column(length=10, nullable=true)
      *
      * @Assert\Expression(
@@ -565,6 +575,32 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         $this->totalAssets = $totalAssets;
 
         return $this;
+    }
+
+    public function getTargetType(): ?ProgramChoiceOption
+    {
+        return $this->targetType;
+    }
+
+    public function setTargetType(?ProgramChoiceOption $targetType): Borrower
+    {
+        $this->targetType = $targetType;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("targetType")
+     *
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getTargetTypeDescription(): ?string
+    {
+        if ($this->targetType) {
+            return $this->targetType->getDescription();
+        }
+
+        return null;
     }
 
     public function getGrade(): ?string
