@@ -20,6 +20,7 @@ class RollbarPersonHandler extends RollbarHandlerFactory
 
                 if ($token) {
                     $user = $token->getUser();
+                    $staffId = $user->getCurrentStaff() ? $user->getCurrentStaff()->getId() : null;
 
                     /*
                      * email formatted
@@ -28,6 +29,7 @@ class RollbarPersonHandler extends RollbarHandlerFactory
                     return [
                         'id'    => $user->getId(),
                         'email' => \preg_replace('/(?<=\w)\w(?=.*@)/', '*', $user->getEmail()),
+                        'staff' => $staffId,
                     ];
                 }
 
