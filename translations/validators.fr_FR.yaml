@@ -192,6 +192,9 @@ CreditGuaranty:
             invalid: Le marché choisi n'est pas valable.
         distributionProcess:
             textMax: Les textes de chaque étape ne peuvent excéder une longeur de %limit%.
+        esbCalculationActivated:
+            missingProgramEligibilityForEsb: Le programme ne peut être validé, le champ %fieldAlias% doit avoir un ProgramEligibility et au moins un ProgramEligibilityConfiguration pour permettre le calcul de l'ESB.
+            missingProgramEligibilityConfigurationForEsb: Le programme ne peut être validé, le champ %fieldAlias% doit avoir au moins un ProgramEligibilityConfiguration pour permettre le calcul de l'ESB.
         funds:
             greater: Vous ne pouvez pas réduire le montant total sur un programme en cours.
             draft: Vous ne pouvez que réduire le montant total sur un programme en brouillon.

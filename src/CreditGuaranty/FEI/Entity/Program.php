@@ -35,6 +35,7 @@ use KLS\Core\Validator\Constraints\PreviousValue;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Download;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Update;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\DeepCloneInterface;
+use KLS\CreditGuaranty\FEI\Validator\Constraints\IsGrossSubsidyEquivalentConfigured;
 use LogicException;
 use RuntimeException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -347,6 +348,8 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @IsGrossSubsidyEquivalentConfigured
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */
