@@ -472,15 +472,15 @@ trait FieldTrait
         );
     }
 
-    protected function createSiretField(): Field
+    protected function createRegistrationNumberField(): Field
     {
         return new Field(
-            FieldAlias::SIRET,
+            FieldAlias::REGISTRATION_NUMBER,
             Field::TAG_ELIGIBILITY,
             'borrower',
             'other',
             'borrower',
-            'siret',
+            'registrationNumber',
             'string',
             Borrower::class,
             false,

@@ -201,26 +201,13 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield FieldAlias::SIRET => [
-            'fieldAlias'              => FieldAlias::SIRET,
+        yield FieldAlias::REGISTRATION_NUMBER => [
+            'fieldAlias'              => FieldAlias::REGISTRATION_NUMBER,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
             'reservationPropertyName' => 'borrower',
-            'propertyPath'            => 'siret',
-            'propertyType'            => 'string',
-            'objectClass'             => Borrower::class,
-            'comparable'              => false,
-            'unit'                    => null,
-            'predefinedItems'         => null,
-        ];
-        yield FieldAlias::TAX_NUMBER => [
-            'fieldAlias'              => FieldAlias::TAX_NUMBER,
-            'tag'                     => Field::TAG_ELIGIBILITY,
-            'category'                => 'profile',
-            'type'                    => 'other',
-            'reservationPropertyName' => 'borrower',
-            'propertyPath'            => 'taxNumber',
+            'propertyPath'            => 'registrationNumber',
             'propertyType'            => 'string',
             'objectClass'             => Borrower::class,
             'comparable'              => false,

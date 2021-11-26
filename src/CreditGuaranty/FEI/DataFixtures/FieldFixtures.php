@@ -75,13 +75,8 @@ class FieldFixtures extends AbstractSQLFixtures
             'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
         ),
         (
-            'f6ea8c30-48d1-4852-9c4a-5e1298f7f902', 'eligibility', 'profile', 'other',
-            'siret', 'borrower', 'siret', 'string',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
-        ),
-        (
-            '093a2142-ab5d-4b57-afb0-e8749131740b', 'eligibility', 'profile', 'other',
-            'tax_number', 'borrower', 'taxNumber', 'string',
+            '55e19a28-d533-49c2-aaf7-820f22df8268', 'eligibility', 'profile', 'other',
+            'registration_number', 'borrower', 'registrationNumber', 'string',
             'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
         ),
         (

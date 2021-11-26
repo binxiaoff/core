@@ -102,7 +102,7 @@ class EligibilityConditionCheckerTest extends TestCase
         $this->withBorrower($this->reservation);
         $entity = $this->reservation->getBorrower();
 
-        $field                           = $this->createSiretField();
+        $field                           = $this->createRegistrationNumberField();
         $leftField1                      = $this->createEmployeesNumberField();
         $leftField2                      = $this->createTurnoverField();
         $rightField2                     = $this->createTotalAssetsField();
@@ -215,7 +215,7 @@ class EligibilityConditionCheckerTest extends TestCase
     {
         $entity = $this->reservation->getBorrower();
 
-        $field                           = $this->createSiretField();
+        $field                           = $this->createRegistrationNumberField();
         $leftField1                      = $this->createTotalAssetsField();
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
@@ -310,7 +310,7 @@ class EligibilityConditionCheckerTest extends TestCase
     {
         $entity = $this->reservation->getBorrower();
 
-        $field                           = $this->createSiretField();
+        $field                           = $this->createRegistrationNumberField();
         $leftField1                      = $this->createYoungFarmerField();
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
@@ -353,7 +353,7 @@ class EligibilityConditionCheckerTest extends TestCase
     {
         $entity = $this->reservation->getBorrower();
 
-        $field                           = $this->createSiretField();
+        $field                           = $this->createRegistrationNumberField();
         $leftField1                      = $this->createActivityCountryField();
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);

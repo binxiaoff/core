@@ -52,8 +52,7 @@ class FieldAlias extends AbstractEnum
     public const INVESTMENT_DEPARTMENT = 'investment_department';
     public const INVESTMENT_POST_CODE  = 'investment_post_code';
     public const INVESTMENT_STREET     = 'investment_street';
-    public const SIRET                 = 'siret';
-    public const TAX_NUMBER            = 'tax_number';
+    public const REGISTRATION_NUMBER   = 'registration_number';
     // number
     public const BFR_VALUE             = 'bfr_value';
     public const CREDIT_EXCLUDING_FEI  = 'credit_excluding_fei';

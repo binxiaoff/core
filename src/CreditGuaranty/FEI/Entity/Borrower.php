@@ -125,22 +125,14 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?DateTimeImmutable $activityStartDate = null;
 
     /**
-     * @ORM\Column(type="string", length=14, nullable=true)
+     * @ORM\Column(type="string", length=200, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
+     * @Assert\Length(max=200)
      *
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
      */
-    private ?string $siret = null;
-
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     *
-     * @Assert\NotBlank(allowNull=true)
-     *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
-     */
-    private ?string $taxNumber = null;
+    private ?string $registrationNumber = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
@@ -439,26 +431,14 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         return $this;
     }
 
-    public function getSiret(): ?string
+    public function getRegistrationNumber(): ?string
     {
-        return $this->siret;
+        return $this->registrationNumber;
     }
 
-    public function setSiret(?string $siret): Borrower
+    public function setRegistrationNumber(?string $registrationNumber): Borrower
     {
-        $this->siret = $siret;
-
-        return $this;
-    }
-
-    public function getTaxNumber(): ?string
-    {
-        return $this->taxNumber;
-    }
-
-    public function setTaxNumber(?string $taxNumber): Borrower
-    {
-        $this->taxNumber = $taxNumber;
+        $this->registrationNumber = $registrationNumber;
 
         return $this;
     }
