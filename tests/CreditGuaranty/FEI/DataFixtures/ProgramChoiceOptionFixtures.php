@@ -16,6 +16,12 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
 {
     // user-defined list type fields
     private const FIELDS = [
+        'field-activity_department' => [
+            'department',
+        ],
+        'field-activity_country' => [
+            'FR',
+        ],
         'field-aid_intensity' => [
             '0.20', '0.40', '0.60', '0.80',
         ],
@@ -25,29 +31,43 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'Agriculture',
             'Apiculteur',
         ],
-        'field-activity_department' => [
-            'department',
+        'field-company_naf_code' => [
+            '0001A',
         ],
-        'field-activity_country' => [
+        'field-exploitation_size' => [
+            '42',
+        ],
+        'field-investment_country' => [
             'FR',
         ],
         'field-investment_department' => [
             'department',
         ],
-        'field-investment_country' => [
-            'FR',
-        ],
         'field-investment_location' => [
             'Paris',
         ],
-        'field-company_naf_code' => [
-            '0001A',
+        'field-investment_thematic' => [
+            'Renouvellement et installation',
+            'Mieux répondre / renforcer',
+            'Transformation',
+            'Accompagner',
+            'Mettre à niveau',
+        ],
+        'field-legal_form' => [
+            'SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS',
         ],
         'field-loan_naf_code' => [
             '0001A',
         ],
-        'field-exploitation_size' => [
-            '42',
+        'field-loan_type' => [
+            'term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment',
+        ],
+        'field-product_category_code' => [
+            '1 - ANIMAUX',
+            '6 - PLANTES',
+            '7 - LÉGUMES',
+            '8 - FRUITS',
+            '10 - CÉRÉALES',
         ],
     ];
 

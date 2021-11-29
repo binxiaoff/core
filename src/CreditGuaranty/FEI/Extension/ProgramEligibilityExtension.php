@@ -28,8 +28,12 @@ class ProgramEligibilityExtension implements QueryCollectionExtensionInterface
         $this->staffPermissionManager = $staffPermissionManager;
     }
 
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         if (ProgramEligibility::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
@@ -41,10 +45,16 @@ class ProgramEligibilityExtension implements QueryCollectionExtensionInterface
         $programAlias       = 'p';
         $participationAlias = 'pa';
 
-        // it needs to join participation to get programEligibility fields for generating reservation request forms
         $queryBuilder
+            // add distinct() if results are missing
             ->innerJoin("{$queryBuilder->getRootAliases()[0]}.program", $programAlias)
-            ->leftJoin(Participation::class, $participationAlias, Join::WITH, "{$participationAlias}.program = {$programAlias}.id")
+            // it needs to join participation to get programEligibility fields for generating reservation request forms
+            ->leftJoin(
+                Participation::class,
+                $participationAlias,
+                Join::WITH,
+                "{$participationAlias}.program = {$programAlias}.id"
+            )
         ;
         $this->applyProgramManagerOrParticipantFilter($staff, $queryBuilder, $programAlias, $participationAlias);
     }

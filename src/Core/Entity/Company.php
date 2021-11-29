@@ -98,8 +98,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         },
  *     },
  * )
- * @ApiFilter("KLS\Core\Filter\InvertedSearchFilter", properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"})
+ *
  * @ApiFilter(SearchFilter::class, properties={"groupName"})
+ * @ApiFilter(
+ *     "KLS\Core\Filter\InvertedSearchFilter",
+ *     properties={"projectParticipations.project.publicId", "projectParticipations.project", "groupName"}
+ * )
  * @ApiFilter("KLS\Core\Filter\Company\ParticipantCandidateFilter")
  * @ApiFilter("KLS\Core\Filter\Company\CARegionalBankFilter")
  *
@@ -135,13 +139,11 @@ class Company implements TraceableStatusAwareInterface
     private string $displayName;
 
     /**
-     * @ORM\Column(type="string", length=300)
-     *
-     * @Assert\NotBlank
+     * @ORM\Column(type="string", length=300, nullable=true)
      *
      * @Groups({"company:read"})
      */
-    private string $legalName;
+    private ?string $legalName = null;
 
     /**
      * @ORM\Column(type="string", length=9, unique=true)
@@ -152,33 +154,31 @@ class Company implements TraceableStatusAwareInterface
     private string $siren;
 
     /**
-     * @ORM\Column(type="string", length=10, unique=true)
-     *
-     * @Assert\NotBlank
+     * @ORM\Column(type="string", length=10, nullable=true, unique=true)
      *
      * @Groups({"company:read"})
      */
-    private string $bankCode;
+    private ?string $clientNumber = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\CompanyGroup")
      * @ORM\JoinColumn(name="id_company_group")
      */
-    private ?CompanyGroup $companyGroup;
+    private ?CompanyGroup $companyGroup = null;
 
     /**
      * @ORM\Column(type="string", length=16, nullable=true, unique=true)
      *
      * @Groups({"company:read"})
      */
-    private ?string $vatNumber;
+    private ?string $vatNumber = null;
 
     /**
-     * @ORM\Column(type="string", length=20)
+     * @ORM\Column(type="string", length=20, nullable=true)
      *
      * @Groups({"company:read"})
      */
-    private string $applicableVat;
+    private ?string $applicableVat = null;
 
     /**
      * @ORM\OneToOne(targetEntity="KLS\Core\Entity\Team", cascade={"persist"}, inversedBy="company")
@@ -191,7 +191,7 @@ class Company implements TraceableStatusAwareInterface
      *
      * @Groups({"company:read"})
      */
-    private ?string $emailDomain;
+    private ?string $emailDomain = null;
 
     /**
      * @var string|null
@@ -221,7 +221,12 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @var Collection|CompanyModule[]
      *
-     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\CompanyModule", mappedBy="company", indexBy="code", cascade={"persist"})
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Core\Entity\CompanyModule",
+     *     mappedBy="company",
+     *     indexBy="code",
+     *     cascade={"persist"}
+     * )
      *
      * @Groups({Company::SERIALIZER_GROUP_COMPANY_ADMIN_READ, Company::SERIALIZER_GROUP_COMPANY_ACCOUNTANT_READ})
      */
@@ -237,21 +242,18 @@ class Company implements TraceableStatusAwareInterface
     /**
      * @throws Exception
      */
-    public function __construct(string $displayName, string $legalName, string $siren)
+    public function __construct(string $displayName, string $siren)
     {
-        $this->displayName  = $displayName;
-        $this->legalName    = $legalName;
-        $this->rootTeam     = Team::createRootTeam($this);
-        $this->statuses     = new ArrayCollection();
-        $this->added        = new DateTimeImmutable();
-        $this->admins       = new ArrayCollection();
-        $this->companyGroup = null;
-        $this->siren        = $siren;
-        $moduleCodes        = CompanyModule::getAvailableModuleCodes();
-        $this->modules      = new ArrayCollection(\array_map(function ($module) {
+        $this->displayName = $displayName;
+        $this->rootTeam    = Team::createRootTeam($this);
+        $this->statuses    = new ArrayCollection();
+        $this->added       = new DateTimeImmutable();
+        $this->admins      = new ArrayCollection();
+        $this->siren       = $siren;
+        $moduleCodes       = CompanyModule::getAvailableModuleCodes();
+        $this->modules     = new ArrayCollection(\array_map(function ($module) {
             return new CompanyModule($module, $this);
         }, \array_combine($moduleCodes, $moduleCodes)));
-        $this->applicableVat = static::VAT_METROPOLITAN;
         $this->setCurrentStatus(new CompanyStatus($this, CompanyStatus::STATUS_PROSPECT));
     }
 
@@ -274,9 +276,16 @@ class Company implements TraceableStatusAwareInterface
         return $this;
     }
 
-    public function getLegalName(): string
+    public function getLegalName(): ?string
     {
         return $this->legalName;
+    }
+
+    public function setLegalName(?string $legalName): Company
+    {
+        $this->legalName = $legalName;
+
+        return $this;
     }
 
     public function getSiren(): string
@@ -440,14 +449,14 @@ class Company implements TraceableStatusAwareInterface
         return $this->statuses;
     }
 
-    public function getBankCode(): string
+    public function getClientNumber(): ?string
     {
-        return $this->bankCode;
+        return $this->clientNumber;
     }
 
-    public function setBankCode(string $bankCode): Company
+    public function setClientNumber(?string $clientNumber): Company
     {
-        $this->bankCode = $bankCode;
+        $this->clientNumber = $clientNumber;
 
         return $this;
     }
@@ -484,12 +493,12 @@ class Company implements TraceableStatusAwareInterface
         return $this;
     }
 
-    public function getApplicableVat(): string
+    public function getApplicableVat(): ?string
     {
         return $this->applicableVat;
     }
 
-    public function setApplicableVat(string $applicableVat): Company
+    public function setApplicableVat(?string $applicableVat): Company
     {
         $this->applicableVat = $applicableVat;
 

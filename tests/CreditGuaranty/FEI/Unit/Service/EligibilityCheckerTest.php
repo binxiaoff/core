@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace KLS\Test\CreditGuaranty\FEI\Unit\Service;
 
 use Doctrine\Common\Collections\Collection;
-use KLS\CreditGuaranty\FEI\Entity\Borrower;
 use KLS\CreditGuaranty\FEI\Entity\Field;
-use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
-use KLS\CreditGuaranty\FEI\Entity\Project;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConfigurationRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityRepository;
@@ -31,8 +28,8 @@ use Prophecy\Prophecy\ObjectProphecy;
  */
 class EligibilityCheckerTest extends TestCase
 {
-    use ReservationSetTrait;
     use ProphecyTrait;
+    use ReservationSetTrait;
 
     /** @var ProgramEligibilityRepository|ObjectProphecy */
     private $programEligibilityRepository;
@@ -87,45 +84,9 @@ class EligibilityCheckerTest extends TestCase
         $program        = $this->reservation->getProgram();
         $entity         = $this->reservation->getBorrower();
 
-        $field1 = new Field(
-            'company_name',
-            Field::TAG_ELIGIBILITY,
-            $category,
-            'other',
-            'borrower',
-            'companyName',
-            'string',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
-        $field2 = new Field(
-            'creation_in_progress',
-            Field::TAG_ELIGIBILITY,
-            $category,
-            'bool',
-            'borrower',
-            'creationInProgress',
-            'bool',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
-        $field3 = new Field(
-            'legal_form',
-            Field::TAG_ELIGIBILITY,
-            $category,
-            'list',
-            'borrower',
-            'legalForm',
-            'ProgramChoiceOption',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
+        $field1 = $this->createCompanyNameField();
+        $field2 = $this->createCreationInProgressField();
+        $field3 = $this->createLegalFormField();
 
         $legalFormOption      = new ProgramChoiceOption($program, 'legal form', $field3);
         $programEligibility1  = new ProgramEligibility($program, $field1);
@@ -158,10 +119,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 1 - other
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility1)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field1)
             ->shouldBeCalledOnce()
             ->willReturn($entity)
@@ -179,10 +136,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 2 - bool
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility2)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field2)
             ->shouldBeCalledOnce()
             ->willReturn($entity)
@@ -203,10 +156,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 3 - list
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field3])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility3)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field3)
             ->shouldBeCalledOnce()
             ->willReturn($entity)
@@ -246,32 +195,8 @@ class EligibilityCheckerTest extends TestCase
         $program        = $this->reservation->getProgram();
         $entity         = $this->reservation->getFinancingObjects();
 
-        $field1 = new Field(
-            'loan_duration',
-            Field::TAG_ELIGIBILITY,
-            $category,
-            'other',
-            'financingObjects',
-            'loanDuration',
-            'int',
-            FinancingObject::class,
-            false,
-            null,
-            null
-        );
-        $field2 = new Field(
-            'supporting_generations_renewal',
-            Field::TAG_ELIGIBILITY,
-            $category,
-            'bool',
-            'financingObjects',
-            'supportingGenerationsRenewal',
-            'bool',
-            FinancingObject::class,
-            false,
-            null,
-            null
-        );
+        $field1 = $this->createLoanDurationField();
+        $field2 = $this->createSupportingGenerationsRenewalField();
 
         $programEligibility1              = new ProgramEligibility($program, $field1);
         $programEligibility2              = new ProgramEligibility($program, $field2);
@@ -285,10 +210,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 1 - other
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility1)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field1)
             ->shouldBeCalledOnce()
             ->willReturn($entity)
@@ -309,10 +230,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 2 - bool
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility2)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field2)
             ->shouldBeCalledOnce()
             ->willReturn($entity)
@@ -352,45 +269,9 @@ class EligibilityCheckerTest extends TestCase
         $withConditions = false;
         $program        = $this->reservation->getProgram();
 
-        $field1 = new Field(
-            'activity_post_code',
-            Field::TAG_ELIGIBILITY,
-            'profile',
-            'other',
-            'borrower',
-            'addressPostCode',
-            'string',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
-        $field2 = new Field(
-            'receiving_grant',
-            Field::TAG_ELIGIBILITY,
-            'project',
-            'bool',
-            'project',
-            'receivingGrant',
-            'bool',
-            Project::class,
-            false,
-            null,
-            null
-        );
-        $field3 = new Field(
-            'financing_object_type',
-            Field::TAG_ELIGIBILITY,
-            'loan',
-            'list',
-            'financingObjects',
-            'financingObjectType',
-            'ProgramChoiceOption',
-            FinancingObject::class,
-            false,
-            null,
-            null
-        );
+        $field1 = $this->createActivityPostCodeField();
+        $field2 = $this->createReceivingGrantField();
+        $field3 = $this->createFinancingObjectTypeField();
 
         $programEligibility1       = new ProgramEligibility($program, $field1);
         $programEligibility2       = new ProgramEligibility($program, $field2);
@@ -423,10 +304,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 1 - other
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility1)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field1)
             ->shouldBeCalledOnce()
             ->willReturn($this->reservation->getBorrower())
@@ -446,10 +323,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 2 - bool
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility2)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field2)
             ->shouldBeCalledOnce()
             ->willReturn($this->reservation->getProject())
@@ -470,10 +343,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 3 - list
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field3])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility3)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field3)
             ->shouldBeCalledOnce()
             ->willReturn($this->reservation->getFinancingObjects())
@@ -512,45 +381,9 @@ class EligibilityCheckerTest extends TestCase
         $withConditions = true;
         $program        = $this->reservation->getProgram();
 
-        $field1 = new Field(
-            'loan_deferral',
-            Field::TAG_ELIGIBILITY,
-            'loan',
-            'other',
-            'financingObjects',
-            'loanDeferral',
-            'int',
-            FinancingObject::class,
-            false,
-            null,
-            null
-        );
-        $field2 = new Field(
-            'borrower_type',
-            Field::TAG_ELIGIBILITY,
-            'profile',
-            'list',
-            'borrower',
-            'borrowerType',
-            'ProgramChoiceOption',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
-        $field3 = new Field(
-            'receiving_grant',
-            Field::TAG_ELIGIBILITY,
-            'project',
-            'bool',
-            'project',
-            'receivingGrant',
-            'bool',
-            Project::class,
-            false,
-            null,
-            null
-        );
+        $field1 = $this->createLoanDeferralField();
+        $field2 = $this->createBorrowerTypeField();
+        $field3 = $this->createReceivingGrantField();
 
         $programEligibility1  = new ProgramEligibility($program, $field1);
         $programEligibility2  = new ProgramEligibility($program, $field2);
@@ -583,10 +416,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 1 - other
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field1])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility1)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field1)
             ->shouldBeCalledOnce()
             ->willReturn($this->reservation->getFinancingObjects())
@@ -607,10 +436,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 2 - list
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field2])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility2)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field2)
             ->shouldBeCalledOnce()
             ->willReturn($this->reservation->getBorrower())
@@ -632,10 +457,6 @@ class EligibilityCheckerTest extends TestCase
         ;
 
         // configuration 3 - bool
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field3])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility3)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field3)
             ->shouldBeCalledOnce()
             ->willReturn($this->reservation->getProject())
@@ -659,58 +480,6 @@ class EligibilityCheckerTest extends TestCase
         $result             = $eligibilityChecker->check($this->reservation, $withConditions, $category);
 
         static::assertSame(['profile' => ['borrower_type'], 'project' => ['receiving_grant']], $result);
-    }
-
-    public function configurationExceptionsProvider(): iterable
-    {
-        yield 'profile - other type' => [
-            new Field(
-                'beneficiary_name',
-                Field::TAG_ELIGIBILITY,
-                'profile',
-                'other',
-                'borrower',
-                'beneficiaryName',
-                'string',
-                Borrower::class,
-                false,
-                null,
-                null
-            ),
-            'Borrower Name',
-        ];
-        yield 'project - bool type' => [
-            new Field(
-                'receiving_grant',
-                Field::TAG_ELIGIBILITY,
-                'project',
-                'other',
-                'project',
-                'receivingGrant',
-                'bool',
-                Project::class,
-                false,
-                null,
-                null
-            ),
-            false,
-        ];
-        yield 'loan - list type' => [
-            new Field(
-                'financing_object_type',
-                Field::TAG_ELIGIBILITY,
-                'loan',
-                'list',
-                'project',
-                'financingObjectType',
-                'ProgramChoiceOption',
-                FinancingObject::class,
-                false,
-                null,
-                null
-            ),
-            null,
-        ];
     }
 
     /**
@@ -746,10 +515,6 @@ class EligibilityCheckerTest extends TestCase
             ->willReturn($programEligibilities)
         ;
 
-        $this->programEligibilityRepository->findOneBy(['program' => $program, 'field' => $field])
-            ->shouldBeCalledOnce()
-            ->willReturn($programEligibility)
-        ;
         $this->reservationAccessor->getEntity($this->reservation, $field)
             ->shouldBeCalledOnce()
             ->willReturn($entity)
@@ -773,6 +538,22 @@ class EligibilityCheckerTest extends TestCase
             [$field->getCategory() => [$field->getFieldAlias()]],
             $result
         );
+    }
+
+    public function configurationExceptionsProvider(): iterable
+    {
+        yield 'profile - other type' => [
+            $this->createBeneficiaryNameField(),
+            'Borrower Name',
+        ];
+        yield 'project - bool type' => [
+            $this->createReceivingGrantField(),
+            false,
+        ];
+        yield 'loan - list type' => [
+            $this->createFinancingObjectTypeField(),
+            null,
+        ];
     }
 
     private function getEntity(Field $field)

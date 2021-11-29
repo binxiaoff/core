@@ -12,6 +12,7 @@ use Faker\Generator;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Staff;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\Participation;
@@ -95,11 +96,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'name'     => 'Reservation draft_1',
             'program'  => $program,
             'borrower' => [
-                'youngFarmer'        => true,
-                'creationInProgress' => true,
-                'subsidiary'         => true,
-                'turnoverAmount'     => 0,
-                'totalAssetsAmount'  => 0,
+                FieldAlias::YOUNG_FARMER         => true,
+                FieldAlias::CREATION_IN_PROGRESS => true,
+                FieldAlias::SUBSIDIARY           => true,
+                FieldAlias::TURNOVER             => 0,
+                FieldAlias::TOTAL_ASSETS         => 0,
             ],
             'project'          => [],
             'financingObjects' => [],
@@ -110,11 +111,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'name'     => 'Reservation draft_2',
             'program'  => $program,
             'borrower' => [
-                'youngFarmer'        => false,
-                'creationInProgress' => true,
-                'subsidiary'         => false,
-                'turnoverAmount'     => 0,
-                'totalAssetsAmount'  => 0,
+                FieldAlias::YOUNG_FARMER         => false,
+                FieldAlias::CREATION_IN_PROGRESS => true,
+                FieldAlias::SUBSIDIARY           => false,
+                FieldAlias::TURNOVER             => 0,
+                FieldAlias::TOTAL_ASSETS         => 0,
             ],
             'project'          => [],
             'financingObjects' => [],
@@ -125,22 +126,20 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'name'     => 'Reservation sent_1',
             'program'  => $program,
             'borrower' => [
-                'youngFarmer'        => true,
-                'creationInProgress' => true,
-                'subsidiary'         => true,
-                'turnoverAmount'     => 100,
-                'totalAssetsAmount'  => 2048,
+                FieldAlias::YOUNG_FARMER         => true,
+                FieldAlias::CREATION_IN_PROGRESS => true,
+                FieldAlias::SUBSIDIARY           => true,
+                FieldAlias::TURNOVER             => 100,
+                FieldAlias::TOTAL_ASSETS         => 2048,
             ],
             'project' => [
-                'receivingGrant'           => true,
-                'activatingEsbCalculation' => true,
-                'loansReleasedOnInvoice'   => true,
-                'totalFeiCreditAmount'     => 1000,
-                'creditExcludingFeiAmount' => 3000,
+                FieldAlias::RECEIVING_GRANT      => true,
+                FieldAlias::TOTAL_FEI_CREDIT     => 1000,
+                FieldAlias::CREDIT_EXCLUDING_FEI => 3000,
             ],
             'financingObjects' => [
-                ['mainLoan' => true, 'loanDuration' => 6],
-                ['mainLoan' => false, 'loanDuration' => 6],
+                ['mainLoan' => true, FieldAlias::LOAN_DURATION => 6],
+                ['mainLoan' => false, FieldAlias::LOAN_DURATION => 6],
             ],
             'addedBy'       => $addedBy,
             'currentStatus' => ReservationStatus::STATUS_SENT,
@@ -149,21 +148,19 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'name'     => 'Reservation sent_2',
             'program'  => $program,
             'borrower' => [
-                'youngFarmer'        => false,
-                'creationInProgress' => false,
-                'subsidiary'         => true,
-                'turnoverAmount'     => 2048,
-                'totalAssetsAmount'  => 42,
+                FieldAlias::YOUNG_FARMER         => false,
+                FieldAlias::CREATION_IN_PROGRESS => false,
+                FieldAlias::SUBSIDIARY           => true,
+                FieldAlias::TURNOVER             => 2048,
+                FieldAlias::TOTAL_ASSETS         => 42,
             ],
             'project' => [
-                'receivingGrant'           => false,
-                'activatingEsbCalculation' => false,
-                'loansReleasedOnInvoice'   => true,
-                'totalFeiCreditAmount'     => 100,
-                'creditExcludingFeiAmount' => 42,
+                FieldAlias::RECEIVING_GRANT      => false,
+                FieldAlias::TOTAL_FEI_CREDIT     => 100,
+                FieldAlias::CREDIT_EXCLUDING_FEI => 42,
             ],
             'financingObjects' => [
-                ['mainLoan' => true, 'loanDuration' => 2],
+                ['mainLoan' => true, FieldAlias::LOAN_DURATION => 2],
             ],
             'addedBy'       => $addedBy,
             'currentStatus' => ReservationStatus::STATUS_SENT,
@@ -193,7 +190,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         $reservation->getProject()->setFundingMoney(new NullableMoney('EUR', (string) $totalAmount));
 
-        $currentReservationStatus = new ReservationStatus($reservation, $reservationData['currentStatus'], $reservationData['addedBy']);
+        $currentReservationStatus = new ReservationStatus(
+            $reservation,
+            $reservationData['currentStatus'],
+            $reservationData['addedBy']
+        );
         $this->createReservationStatuses($currentReservationStatus);
         $reservation->setCurrentStatus($currentReservationStatus);
 
@@ -207,9 +208,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $reservation->getBorrower()
             ->setBeneficiaryName('Borrower Name')
             ->setBorrowerType($this->findProgramChoiceOption($program, 'field-borrower_type', 'Installé'))
-            ->setYoungFarmer($data['youngFarmer'])
-            ->setCreationInProgress($data['creationInProgress'])
-            ->setSubsidiary($data['subsidiary'])
+            ->setYoungFarmer($data[FieldAlias::YOUNG_FARMER])
+            ->setCreationInProgress($data[FieldAlias::CREATION_IN_PROGRESS])
+            ->setSubsidiary($data[FieldAlias::SUBSIDIARY])
             ->setCompanyName('Borrower Company')
             ->setActivityStartDate(new DateTimeImmutable())
             ->setAddressStreet($this->faker->streetAddress)
@@ -223,8 +224,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setCompanyNafCode($this->findProgramChoiceOption($program, 'field-company_naf_code', '0001A'))
             ->setEmployeesNumber(42)
             ->setExploitationSize($this->findProgramChoiceOption($program, 'field-exploitation_size', '42'))
-            ->setTurnover(new NullableMoney('EUR', (string) $data['turnoverAmount']))
-            ->setTotalAssets(new NullableMoney('EUR', (string) $data['totalAssetsAmount']))
+            ->setTurnover(new NullableMoney('EUR', (string) $data[FieldAlias::TURNOVER]))
+            ->setTotalAssets(new NullableMoney('EUR', (string) $data[FieldAlias::TOTAL_ASSETS]))
             ->setGrade('B')
         ;
     }
@@ -235,28 +236,57 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $project = $reservation->getProject();
 
         $project
-            ->setInvestmentThematic($this->findProgramChoiceOption($program, 'field-investment_thematic', 'Project : ' . $this->faker->sentence))
-            ->setInvestmentType($this->findProgramChoiceOption($program, 'field-investment_type', 'Type : ' . $this->faker->sentence))
+            ->addInvestmentThematic(
+                $this->findProgramChoiceOption(
+                    $program,
+                    'field-investment_thematic',
+                    'Thématique : ' . $this->faker->sentence
+                )
+            )
+            ->addInvestmentThematic(
+                $this->findProgramChoiceOption(
+                    $program,
+                    'field-investment_thematic',
+                    'Thématique : ' . $this->faker->sentence
+                )
+            )
+            ->setInvestmentType(
+                $this->findProgramChoiceOption($program, 'field-investment_type', 'Type : ' . $this->faker->sentence)
+            )
             ->setDetail($this->faker->sentence)
             ->setAidIntensity($this->findProgramChoiceOption($program, 'field-aid_intensity', '0.40'))
-            ->setAdditionalGuaranty($this->findProgramChoiceOption($program, 'field-additional_guaranty', $this->faker->sentence(3)))
-            ->setAgriculturalBranch($this->findProgramChoiceOption($program, 'field-agricultural_branch', 'Branch N: ' . $this->faker->sentence))
+            ->setAdditionalGuaranty(
+                $this->findProgramChoiceOption($program, 'field-additional_guaranty', $this->faker->sentence(3))
+            )
+            ->setAgriculturalBranch(
+                $this->findProgramChoiceOption(
+                    $program,
+                    'field-agricultural_branch',
+                    'Branch N: ' . $this->faker->sentence
+                )
+            )
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
-            ->setAddressDepartment($this->findProgramChoiceOption($program, 'field-investment_department', 'department'))
+            ->setAddressDepartment(
+                $this->findProgramChoiceOption(
+                    $program,
+                    'field-investment_department',
+                    'department'
+                )
+            )
             ->setAddressCountry($this->findProgramChoiceOption($program, 'field-investment_country', 'FR'))
             ->setFundingMoney(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setContribution(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setEligibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setTotalFeiCredit(new NullableMoney('EUR', (string) $data['totalFeiCreditAmount']))
+            ->setTotalFeiCredit(new NullableMoney('EUR', (string) $data[FieldAlias::TOTAL_FEI_CREDIT]))
             ->setTangibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setIntangibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setCreditExcludingFei(new NullableMoney('EUR', (string) $data['creditExcludingFeiAmount']))
+            ->setCreditExcludingFei(new NullableMoney('EUR', (string) $data[FieldAlias::CREDIT_EXCLUDING_FEI]))
             ->setLandValue(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
         ;
 
-        if ($data['receivingGrant']) {
+        if ($data[FieldAlias::RECEIVING_GRANT]) {
             $project->setGrant(new NullableMoney('EUR', (string) $this->faker->randomNumber()));
         }
     }
@@ -268,14 +298,17 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         return (new FinancingObject($reservation, $loanMoney, $data['mainLoan'], $this->faker->sentence(3, true)))
             ->setSupportingGenerationsRenewal(true)
-            ->setFinancingObjectType($this->findProgramChoiceOption($program, 'field-financing_object_type', $this->faker->text(255)))
+            ->setFinancingObjectType(
+                $this->findProgramChoiceOption($program, 'field-financing_object_type', $this->faker->text(255))
+            )
             ->setLoanNafCode($this->findProgramChoiceOption($program, 'field-loan_naf_code', '0001A'))
             ->setBfrValue(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setLoanType($this->findProgramChoiceOption($program, 'field-loan_type', 'short_term'))
-            ->setLoanDuration($data['loanDuration'])
+            ->setLoanDuration($data[FieldAlias::LOAN_DURATION])
             ->setLoanDeferral($this->faker->numberBetween(0, 12))
             ->setLoanPeriodicity($this->findProgramChoiceOption($program, 'field-loan_periodicity', 'monthly'))
             ->setInvestmentLocation($this->findProgramChoiceOption($program, 'field-investment_location', 'Paris'))
+            ->setInvestmentLocation($this->findProgramChoiceOption($program, 'field-product_category_code'))
         ;
     }
 
@@ -288,7 +321,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
 
         foreach (ReservationStatus::ALLOWED_STATUS as $allowedStatus => $allowedStatuses) {
-            $previousReservationStatus = new ReservationStatus($currentReservationStatus->getReservation(), $allowedStatus, $currentReservationStatus->getAddedBy());
+            $previousReservationStatus = new ReservationStatus(
+                $currentReservationStatus->getReservation(),
+                $allowedStatus,
+                $currentReservationStatus->getAddedBy()
+            );
 
             if (ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION === $allowedStatus) {
                 $previousReservationStatus->setComment($this->faker->text(200));
@@ -308,8 +345,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $this->entityManager->persist($currentReservationStatus);
     }
 
-    private function findProgramChoiceOption(Program $program, string $fieldReference, ?string $description = null): ProgramChoiceOption
-    {
+    private function findProgramChoiceOption(
+        Program $program,
+        string $fieldReference,
+        ?string $description = null
+    ): ProgramChoiceOption {
         /** @var Field $field */
         $field = $this->getReference($fieldReference);
 
@@ -344,7 +384,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
 
         if (0 === $programEligibility->getProgramEligibilityConfigurations()->count()) {
-            $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, $programChoiceOption, null, true);
+            $programEligibilityConfiguration = new ProgramEligibilityConfiguration(
+                $programEligibility,
+                $programChoiceOption,
+                null,
+                true
+            );
             $this->entityManager->persist($programEligibilityConfiguration);
         }
 

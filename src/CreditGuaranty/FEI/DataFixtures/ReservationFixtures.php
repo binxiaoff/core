@@ -95,10 +95,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
     private function loadDataForProgramCommercialized(): iterable
     {
+        $participationReferences = [ParticipationFixtures::PARTICIPANT_SAVO, ParticipationFixtures::PARTICIPANT_TOUL];
+
         /** @var Program $program */
         $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
 
-        foreach ([ParticipationFixtures::PARTICIPANT_SAVO, ParticipationFixtures::PARTICIPANT_TOUL] as $participationReference) {
+        foreach ($participationReferences as $participationReference) {
             /** @var Participation $participation */
             $participation    = $this->getReference($participationReference);
             $participant      = $participation->getParticipant();
@@ -111,6 +113,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     'program'  => $program,
                     'borrower' => [
                         FieldAlias::CREATION_IN_PROGRESS => true,
+                        FieldAlias::YOUNG_FARMER         => $this->faker->boolean,
                         FieldAlias::LEGAL_FORM           => LegalForm::SARL,
                         FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
@@ -124,10 +127,15 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     'program'  => $program,
                     'borrower' => [
                         FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::YOUNG_FARMER         => true,
                         FieldAlias::LEGAL_FORM           => LegalForm::SA,
                         FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.60',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
@@ -137,12 +145,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                            FieldAlias::LOAN_DURATION                  => 4,
+                            FieldAlias::LOAN_DURATION                  => 70,
                         ],
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                            FieldAlias::LOAN_DURATION                  => 4,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
+                            FieldAlias::LOAN_DURATION                  => 35,
                         ],
                     ],
                     'addedBy'       => $staff,
@@ -152,21 +160,31 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     'name'     => \sprintf('Reservation brouillon inéligible %s (%s)', $i, $companyShortCode),
                     'program'  => $program,
                     'borrower' => [
-                        FieldAlias::CREATION_IN_PROGRESS => false,
-                        FieldAlias::LEGAL_FORM           => LegalForm::SAS,
-                        FieldAlias::EMPLOYEES_NUMBER     => 800,
+                        FieldAlias::CREATION_IN_PROGRESS => true,
+                        FieldAlias::YOUNG_FARMER         => false,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SELAS,
+                        FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[4],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => false,
                         FieldAlias::AID_INTENSITY         => '0.20',
-                        FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
-                        FieldAlias::INTANGIBLE_FEI_CREDIT => 1200,
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 500,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 1000,
                     ],
                     'financingObjects' => [
                         [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => false,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 70,
+                        ],
+                        [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                            FieldAlias::LOAN_DURATION                  => 6,
+                            FieldAlias::LOAN_DURATION                  => 120,
                         ],
                     ],
                     'addedBy'       => $staff,
@@ -177,25 +195,26 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     'program'  => $program,
                     'borrower' => [
                         FieldAlias::CREATION_IN_PROGRESS => false,
-                        FieldAlias::LEGAL_FORM           => LegalForm::SA,
-                        FieldAlias::EMPLOYEES_NUMBER     => 300,
+                        FieldAlias::YOUNG_FARMER         => true,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SARL,
+                        FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
-                        FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
-                        FieldAlias::INTANGIBLE_FEI_CREDIT => 300,
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 2000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 100,
                     ],
                     'financingObjects' => [
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                            FieldAlias::LOAN_DURATION                  => 4,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                            FieldAlias::LOAN_DURATION                  => 4,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
+                            FieldAlias::LOAN_DURATION                  => 24,
                         ],
                     ],
                     'addedBy'       => $staff,
@@ -206,44 +225,74 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     'program'  => $program,
                     'borrower' => [
                         FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::YOUNG_FARMER         => true,
                         FieldAlias::LEGAL_FORM           => LegalForm::SA,
-                        FieldAlias::EMPLOYEES_NUMBER     => 300,
+                        FieldAlias::EMPLOYEES_NUMBER     => 100,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[4],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
-                        FieldAlias::TANGIBLE_FEI_CREDIT   => 100000,
-                        FieldAlias::INTANGIBLE_FEI_CREDIT => 42000,
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 2000,
+                        FieldAlias::INTANGIBLE_FEI_CREDIT => 100,
                     ],
                     'financingObjects' => [
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
-                            FieldAlias::LOAN_DURATION                  => 4,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 12,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 12,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 12,
                         ],
                     ],
                     'addedBy'       => $staff,
                     'currentStatus' => ReservationStatus::STATUS_WAITING_FOR_FEI,
                 ];
-                yield \sprintf('%s-%s-%s', self::RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION, $companyShortCode, $i) => [
+                yield \sprintf(
+                    '%s-%s-%s',
+                    self::RESERVATION_REQUEST_FOR_ADDITIONAL_INFORMATION,
+                    $companyShortCode,
+                    $i
+                ) => [
                     'name'     => \sprintf('Reservation information supplémentaire %s (%s)', $i, $companyShortCode),
                     'program'  => $program,
                     'borrower' => [
                         FieldAlias::CREATION_IN_PROGRESS => false,
-                        FieldAlias::LEGAL_FORM           => LegalForm::SARL,
+                        FieldAlias::YOUNG_FARMER         => true,
+                        FieldAlias::LEGAL_FORM           => LegalForm::SAS,
                         FieldAlias::EMPLOYEES_NUMBER     => 150,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[0],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => '0.80',
-                        FieldAlias::TANGIBLE_FEI_CREDIT   => 100,
+                        FieldAlias::AID_INTENSITY         => '0.40',
+                        FieldAlias::TANGIBLE_FEI_CREDIT   => 500,
                         FieldAlias::INTANGIBLE_FEI_CREDIT => 20,
                     ],
                     'financingObjects' => [
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
-                            FieldAlias::LOAN_DURATION                  => 4,
+                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
+                            FieldAlias::LOAN_DURATION                  => 70,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
+                            FieldAlias::LOAN_DURATION                  => 30,
                         ],
                     ],
                     'addedBy'       => $staff,
@@ -254,10 +303,16 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     'program'  => $program,
                     'borrower' => [
                         FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::YOUNG_FARMER         => false,
                         FieldAlias::LEGAL_FORM           => LegalForm::SAS,
                         FieldAlias::EMPLOYEES_NUMBER     => 30,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 22000,
@@ -283,49 +338,39 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     'program'  => $program,
                     'borrower' => [
                         FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::YOUNG_FARMER         => false,
                         FieldAlias::LEGAL_FORM           => LegalForm::SA,
                         FieldAlias::EMPLOYEES_NUMBER     => 450,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 6000,
                         FieldAlias::INTANGIBLE_FEI_CREDIT => 700,
                     ],
-                    'financingObjects' => [
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                            FieldAlias::LOAN_DURATION                  => 4,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                            FieldAlias::LOAN_DURATION                  => 4,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
-                            FieldAlias::LOAN_DURATION                  => 4,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
-                            FieldAlias::LOAN_DURATION                  => 4,
-                        ],
-                    ],
-                    'addedBy'       => $staff,
-                    'currentStatus' => ReservationStatus::STATUS_ARCHIVED,
+                    'financingObjects' => [],
+                    'addedBy'          => $staff,
+                    'currentStatus'    => ReservationStatus::STATUS_ARCHIVED,
                 ];
                 yield \sprintf('%s-%s-%s', self::RESERVATION_REFUSED_BY_MANAGING_COMPANY, $companyShortCode, $i) => [
                     'name'     => \sprintf('Reservation refusée %s (%s)', $i, $companyShortCode),
                     'program'  => $program,
                     'borrower' => [
                         FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::YOUNG_FARMER         => false,
                         FieldAlias::LEGAL_FORM           => LegalForm::SA,
                         FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 80000,
@@ -349,10 +394,16 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     'program'  => $program,
                     'borrower' => [
                         FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::YOUNG_FARMER         => true,
                         FieldAlias::LEGAL_FORM           => LegalForm::SA,
                         FieldAlias::EMPLOYEES_NUMBER     => 300,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
                         FieldAlias::AID_INTENSITY         => '0.80',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
@@ -362,27 +413,27 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                            FieldAlias::LOAN_DURATION                  => 6,
+                            FieldAlias::LOAN_DURATION                  => 50,
                         ],
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                            FieldAlias::LOAN_DURATION                  => 1,
+                            FieldAlias::LOAN_DURATION                  => 30,
                         ],
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
-                            FieldAlias::LOAN_DURATION                  => 4,
+                            FieldAlias::LOAN_DURATION                  => 12,
                         ],
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
-                            FieldAlias::LOAN_DURATION                  => 5,
+                            FieldAlias::LOAN_DURATION                  => 48,
                         ],
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::STAND_BY,
-                            FieldAlias::LOAN_DURATION                  => 2,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 70,
                         ],
                     ],
                     'addedBy'       => $staff,
@@ -394,10 +445,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
     private function loadDataForProgramPaused(): iterable
     {
+        $participationReferences = [ParticipationFixtures::PARTICIPANT_SAVO, ParticipationFixtures::PARTICIPANT_TOUL];
+
         /** @var Program $program */
         $program = $this->getReference(ProgramFixtures::REFERENCE_PAUSED);
 
-        foreach ([ParticipationFixtures::PARTICIPANT_SAVO, ParticipationFixtures::PARTICIPANT_TOUL] as $participationReference) {
+        foreach ($participationReferences as $participationReference) {
             /** @var Participation $participation */
             $participation        = $this->getReference($participationReference);
             $staff                = $participation->getParticipant()->getStaff()->current();
@@ -411,12 +464,18 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     'program'  => $program,
                     'borrower' => [
                         FieldAlias::CREATION_IN_PROGRESS => false,
+                        FieldAlias::YOUNG_FARMER         => true,
                         FieldAlias::LEGAL_FORM           => LegalForm::SA,
                         FieldAlias::EMPLOYEES_NUMBER     => 300,
                     ],
                     'project' => [
+                        FieldAlias::INVESTMENT_THEMATIC => [
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[1],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[2],
+                            ProgramChoiceOptionFixtures::INVESTMENT_THEMATIC_LIST[3],
+                        ],
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => '0.80',
+                        FieldAlias::AID_INTENSITY         => '0.60',
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
                         FieldAlias::INTANGIBLE_FEI_CREDIT => 300,
                     ],
@@ -424,22 +483,27 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                            FieldAlias::LOAN_DURATION                  => 4,
+                            FieldAlias::LOAN_DURATION                  => 50,
                         ],
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                            FieldAlias::LOAN_DURATION                  => 4,
+                            FieldAlias::LOAN_DURATION                  => 30,
                         ],
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
-                            FieldAlias::LOAN_DURATION                  => 4,
+                            FieldAlias::LOAN_DURATION                  => 12,
                         ],
                         [
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
-                            FieldAlias::LOAN_DURATION                  => 4,
+                            FieldAlias::LOAN_DURATION                  => 48,
+                        ],
+                        [
+                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                            FieldAlias::LOAN_DURATION                  => 70,
                         ],
                     ],
                     'addedBy'       => $staff,
@@ -472,7 +536,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         $reservation->getProject()->setFundingMoney(new NullableMoney('EUR', (string) $totalAmount));
 
-        $currentReservationStatus = new ReservationStatus($reservation, $reservationData['currentStatus'], $reservationData['addedBy']);
+        $currentReservationStatus = new ReservationStatus(
+            $reservation,
+            $reservationData['currentStatus'],
+            $reservationData['addedBy']
+        );
         $this->createReservationStatuses($currentReservationStatus);
         $reservation->setCurrentStatus($currentReservationStatus);
 
@@ -486,19 +554,23 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     private function withBorrower(Reservation $reservation, array $data): void
     {
         $program = $reservation->getProgram();
-        $grades  = $program->getProgramGradeAllocations()->map(fn (ProgramGradeAllocation $item) => $item->getGrade())->toArray();
+        $grades  = $program->getProgramGradeAllocations()->map(
+            fn (ProgramGradeAllocation $item) => $item->getGrade()
+        )->toArray();
 
         $reservation->getBorrower()
             ->setBeneficiaryName($this->faker->name)
             ->setBorrowerType($this->findProgramChoiceOption($program, FieldAlias::BORROWER_TYPE))
-            ->setYoungFarmer($this->faker->boolean)
+            ->setYoungFarmer($data[FieldAlias::YOUNG_FARMER])
             ->setCreationInProgress($data[FieldAlias::CREATION_IN_PROGRESS])
             ->setSubsidiary($this->faker->boolean)
             ->setCompanyName($this->faker->company)
             ->setActivityStartDate(new DateTimeImmutable())
             ->setSiret((string) $this->faker->numberBetween(10000, 99999))
             ->setTaxNumber('12 23 45 678 987')
-            ->setLegalForm($this->findProgramChoiceOption($program, FieldAlias::LEGAL_FORM, $data[FieldAlias::LEGAL_FORM]))
+            ->setLegalForm(
+                $this->findProgramChoiceOption($program, FieldAlias::LEGAL_FORM, $data[FieldAlias::LEGAL_FORM])
+            )
             ->setCompanyNafCode($this->findProgramChoiceOption($program, FieldAlias::COMPANY_NAF_CODE))
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
@@ -518,13 +590,34 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $program = $reservation->getProgram();
         $project = $reservation->getProject();
 
+        foreach ($data[FieldAlias::INVESTMENT_THEMATIC] as $description) {
+            $project->addInvestmentThematic(
+                $this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, $description)
+            );
+        }
+
         $project
-            ->setInvestmentThematic($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_THEMATIC, 'Project : ' . $this->faker->sentence))
-            ->setInvestmentType($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type : ' . $this->faker->sentence))
+            ->setInvestmentType(
+                $this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_TYPE, 'Type: ' . $this->faker->sentence)
+            )
             ->setDetail($this->faker->sentence)
-            ->setAidIntensity($this->findProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $data[FieldAlias::AID_INTENSITY]))
-            ->setAdditionalGuaranty($this->findProgramChoiceOption($program, FieldAlias::ADDITIONAL_GUARANTY, $this->faker->unique()->sentence(3)))
-            ->setAgriculturalBranch($this->findProgramChoiceOption($program, FieldAlias::AGRICULTURAL_BRANCH, 'Branch N: ' . $this->faker->sentence))
+            ->setAidIntensity(
+                $this->findProgramChoiceOption($program, FieldAlias::AID_INTENSITY, $data[FieldAlias::AID_INTENSITY])
+            )
+            ->setAdditionalGuaranty(
+                $this->findProgramChoiceOption(
+                    $program,
+                    FieldAlias::ADDITIONAL_GUARANTY,
+                    $this->faker->unique()->sentence(3)
+                )
+            )
+            ->setAgriculturalBranch(
+                $this->findProgramChoiceOption(
+                    $program,
+                    FieldAlias::AGRICULTURAL_BRANCH,
+                    'Branch N: ' . $this->faker->sentence
+                )
+            )
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
@@ -552,7 +645,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         return (new FinancingObject($reservation, $loanMoney, $this->faker->boolean, $this->faker->sentence(3, true)))
             ->setSupportingGenerationsRenewal($data[FieldAlias::SUPPORTING_GENERATIONS_RENEWAL])
-            ->setFinancingObjectType($this->findProgramChoiceOption($program, FieldAlias::FINANCING_OBJECT_TYPE, $this->faker->sentence))
+            ->setFinancingObjectType(
+                $this->findProgramChoiceOption($program, FieldAlias::FINANCING_OBJECT_TYPE, $this->faker->sentence)
+            )
             ->setLoanNafCode($this->findProgramChoiceOption($program, FieldAlias::LOAN_NAF_CODE))
             ->setBfrValue(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setLoanType($this->findProgramChoiceOption($program, FieldAlias::LOAN_TYPE, $data[FieldAlias::LOAN_TYPE]))
@@ -560,6 +655,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setLoanDeferral($this->faker->numberBetween(0, 12))
             ->setLoanPeriodicity($this->findProgramChoiceOption($program, FieldAlias::LOAN_PERIODICITY))
             ->setInvestmentLocation($this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_LOCATION))
+            ->setProductCategoryCode($this->findProgramChoiceOption($program, FieldAlias::PRODUCT_CATEGORY_CODE))
         ;
     }
 
@@ -572,7 +668,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
 
         foreach (ReservationStatus::ALLOWED_STATUS as $allowedStatus => $allowedStatuses) {
-            $previousReservationStatus = new ReservationStatus($currentReservationStatus->getReservation(), $allowedStatus, $currentReservationStatus->getAddedBy());
+            $previousReservationStatus = new ReservationStatus(
+                $currentReservationStatus->getReservation(),
+                $allowedStatus,
+                $currentReservationStatus->getAddedBy()
+            );
 
             if (ReservationStatus::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION === $allowedStatus) {
                 $previousReservationStatus->setComment($this->faker->text(200));
@@ -592,8 +692,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $this->entityManager->persist($currentReservationStatus);
     }
 
-    private function findProgramChoiceOption(Program $program, string $fieldAlias, ?string $description = null): ProgramChoiceOption
-    {
+    private function findProgramChoiceOption(
+        Program $program,
+        string $fieldAlias,
+        ?string $description = null
+    ): ProgramChoiceOption {
         /** @var Field $field */
         $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
 
@@ -628,7 +731,12 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
 
         if (0 === $programEligibility->getProgramEligibilityConfigurations()->count()) {
-            $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, $programChoiceOption, null, true);
+            $programEligibilityConfiguration = new ProgramEligibilityConfiguration(
+                $programEligibility,
+                $programChoiceOption,
+                null,
+                true
+            );
             $this->entityManager->persist($programEligibilityConfiguration);
         }
 

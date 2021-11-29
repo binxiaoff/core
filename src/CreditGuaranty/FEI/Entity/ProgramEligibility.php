@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\CloneableTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\DeepCloneInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -62,7 +63,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *
  * @UniqueEntity({"field", "program"})
  */
-class ProgramEligibility
+class ProgramEligibility implements DeepCloneInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -172,16 +173,28 @@ class ProgramEligibility
         return $this;
     }
 
-    protected function onClone(): void
+    public function deepClone(): ProgramEligibility
     {
+        $clonedProgramEligibility               = clone $this;
         $clonedProgramEligibilityConfigurations = new ArrayCollection();
         foreach ($this->programEligibilityConfigurations as $item) {
-            $clonedItem = clone $item;
-            $clonedItem->setProgramEligibility($this);
+            if (false === $item instanceof DeepCloneInterface) {
+                throw new \LogicException(
+                    \sprintf(
+                        'Make sure that class %s implements %s',
+                        \get_class($item),
+                        DeepCloneInterface::class
+                    )
+                );
+            }
+            $clonedItem = $item->deepClone();
+            $clonedItem->setProgramEligibility($clonedProgramEligibility);
             $clonedProgramEligibilityConfigurations->add($clonedItem);
         }
 
-        $this->programEligibilityConfigurations = $clonedProgramEligibilityConfigurations;
+        $clonedProgramEligibility->programEligibilityConfigurations = $clonedProgramEligibilityConfigurations;
+
+        return $clonedProgramEligibility;
     }
 
     private function initialiseConfigurations(): void

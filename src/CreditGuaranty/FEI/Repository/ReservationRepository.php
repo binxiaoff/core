@@ -6,13 +6,16 @@ namespace KLS\CreditGuaranty\FEI\Repository;
 
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use Doctrine\Persistence\ManagerRegistry;
+use KLS\Core\DTO\Query;
+use KLS\Core\Repository\Traits\QueryHandlerTrait;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
+use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 
@@ -24,6 +27,8 @@ use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
  */
 class ReservationRepository extends ServiceEntityRepository
 {
+    use QueryHandlerTrait;
+
     public function __construct(ManagerRegistry $managerRegistry)
     {
         parent::__construct($managerRegistry, Reservation::class);
@@ -57,44 +62,57 @@ class ReservationRepository extends ServiceEntityRepository
         ;
     }
 
-    public function findByReportingFilters(array $selects, array $joins, int $itemsPerPage, int $page): Paginator
-    {
-        $qb = $this->createQueryBuilder('r');
+    public function findByReportingFilters(
+        Program $program,
+        Query $query,
+        ?int $offset = null,
+        ?int $limit = null
+    ): array {
+        $queryBuilder = $this->buildQuery(
+            $this->getReportingQueryBuilder($program),
+            $query,
+            $offset,
+            $limit
+        );
 
-        if (empty($selects) || empty($joins)) {
-            $qb->andWhere('1 = 0');
-        } else {
-            $qb
-                ->select('financingObjects.id AS id_financing_object')
-                ->addSelect('financingObjects.reportingFirstDate AS reporting_first_date')
-                ->addSelect('financingObjects.reportingLastDate AS reporting_last_date')
-                ->addSelect('financingObjects.reportingValidationDate AS reporting_validation_date')
-                ->leftJoin(FinancingObject::class, 'financingObjects', Join::WITH, 'r.id = financingObjects.reservation')
-            ;
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
 
-            foreach ($selects as $select) {
-                $qb->addSelect($select);
-            }
-            foreach ($joins as $join) {
-                $qb->leftJoin(...$join);
-            }
+    public function getPaginatorByReportingFilters(
+        Program $program,
+        Query $query,
+        int $offset,
+        int $limit
+    ): Paginator {
+        $queryBuilder = $this->buildQuery(
+            $this->getReportingQueryBuilder($program),
+            $query,
+            $offset,
+            $limit
+        );
 
-            $qb
-                ->innerJoin('r.currentStatus', 'rcs')
-                ->where('rcs.status = :reservationStatus')
-                ->setParameter('reservationStatus', ReservationStatus::STATUS_CONTRACT_FORMALIZED)
-            ;
-        }
-
-        $criteria = Criteria::create()
-            ->setFirstResult(($page - 1) * $itemsPerPage)
-            ->setMaxResults($itemsPerPage)
-        ;
-        $qb->addCriteria($criteria);
-
-        $doctrinePaginator = new DoctrinePaginator($qb, false);
+        $doctrinePaginator = new DoctrinePaginator($queryBuilder, false);
         $doctrinePaginator->setUseOutputWalkers(false);
 
         return new Paginator($doctrinePaginator);
+    }
+
+    private function getReportingQueryBuilder(Program $program): QueryBuilder
+    {
+        return $this->createQueryBuilder('r')
+            ->select('financingObjects.id AS id_financing_object')
+            ->innerJoin('r.program', 'program')
+            ->innerJoin('r.currentStatus', 'rcs')
+            ->leftJoin(
+                FinancingObject::class,
+                'financingObjects',
+                Join::WITH,
+                'r.id = financingObjects.reservation'
+            )
+            ->where('program = :program')
+            ->andWhere('rcs.status = :reservationStatus')
+            ->setParameter('program', $program)
+            ->setParameter('reservationStatus', ReservationStatus::STATUS_CONTRACT_FORMALIZED)
+        ;
     }
 }

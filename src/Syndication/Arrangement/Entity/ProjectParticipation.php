@@ -780,6 +780,26 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
             && ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED === $this->getCurrentStatus()->getStatus();
     }
 
+    public function getManagedMembersOfPermission(Staff $staff, int $permission): array
+    {
+        if (false === $staff->isManager()) {
+            return [];
+        }
+
+        return $this->getProjectParticipationMembers()->filter(
+            function (ProjectParticipationMember $projectParticipationMember) use ($permission, $staff) {
+                return $projectParticipationMember->getPermissions()->has($permission)
+                    && false === $projectParticipationMember->isArchived()
+                        && $projectParticipationMember->getStaff()->isActive()
+                    && (\in_array(
+                        $projectParticipationMember->getStaff()->getTeam(),
+                        [...$staff->getTeam()->getDescendents(), $staff->getTeam()],
+                        true
+                    ));
+            }
+        )->toArray();
+    }
+
     /**
      * @Assert\Callback
      */

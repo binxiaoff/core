@@ -9,7 +9,6 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\TeamEdge;
-use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipationMember;
 
 /**
@@ -40,17 +39,5 @@ class ProjectParticipationMemberRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
-    }
-
-    public function findActiveByProjectParticipationAndManagerAndPermissionEnabled(ProjectParticipation $projectParticipation, Staff $manager, int $permission = 0): array
-    {
-        if (false === $manager->isManager()) {
-            return [];
-        }
-
-        return $projectParticipation->getProjectParticipationMembers()->filter(function (ProjectParticipationMember $projectParticipationMember) use ($permission, $manager) {
-            return $projectParticipationMember->getPermissions()->has($permission) && false === $projectParticipationMember->isArchived()
-                && (\in_array($projectParticipationMember->getStaff()->getTeam(), [...$manager->getTeam()->getDescendents(), $manager->getTeam()], true));
-        })->toArray();
     }
 }

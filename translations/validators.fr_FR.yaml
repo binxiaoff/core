@@ -1,14 +1,14 @@
 Agency:
     AbstractProjectMember:
         archived:
-            referent: Un membre referent ne peut pas être archivé
+            referent: Un membre référent ne peut pas être archivé
             signatory: Un membre signataire ne peut pas être archivé
             draft: Vous ne pouvez pas archiver un membre en draft
     AgentMember:
         user:
             missingStaff: L'utilisateur {{ email }} ne peut pas être membre de l'équipe de l'agent sans avoir été habilité pour {{ company }}
     Project:
-        missingStatus: Vous ne pouvez pas aller de l'état {{ nextStatus }} sans passer par l'état {{ missingStatus }}
+        missingStatus: Vous ne pouvez pas aller vers l'état {{ nextStatus }} sans passer par l'état {{ missingStatus }}
         passedStatus: Ce projet est déja passé par l'état {{ status }}
     Contact:
         type:
@@ -21,7 +21,7 @@ Agency:
         responsabilities:
             agent: Vous devez être l'agent du projet pour sélectionner activer le bit
             secondary: Etant dans la syndication silencieuse, vous ne pouvez pas avoir de responsabilité
-            arranger: Vous ne pouvez pas être arranger et co-arrangeur
+            arranger: Vous ne pouvez pas être arrangeur et co-arrangeur
         commission:
             agent:
                 zero: La commission de l'agent doit être à zéro
@@ -52,8 +52,8 @@ Agency:
         inconsistentCovenant: On ne peut ajouter de règle d'impact sur les marges qu'aux engagements de nature financière
     Inequality:
         maxValue:
-            incorrectOperator: Il ne peut y avoir de valeur maximal que si l'operateur est "between"
-            greaterThan: La valeur maximale doit être strictement supérieur à la valeur
+            incorrectOperator: Il ne peut y avoir de valeur maximale que si l'opérateur est "between"
+            greaterThan: La valeur maximale doit être strictement supérieure à la valeur
     Term:
         borrowerComment:
             neededBorrowerAction: Il faut que l'emprunteur ait rempli la valeur ou le document pour mettre un commentaire
@@ -73,16 +73,16 @@ Agency:
         waiverComment:
             waiverStatusRequired: Le waiver doit être statué pour ce commentaire
         grantedDelay:
-            invalidTermRequired: L'échec de la validation de l'agent est requise pour avoir accorder un delais supplémentaire
+            invalidTermRequired: L'échec de la validation de l'agent est requise pour avoir accordé un délai supplémentaire
         sharingDate:
             agentValidationRequired: Il faut une validation (réussite ou échec) avant de partager le résultat
         archivingDate:
-            poolSharingRequired: Il faut partager le resultat au pool avant d'archiver
+            poolSharingRequired: Il faut partager le résultat au pool avant d'archiver
 
 Core:
     AcceptationsLegalDocs:
         legalDoc:
-            unique: Vous ne pouvez pas signé 2 fois les mêmes CGU.
+            unique: Vous ne pouvez pas signer 2 fois les mêmes CGU.
             notCurrent: Vous ne pouvez qu'accepter les dernières CGU.
     LendingRate:
         indexType:
@@ -153,11 +153,11 @@ ProjectParticipationMember:
         incorrectCompany: Ce staff et la participation ne sont pas liés à la même entité
     acceptedNdaVersion:
         unacceptableVersion: Cette version de fichier n'est pas une de la lettre de confidentialité acceptable
-        accepted: Ce staff a déjà acception la lettre de confidentialité.
+        accepted: Ce staff a déjà accepté la lettre de confidentialité.
     acceptableNdaVersion:
         empty: La lettre de confidentialité acceptable n'est pas définie.
     archived:
-        lastActiveMember: Vous ne pouvez pas archiver la dernier membre de la participation
+        lastActiveMember: Vous ne pouvez pas archiver le dernier membre de la participation
         ProjectParticipationStatus:
             status:
                 invalid: Le statut n'est pas valide.
@@ -187,11 +187,11 @@ ProjectParticipationMember:
 CreditGuaranty:
     Program:
         name:
-            unique: Le nom d'une programme doit être unique.
+            unique: Le nom d'un programme doit être unique.
         companyGroupTag:
             invalid: Le marché choisi n'est pas valable.
         distributionProcess:
-            textMax: Les textes de chaque étape ne peut excéder une longeur de %limit%.
+            textMax: Les textes de chaque étape ne peuvent excéder une longeur de %limit%.
         funds:
             greater: Vous ne pouvez pas réduire le montant total sur un programme en cours.
             draft: Vous ne pouvez que réduire le montant total sur un programme en brouillon.
@@ -235,9 +235,11 @@ CreditGuaranty:
             notComparableUnit: Les champs choisis n'ont pas le même unit.
         operation:
             notEqual: L'operation doit être un égal pour une comparaison de type "bool" ou "list".
-        programChoiceOption:
+        programChoiceOptions:
+            invalidMappingField: Le field {{ fieldId }} du programChoiceOption ne correspond pas au leftOperandField {{ leftOperandFieldId }} du ProgramEligibilityCondition.
             notEmpty: programChoiceOption doit être vide si ce n'est pas une comparaison de type "list".
-            required: Merci de remplir un programChoiceOption pour une comparaison de type "list".
+            required: Merci de remplir les programChoiceOptions pour une comparaison de type "list".
+            sameWithConfiguration: Les éléments de la collection programChoiceOptions ne doivent pas correspondre au programChoiceOption du ProgramEligibilityConfiguration.
         rightOperandField:
             notEmpty: rightOperandField doit être vide pour une comparaison de type "value", "bool" ou "list".
             required: rightOperandField doit être requis pour une comparaison de type "rate".
@@ -263,14 +265,14 @@ CreditGuaranty:
             required: La réservation ne peut être envoyée, les informations du bénéficiaire n'ont pas été remplies.
         project:
             aidIntensity:
-                requiredForEsb: L'intensité d'aide du projet doit être renseigné pour calculer l'équivalent subvention brute.
+                requiredForEsb: L'intensité d'aide du projet doit être renseignée pour calculer l'équivalent subvention brute.
             fundingMoney:
                 balanceExceeded: Le montant disponible dans le programme est inférieur au montant de votre réservation.
                 quotaExceeded: Le montant disponible dans le programme pour votre entité est inférieur au montant de votre réservation.
                 gradeAllocationExceeded: Le montant disponible dans le programme pour la notation de votre réservation est inférieur au montant de votre réservation.
                 borrowerTypeAllocationExceeded: Le montant disponible dans le programme pour votre type d'emprunteur est inférieur au montant de votre réservation.
             grant:
-                requiredForEsb: Les subventions liés au projet du projet doivent être renseignées pour calculer l'équivalent subvention brute.
+                requiredForEsb: Les subventions liées au projet du projet doivent être renseignées pour calculer l'équivalent subvention brute.
             totalFeiCredit:
                 requiredForEsb: Le montant total du crédit FEI du projet doit être renseigné pour calculer l'équivalent subvention brute.
         financingObject:

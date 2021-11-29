@@ -26,17 +26,24 @@ class ProgramExtension implements QueryCollectionExtensionInterface
         $this->staffPermissionManager = $staffPermissionManager;
     }
 
-    public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, string $operationName = null): void
-    {
+    public function applyToCollection(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        string $resourceClass,
+        string $operationName = null
+    ): void {
         if (Program::class !== $resourceClass || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
         }
+
         $token = $this->security->getToken();
         /** @var Staff|null $staff */
         $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
 
         $programAlias       = $queryBuilder->getRootAliases()[0];
         $participationAlias = $queryNameGenerator->generateJoinAlias('participations');
+
+        // add distinct() if results are missing
         $queryBuilder->leftJoin("{$programAlias}.participations", $participationAlias);
 
         $this->applyProgramManagerOrParticipantFilter($staff, $queryBuilder, $programAlias, $participationAlias);

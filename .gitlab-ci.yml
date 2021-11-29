@@ -35,7 +35,6 @@ cache:
       if [[ "${CI_ENVIRONMENT_NAME}" = "prod" ]]
       then
         export SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY_PROD
-        export ANSIBLE_VAULT_PASS=$ANSIBLE_VAULT_PASS_PROD
         echo "$SSH_KNOWN_HOSTS_PROD" >> ~/.ssh/known_hosts
       elif [[ "${CI_ENVIRONMENT_NAME}" = "preprod" ]]
       then
@@ -46,7 +45,6 @@ cache:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - chmod 644 ~/.ssh/known_hosts
     - git clone -b "${ANSIBLE_BRANCH:-master}" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/ca-lending-services/infra.git
-    - echo "$ANSIBLE_VAULT_PASS" > infra/.vault_pass
     - cd infra/provisioning || exit 1
     - export DEPLOY_USER="${GITLAB_USER_NAME}"
   script:
@@ -60,14 +58,14 @@ cache:
 # Job configuration
 ###
 stages:
-  - validation
-  - test
-  - deploy
+  - 🔎 validation
+  - 🧪 test
+  - 🚀 deploy
 
 # Validation
 
-validation:db:
-  stage: validation
+🔎 migrations:
+  stage: 🔎 validation
   services:
     - name: mysql:8.0.20
       alias: db
@@ -87,12 +85,27 @@ validation:db:
 
 # Testing
 
-test:application:
+🧪 functional:
+  services:
+    - name: mysql:8.0.20
+      alias: db
+  stage: 🧪 test
+  before_script:
+  - composer config -g cache-dir "$(pwd)/.composer-cache"
+  - composer install
+  script:
+    - php bin/console doctrine:database:drop --env=test --connection=migration --if-exists --force
+    - php bin/console doctrine:database:create --env=test --connection=migration
+    - php bin/console doctrine:migration:migrate -n --env=test
+    - php bin/console doctrine:fixtures:load --env=test -n --group=test
+    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='functional'
+
+🧪 unit:
   ### Uncomment the following if using a database
   # services:
   #   - name: mysql:8.0.20
   #     alias: db
-  stage: test
+  stage: 🧪 test
   before_script:
     - composer config -g cache-dir "$(pwd)/.composer-cache"
     - composer install
@@ -101,8 +114,8 @@ test:application:
 
 # Deployment
 
-deploy:prod:
-  stage: deploy
+🚀 prod:
+  stage: 🚀 deploy
   extends: .deploy-api
   environment:
     name: prod
@@ -113,8 +126,8 @@ deploy:prod:
     refs:
       - /^[1-9][0-9]*\.[0-9]+\.[0-9]+$/
 
-deploy:preprod:
-  stage: deploy
+🚀 preprod:
+  stage: 🚀 deploy
   extends: .deploy-api
   environment:
     name: preprod
@@ -125,15 +138,15 @@ deploy:preprod:
       - /^hotfix/.*/
       - /^[1-9][0-9]*\.[0-9]+\.[0-9]+$/
 
-deploy:demo:
-  stage: deploy
+🚀 demo:
+  stage: 🚀 deploy
   extends: .deploy-api
   environment:
     name: demo
     url: https://api.demo.kls-platform.com
 
-deploy:integration:
-  stage: deploy
+🚀 integration:
+  stage: 🚀 deploy
   extends: .deploy-api
   environment:
     name: integration
@@ -143,8 +156,8 @@ deploy:integration:
     refs:
       - develop
 
-deploy:cg:
-  stage: deploy
+🚀 cg:
+  stage: 🚀 deploy
   extends: .deploy-api
   environment:
     name: cg

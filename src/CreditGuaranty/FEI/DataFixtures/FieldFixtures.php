@@ -62,7 +62,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             'c4876798-0ed5-4808-9ef9-c1810b158c4f', 'eligibility', 'profile', 'list',
             'activity_department', 'borrower', 'addressDepartment', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
             '932afe50-582a-462c-b5cc-16cdd3f09c07', 'eligibility', 'profile', 'list',
@@ -87,7 +87,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             'eef6e5ac-8de6-4084-a06b-dd2974141d94', 'eligibility', 'profile', 'list',
             'legal_form', 'borrower', 'legalForm', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, '["SARL","SAS","SASU","EURL","SA","SELAS"]'
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
             '7cccbd98-6b99-4425-8f29-83a04027740c', 'eligibility', 'profile', 'list',
@@ -138,16 +138,16 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             'c904c2fb-6940-49ef-b9c3-9961c38ef70e', 'eligibility', 'project', 'list',
             'investment_department', 'project', 'addressDepartment', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 1, NULL, NULL
         ),
         (
             '674d1e2d-cf35-4c05-9ee6-69a5bbe698d6', 'eligibility', 'project', 'list',
             'investment_country', 'project', 'addressCountry', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 0, NULL, NULL
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 1, NULL, NULL
         ),
         (
             '23892bef-00b0-4df5-981e-32913e708a2b', 'eligibility', 'project', 'list',
-            'investment_thematic', 'project', 'investmentThematic', 'ProgramChoiceOption',
+            'investment_thematic', 'project', 'investmentThematics', 'Collection',
             'KLS\\CreditGuaranty\\FEI\\Entity\\Project', 1, NULL, NULL
         ),
         (
@@ -239,7 +239,7 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '675056b4-49bb-40a7-bafe-9bcc86ad7b99', 'eligibility', 'loan', 'list',
             'loan_type', 'financingObjects', 'loanType', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, '["term_loan","short_term","revolving_credit","stand_by","signature_commitment"]'
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, NULL
         ),
         (
             'dc41f2c0-0ca6-4ac4-8d92-c9f583b97923', 'eligibility', 'loan', 'other',
@@ -259,11 +259,17 @@ class FieldFixtures extends AbstractSQLFixtures
         (
             '93319782-8cfd-474f-bfe8-ab5aae88456b', 'eligibility', 'loan', 'list',
             'loan_periodicity', 'financingObjects', 'loanPeriodicity', 'ProgramChoiceOption',
-            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, '["monthly","quarterly","semi_annually","annually"]'
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL,
+            '["monthly","quarterly","semi_annually","annually"]'
         ),
         (
             '61ad5da2-1ae1-4c0b-b3bd-ce42fc0bea3b', 'eligibility', 'loan', 'list',
             'investment_location', 'financingObjects', 'investmentLocation', 'ProgramChoiceOption',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, NULL
+        ),
+        (
+            '316ba97b-3223-4c72-a147-1ae48a91f7ee', 'eligibility', 'loan', 'list',
+            'product_category_code', 'financingObjects', 'productCategoryCode', 'ProgramChoiceOption',
             'KLS\\CreditGuaranty\\FEI\\Entity\\FinancingObject', 1, NULL, NULL
         ),
 
@@ -314,7 +320,7 @@ class FieldFixtures extends AbstractSQLFixtures
         ),
         (
             'd35bcf2a-aaaa-4c97-8eba-e7336589049a', 'info', 'reservation', 'other',
-            'reservation_refusal_date', 'refusedByManagingCompanyDate', '', 'DateTimeImmutable',
+            'reservation_exclusion_date', 'refusedByManagingCompanyDate', '', 'DateTimeImmutable',
             '', 0, NULL, NULL
         ),
         (

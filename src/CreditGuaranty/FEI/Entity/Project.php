@@ -7,12 +7,15 @@ namespace KLS\CreditGuaranty\FEI\Entity;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Constant\GrossSubsidyEquivalent;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramAwareInterface;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
@@ -73,14 +76,20 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private Reservation $reservation;
 
     /**
-     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
-     * @ORM\JoinColumn(name="id_investment_thematic", nullable=true)
+     * @var ProgramChoiceOption[]|Collection
      *
-     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     * @ORM\ManyToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
+     * @ORM\JoinTable(name="credit_guaranty_project_investment_thematic")
      *
-     * @Groups({"creditGuaranty:project:write"})
+     * @Assert\All({
+     *     @Assert\Choice(callback="getAvailableInvestmentThematics")
+     * })
+     *
+     * @ApiProperty(readableLink=false)
+     *
+     * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
-    private ?ProgramChoiceOption $investmentThematic = null;
+    private Collection $investmentThematics;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
@@ -195,6 +204,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     public function __construct(Reservation $reservation)
     {
         $this->reservation         = $reservation;
+        $this->investmentThematics = new ArrayCollection();
         $this->fundingMoney        = new NullableMoney();
         $this->contribution        = new NullableMoney();
         $this->eligibleFeiCredit   = new NullableMoney();
@@ -207,30 +217,40 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $this->added               = new DateTimeImmutable();
     }
 
-    public function getInvestmentThematic(): ?ProgramChoiceOption
+    public function getReservation(): Reservation
     {
-        return $this->investmentThematic;
+        return $this->reservation;
     }
 
-    public function setInvestmentThematic(?ProgramChoiceOption $investmentThematic): Project
+    public function getProgram(): Program
     {
-        $this->investmentThematic = $investmentThematic;
+        return $this->getReservation()->getProgram();
+    }
+
+    /**
+     * @return ProgramChoiceOption[]|Collection
+     */
+    public function getInvestmentThematics(): Collection
+    {
+        return $this->investmentThematics;
+    }
+
+    public function addInvestmentThematic(ProgramChoiceOption $programChoiceOption): Project
+    {
+        if (false === $this->investmentThematics->exists($programChoiceOption->getEquivalenceChecker())) {
+            $this->investmentThematics->add($programChoiceOption);
+        }
 
         return $this;
     }
 
-    /**
-     * @SerializedName("investmentThematic")
-     *
-     * @Groups({"creditGuaranty:project:read"})
-     */
-    public function getInvestmentThematicDescription(): ?string
+    public function removeInvestmentThematic(ProgramChoiceOption $programChoiceOption): Project
     {
-        if ($this->investmentThematic) {
-            return $this->investmentThematic->getDescription();
+        if ($this->investmentThematics->exists($programChoiceOption->getEquivalenceChecker())) {
+            $this->investmentThematics->removeElement($programChoiceOption);
         }
 
-        return null;
+        return $this;
     }
 
     public function getInvestmentType(): ?ProgramChoiceOption
@@ -373,6 +393,18 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return $this;
     }
 
+    public function getAidIntensity(): ?ProgramChoiceOption
+    {
+        return $this->aidIntensity;
+    }
+
+    public function setAidIntensity(?ProgramChoiceOption $aidIntensity): Project
+    {
+        $this->aidIntensity = $aidIntensity;
+
+        return $this;
+    }
+
     /**
      * @SerializedName("aidIntensity")
      *
@@ -439,6 +471,18 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return null;
     }
 
+    public function getFundingMoney(): NullableMoney
+    {
+        return $this->fundingMoney;
+    }
+
+    public function setFundingMoney(NullableMoney $fundingMoney): Project
+    {
+        $this->fundingMoney = $fundingMoney;
+
+        return $this;
+    }
+
     public function getContribution(): NullableMoney
     {
         return $this->contribution;
@@ -459,6 +503,18 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     public function setEligibleFeiCredit(NullableMoney $eligibleFeiCredit): Project
     {
         $this->eligibleFeiCredit = $eligibleFeiCredit;
+
+        return $this;
+    }
+
+    public function getTotalFeiCredit(): NullableMoney
+    {
+        return $this->totalFeiCredit;
+    }
+
+    public function setTotalFeiCredit(NullableMoney $totalFeiCredit): Project
+    {
+        $this->totalFeiCredit = $totalFeiCredit;
 
         return $this;
     }
@@ -495,6 +551,18 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     public function setCreditExcludingFei(NullableMoney $creditExcludingFei): Project
     {
         $this->creditExcludingFei = $creditExcludingFei;
+
+        return $this;
+    }
+
+    public function getGrant(): NullableMoney
+    {
+        return $this->grant;
+    }
+
+    public function setGrant(NullableMoney $grant): Project
+    {
+        $this->grant = $grant;
 
         return $this;
     }
@@ -562,52 +630,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         return MoneyCalculator::max($programMaxFeiCredit, $maxFeiCredit);
     }
 
-    public function getProgram(): Program
-    {
-        return $this->getReservation()->getProgram();
-    }
-
-    public function getReservation(): Reservation
-    {
-        return $this->reservation;
-    }
-
-    public function getAidIntensity(): ?ProgramChoiceOption
-    {
-        return $this->aidIntensity;
-    }
-
-    public function setAidIntensity(?ProgramChoiceOption $aidIntensity): Project
-    {
-        $this->aidIntensity = $aidIntensity;
-
-        return $this;
-    }
-
-    public function getTotalFeiCredit(): NullableMoney
-    {
-        return $this->totalFeiCredit;
-    }
-
-    public function setTotalFeiCredit(NullableMoney $totalFeiCredit): Project
-    {
-        $this->totalFeiCredit = $totalFeiCredit;
-
-        return $this;
-    }
-
-    public function getGrant(): NullableMoney
-    {
-        return $this->grant;
-    }
-
-    public function setGrant(NullableMoney $grant): Project
-    {
-        $this->grant = $grant;
-
-        return $this;
-    }
-
     /**
      * @Groups({"creditGuaranty:project:read"})
      */
@@ -621,8 +643,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
 
         $grossSubsidyEquivalents = $financingObjects->map(
             static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent()
-        )->toArray()
-        ;
+        )->toArray();
 
         return MoneyCalculator::sum($grossSubsidyEquivalents);
     }
@@ -633,18 +654,6 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $totalFunds = $this->getTotalFunds($program);
 
         return MoneyCalculator::compare($totalFunds, $program->getFunds()) <= 0;
-    }
-
-    public function getFundingMoney(): NullableMoney
-    {
-        return $this->fundingMoney;
-    }
-
-    public function setFundingMoney(NullableMoney $fundingMoney): Project
-    {
-        $this->fundingMoney = $fundingMoney;
-
-        return $this;
     }
 
     public function checkQuota(): bool
@@ -698,6 +707,19 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $programBorrowerTypeAllocation = $program->getProgramBorrowerTypeAllocations()->get($borrowerType->getId());
 
         return \bccomp((string) $ratio, $programBorrowerTypeAllocation->getMaxAllocationRate(), 4) <= 0;
+    }
+
+    /**
+     * @return ProgramChoiceOption[]|array
+     */
+    public function getAvailableInvestmentThematics(): array
+    {
+        return $this->getProgram()->getProgramChoiceOptions()
+            ->filter(
+                fn (ProgramChoiceOption $pco) => FieldAlias::INVESTMENT_THEMATIC === $pco->getField()->getFieldAlias()
+            )
+            ->toArray()
+        ;
     }
 
     private function getTotalFunds(Program $program, array $filters = []): MoneyInterface

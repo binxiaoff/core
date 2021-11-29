@@ -18,7 +18,6 @@ use KLS\Core\Controller\Dataroom\Get;
 use KLS\Core\Controller\Dataroom\Post;
 use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Drive;
-use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
 use KLS\Core\Entity\Interfaces\StatusInterface;
 use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
@@ -26,6 +25,7 @@ use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
+use KLS\CreditGuaranty\FEI\Controller\EligibilityChecking;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -116,6 +116,34 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "path": "/",
  *             },
  *         },
+ *         "get_ineligibilities": {
+ *             "method": "GET",
+ *             "path": "credit_guaranty/reservations/{publicId}/ineligibilities",
+ *             "controller": EligibilityChecking::class,
+ *             "security": "is_granted('edit', object)",
+ *             "openapi_context": {
+ *                 "parameters": {
+ *                     {
+ *                         "in": "query",
+ *                         "name": "category",
+ *                         "schema": {
+ *                             "type": "string",
+ *                         },
+ *                         "required": false,
+ *                         "description": "Name of the category"
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "withConditions",
+ *                         "schema": {
+ *                             "type": "boolean",
+ *                             "enum": {0, 1, false, true}
+ *                         },
+ *                         "required": true
+ *                     },
+ *                 },
+ *             },
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
@@ -166,7 +194,12 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     private Company $managingCompany;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Borrower", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToOne(
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\Borrower",
+     *     inversedBy="reservation",
+     *     cascade={"persist", "remove"},
+     *     orphanRemoval=true
+     * )
      * @ORM\JoinColumn(name="id_borrower", nullable=false)
      *
      * @Groups({"creditGuaranty:reservation:read"})
@@ -174,7 +207,12 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     private Borrower $borrower;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Project", inversedBy="reservation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToOne(
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\Project",
+     *     inversedBy="reservation",
+     *     cascade={"persist", "remove"},
+     *     orphanRemoval=true
+     * )
      * @ORM\JoinColumn(name="id_project", nullable=false)
      *
      * @Groups({"creditGuaranty:reservation:read"})
@@ -186,7 +224,15 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *
      * @ApiSubresource
      *
-     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObject", mappedBy="reservation", cascade={"remove"}, orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\FinancingObject",
+     *     mappedBy="reservation",
+     *     cascade={"remove"},
+     *     orphanRemoval=true,
+     *     fetch="EXTRA_LAZY"
+     * )
+     *
+     * @Groups({"creditGuaranty:reservation:read"})
      */
     private Collection $financingObjects;
 
@@ -214,7 +260,12 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *
      * @Assert\Valid
      *
-     * @ORM\OneToMany(targetEntity="KLS\CreditGuaranty\FEI\Entity\ReservationStatus", mappedBy="reservation", cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\CreditGuaranty\FEI\Entity\ReservationStatus",
+     *     mappedBy="reservation",
+     *     cascade={"persist"},
+     *     fetch="EAGER"
+     * )
      *
      * @ORM\OrderBy({"added": "ASC"})
      *

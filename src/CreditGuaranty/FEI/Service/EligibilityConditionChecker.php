@@ -6,6 +6,7 @@ namespace KLS\CreditGuaranty\FEI\Service;
 
 use Doctrine\Common\Collections\Collection;
 use KLS\Core\Entity\Constant\MathOperator;
+use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityCondition;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
@@ -25,8 +26,10 @@ class EligibilityConditionChecker
         $this->reservationAccessor                   = $reservationAccessor;
     }
 
-    public function checkByConfiguration(Reservation $reservation, ProgramEligibilityConfiguration $programEligibilityConfiguration): bool
-    {
+    public function checkByConfiguration(
+        Reservation $reservation,
+        ProgramEligibilityConfiguration $programEligibilityConfiguration
+    ): bool {
         $programEligibilityConditions = $this->programEligibilityConditionRepository->findBy([
             'programEligibilityConfiguration' => $programEligibilityConfiguration,
         ]);
@@ -46,22 +49,28 @@ class EligibilityConditionChecker
 
     private function checkCondition(Reservation $reservation, ProgramEligibilityCondition $eligibilityCondition): bool
     {
-        $operator          = $eligibilityCondition->getOperation();
-        $rightOperandField = $eligibilityCondition->getRightOperandField();
-        $rightValue        = $eligibilityCondition->getValue();
+        $valueToCompare = $eligibilityCondition->getValue() ?? $eligibilityCondition->getProgramChoiceOptions();
 
         if (ProgramEligibilityCondition::VALUE_TYPE_RATE === $eligibilityCondition->getValueType()) {
+            $rightOperandField = $eligibilityCondition->getRightOperandField();
+
             if (null === $rightOperandField) {
-                throw new LogicException(\sprintf('The ProgramEligibilityCondition #%d of rate type should have an rightOperandField.', $eligibilityCondition->getId()));
+                $message = 'Impossible to check eligibility, ' .
+                    'rightOperandField is missing for ProgramEligibilityCondition #%d of a rate valueType';
+
+                throw new LogicException(\sprintf($message, $eligibilityCondition->getId()));
             }
 
             $rightEntity = $this->reservationAccessor->getEntity($reservation, $rightOperandField);
 
             if ($rightEntity instanceof Collection) {
-                throw new LogicException(\sprintf('The rightOperandField of ProgramEligibilityCondition #%d cannot be a collection.', $eligibilityCondition->getId()));
+                $message = 'Impossible to check eligibility, ' .
+                    'rightOperandField of ProgramEligibilityCondition #%d cannot be a Collection type.';
+
+                throw new LogicException(\sprintf($message, $eligibilityCondition->getId()));
             }
 
-            $rightValue = \bcmul(
+            $valueToCompare = \bcmul(
                 (string) $this->reservationAccessor->getValue($rightEntity, $rightOperandField),
                 $eligibilityCondition->getValue(),
                 4
@@ -75,7 +84,7 @@ class EligibilityConditionChecker
             foreach ($leftEntity as $leftEntityItem) {
                 $leftValue = $this->reservationAccessor->getValue($leftEntityItem, $leftOperandField);
 
-                if (false === $this->check($operator, $leftValue, $rightValue)) {
+                if (false === $this->checkByType($eligibilityCondition, $leftValue, $valueToCompare)) {
                     return false;
                 }
             }
@@ -85,10 +94,35 @@ class EligibilityConditionChecker
 
         $leftValue = $this->reservationAccessor->getValue($leftEntity, $leftOperandField);
 
-        return $this->check($operator, $leftValue, $rightValue);
+        return $this->checkByType($eligibilityCondition, $leftValue, $valueToCompare);
     }
 
-    private function check(string $operator, $leftValue, $valueToCompare): bool
+    private function checkByType(
+        ProgramEligibilityCondition $programEligibilityCondition,
+        $leftValue,
+        $valueToCompare
+    ): bool {
+        $valueType = $programEligibilityCondition->getValueType();
+        $operation = $programEligibilityCondition->getOperation();
+
+        switch ($valueType) {
+            case ProgramEligibilityCondition::VALUE_TYPE_VALUE:
+            case ProgramEligibilityCondition::VALUE_TYPE_RATE:
+                return $this->checkNumber($operation, $leftValue, $valueToCompare);
+
+            case ProgramEligibilityCondition::VALUE_TYPE_BOOL:
+                return $leftValue === (bool) $valueToCompare;
+
+            case ProgramEligibilityCondition::VALUE_TYPE_LIST:
+                return $this->checkList($programEligibilityCondition, $leftValue, $valueToCompare);
+
+            default:
+                // the check is done in ProgramEligibilityCondition::getAvailableValueTypes
+                throw new LogicException('This code should not be reached');
+        }
+    }
+
+    private function checkNumber(string $operator, $leftValue, $valueToCompare): bool
     {
         $comparison = \bccomp((string) $leftValue, (string) $valueToCompare, 4);
 
@@ -109,7 +143,42 @@ class EligibilityConditionChecker
                 return 0 === $comparison;
 
             default:
-                throw new LogicException(\sprintf('Operator %s unexpected in ProgramEligibilityConditions.', $operator));
+                // the check is done in ProgramEligibilityCondition::getAvailableOperations
+                throw new LogicException('This code should not be reached');
         }
+    }
+
+    private function checkList(
+        ProgramEligibilityCondition $programEligibilityCondition,
+        $leftValue,
+        Collection $valueToCompare
+    ): bool {
+        if ($leftValue instanceof Collection) {
+            foreach ($leftValue as $leftValueItem) {
+                if (false === ($leftValueItem instanceof ProgramChoiceOption)) {
+                    $message = 'Impossible to check eligibility, ' .
+                        'the leftOperandField value is not a ProgramChoiceOption type ' .
+                        'for ProgramEligibilityCondition #%d of a list valueType.';
+
+                    throw new LogicException(\sprintf($message, $programEligibilityCondition->getId()));
+                }
+
+                foreach ($valueToCompare as $valueToCompareItem) {
+                    if ($leftValueItem === $valueToCompareItem) {
+                        return true;
+                    }
+                }
+            }
+
+            return 0 < $leftValue->count();
+        }
+
+        foreach ($valueToCompare as $valueToCompareItem) {
+            if ($leftValue === $valueToCompareItem) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

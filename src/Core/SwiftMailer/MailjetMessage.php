@@ -31,12 +31,17 @@ class MailjetMessage extends \Swift_Message
     public const TEMPLATE_SYNDICATION                                         = 1853479;
     public const TEMPLATE_SYNDICATION_PROSPECT_COMPANY                        = 1853443;
     public const TEMPLATE_SYNDICATION_UNINITIALIZED_USER                      = 1853467;
+    public const TEMPLATE_USER_INITIALISATION                                 = 3325471;
     public const TEMPLATE_USER_PASSWORD_REQUEST                               = 1852070;
 
     private array $vars;
 
-    public function __construct(?string $subject = null, ?string $body = null, ?string $contentType = null, ?string $charset = null)
-    {
+    public function __construct(
+        ?string $subject = null,
+        ?string $body = null,
+        ?string $contentType = null,
+        ?string $charset = null
+    ) {
         parent::__construct($subject, $body, $contentType, $charset);
 
         // This address is required to respect the SMTP RFC but it is not used by mailjet (set in Mailjet template)
@@ -81,7 +86,10 @@ class MailjetMessage extends \Swift_Message
     {
         $this->vars = $this->filterVars($vars);
 
-        $this->getHeaders()->addTextHeader('X-MJ-Vars', \json_encode($this->vars, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        $this->getHeaders()->addTextHeader(
+            'X-MJ-Vars',
+            \json_encode($this->vars, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        );
 
         return $this;
     }

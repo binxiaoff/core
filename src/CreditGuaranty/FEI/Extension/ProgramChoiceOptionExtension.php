@@ -47,6 +47,7 @@ class ProgramChoiceOptionExtension implements QueryCollectionExtensionInterface
         $rootAlias          = $queryBuilder->getRootAliases()[0];
 
         $queryBuilder
+            // add distinct() if results are missing
             ->innerJoin("{$rootAlias}.program", $programAlias)
             ->leftJoin(
                 Participation::class,

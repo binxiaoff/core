@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace KLS\Test\CreditGuaranty\FEI\Unit\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use KLS\CreditGuaranty\FEI\Entity\Borrower;
 use KLS\CreditGuaranty\FEI\Entity\Field;
-use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
+use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityCondition;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
-use KLS\CreditGuaranty\FEI\Entity\Project;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConditionRepository;
 use KLS\CreditGuaranty\FEI\Service\EligibilityConditionChecker;
@@ -30,8 +28,8 @@ use Prophecy\Prophecy\ObjectProphecy;
  */
 class EligibilityConditionCheckerTest extends TestCase
 {
-    use ReservationSetTrait;
     use ProphecyTrait;
+    use ReservationSetTrait;
 
     /** @var ReservationAccessor|ObjectProphecy */
     private $reservationAccessor;
@@ -99,63 +97,17 @@ class EligibilityConditionCheckerTest extends TestCase
     /**
      * @covers ::checkByConfiguration
      */
-    public function testCheckByEligibilityConfigurationWithConditionsEligible(): void
+    public function testCheckByEligibilityConfigurationWithEligibleConditions(): void
     {
+        $this->withBorrower($this->reservation);
         $entity = $this->reservation->getBorrower();
 
-        $field = new Field(
-            'alias_1',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'borrower',
-            'siret',
-            'string',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
-        $leftField1 = new Field(
-            'left_alias_1',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'borrower',
-            'employeesNumber',
-            'int',
-            Borrower::class,
-            true,
-            'person',
-            null
-        );
-        $leftField2 = new Field(
-            'left_alias_2',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'borrower',
-            'turnover',
-            'MoneyInterface',
-            Borrower::class,
-            true,
-            'money',
-            null
-        );
-        $rightField2 = new Field(
-            'right_alias_2',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'borrower',
-            'totalAssets',
-            'MoneyInterface',
-            Borrower::class,
-            true,
-            'money',
-            null
-        );
-
+        $field                           = $this->createSiretField();
+        $leftField1                      = $this->createEmployeesNumberField();
+        $leftField2                      = $this->createTurnoverField();
+        $rightField2                     = $this->createTotalAssetsField();
+        $leftField3                      = $this->createCreationInProgressField();
+        $leftField4                      = $this->createActivityDepartmentField();
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
 
@@ -173,10 +125,26 @@ class EligibilityConditionCheckerTest extends TestCase
             'lt',
             'rate'
         ))->setValue('42');
+        $programEligibilityCondition3 = (new ProgramEligibilityCondition(
+            $programEligibilityConfiguration,
+            $leftField3,
+            null,
+            'eq',
+            'bool'
+        ))->setValue('0');
+        $programEligibilityCondition4 = (new ProgramEligibilityCondition(
+            $programEligibilityConfiguration,
+            $leftField4,
+            null,
+            'eq',
+            'list'
+        ))->addProgramChoiceOption($this->reservation->getBorrower()->getAddressDepartment());
 
         $programEligibilityConditions = new ArrayCollection([
             $programEligibilityCondition1,
             $programEligibilityCondition2,
+            $programEligibilityCondition3,
+            $programEligibilityCondition4,
         ]);
 
         $this->programEligibilityConditionRepository->findBy([
@@ -211,6 +179,26 @@ class EligibilityConditionCheckerTest extends TestCase
         ;
         $this->reservationAccessor->getValue($entity, $leftField2)->shouldBeCalledOnce()->willReturn('128');
 
+        // condition 3 - bool
+        $this->reservationAccessor->getEntity($this->reservation, $leftField3)
+            ->shouldBeCalledOnce()
+            ->willReturn($entity)
+        ;
+        $this->reservationAccessor->getValue($entity, $leftField3)
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        // condition 4 - list
+        $this->reservationAccessor->getEntity($this->reservation, $leftField4)
+            ->shouldBeCalledOnce()
+            ->willReturn($entity)
+        ;
+        $this->reservationAccessor->getValue($entity, $leftField4)
+            ->shouldBeCalledOnce()
+            ->willReturn($entity->getAddressDepartment())
+        ;
+
         $eligibilityConditionChecker = $this->createTestObject();
         $result                      = $eligibilityConditionChecker->checkByConfiguration(
             $this->reservation,
@@ -223,36 +211,12 @@ class EligibilityConditionCheckerTest extends TestCase
     /**
      * @covers ::checkByConfiguration
      */
-    public function testCheckByEligibilityConfigurationWithValueTypeConditionIneligible(): void
+    public function testCheckByEligibilityConfigurationWithIneligibleValueTypeCondition(): void
     {
         $entity = $this->reservation->getBorrower();
 
-        $field = new Field(
-            'alias_1',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'borrower',
-            'siret',
-            'string',
-            Borrower::class,
-            false,
-            null,
-            null
-        );
-        $leftField1 = new Field(
-            'left_alias_1',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'borrower',
-            'totalAssets',
-            'MoneyInterface',
-            Borrower::class,
-            true,
-            'money',
-            null
-        );
+        $field                           = $this->createSiretField();
+        $leftField1                      = $this->createTotalAssetsField();
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = (new ProgramEligibilityCondition(
@@ -290,38 +254,13 @@ class EligibilityConditionCheckerTest extends TestCase
     /**
      * @covers ::checkByConfiguration
      */
-    public function testCheckByEligibilityConfigurationWithRateTypeConditionIneligible(): void
+    public function testCheckByEligibilityConfigurationWithIneligibleRateTypeCondition(): void
     {
         $entity          = $this->reservation->getProject();
         $financingObject = $this->createFinancingObject($this->reservation, true);
 
-        $field = new Field(
-            'alias_1',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'financingObjects',
-            'loanMoney',
-            'MoneyInterface',
-            FinancingObject::class,
-            true,
-            'money',
-            null
-        );
-        $rightField1 = new Field(
-            'right_alias_1',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'project',
-            'fundingMoney',
-            'MoneyInterface',
-            Project::class,
-            true,
-            'money',
-            null
-        );
-
+        $field                           = $this->createLoanMoneyField();
+        $rightField1                     = $this->createProjectTotalAmountField();
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = (new ProgramEligibilityCondition(
@@ -367,22 +306,95 @@ class EligibilityConditionCheckerTest extends TestCase
     /**
      * @covers ::checkByConfiguration
      */
-    public function testCheckByEligibilityConfigurationWithoutRightOperandFieldInRateTypeCondition(): void
+    public function testCheckByEligibilityConfigurationWithIneligibleBoolTypeCondition(): void
     {
-        $field = new Field(
-            'alias_1',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'project',
-            'fundingMoney',
-            'MoneyInterface',
-            Project::class,
-            true,
-            'money',
-            null
+        $entity = $this->reservation->getBorrower();
+
+        $field                           = $this->createSiretField();
+        $leftField1                      = $this->createYoungFarmerField();
+        $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
+        $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
+        $programEligibilityCondition1    = (new ProgramEligibilityCondition(
+            $programEligibilityConfiguration,
+            $leftField1,
+            null,
+            'eq',
+            'value'
+        ))->setValue('0');
+
+        $programEligibilityConditions = new ArrayCollection([$programEligibilityCondition1]);
+
+        $this->programEligibilityConditionRepository->findBy([
+            'programEligibilityConfiguration' => $programEligibilityConfiguration,
+        ])->shouldBeCalledOnce()->willReturn($programEligibilityConditions);
+
+        $this->reservationAccessor->getEntity($this->reservation, $leftField1)
+            ->shouldBeCalledOnce()
+            ->willReturn($entity)
+        ;
+        $this->reservationAccessor->getValue($entity, $leftField1)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $eligibilityConditionChecker = $this->createTestObject();
+        $result                      = $eligibilityConditionChecker->checkByConfiguration(
+            $this->reservation,
+            $programEligibilityConfiguration
         );
 
+        static::assertFalse($result);
+    }
+
+    /**
+     * @covers ::checkByConfiguration
+     */
+    public function testCheckByEligibilityConfigurationWithIneligibleListTypeCondition(): void
+    {
+        $entity = $this->reservation->getBorrower();
+
+        $field                           = $this->createSiretField();
+        $leftField1                      = $this->createActivityCountryField();
+        $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
+        $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
+        $programEligibilityCondition1    = (new ProgramEligibilityCondition(
+            $programEligibilityConfiguration,
+            $leftField1,
+            null,
+            'eq',
+            'list'
+        ))->addProgramChoiceOption(new ProgramChoiceOption($this->reservation->getProgram(), 'RF', $leftField1));
+
+        $programEligibilityConditions = new ArrayCollection([$programEligibilityCondition1]);
+
+        $this->programEligibilityConditionRepository->findBy([
+            'programEligibilityConfiguration' => $programEligibilityConfiguration,
+        ])->shouldBeCalledOnce()->willReturn($programEligibilityConditions);
+
+        $this->reservationAccessor->getEntity($this->reservation, $leftField1)
+            ->shouldBeCalledOnce()
+            ->willReturn($entity)
+        ;
+        $this->reservationAccessor->getValue($entity, $leftField1)
+            ->shouldBeCalledOnce()
+            ->willReturn($entity->getAddressCountry())
+        ;
+
+        $eligibilityConditionChecker = $this->createTestObject();
+        $result                      = $eligibilityConditionChecker->checkByConfiguration(
+            $this->reservation,
+            $programEligibilityConfiguration
+        );
+
+        static::assertFalse($result);
+    }
+
+    /**
+     * @covers ::checkByConfiguration
+     */
+    public function testCheckByEligibilityConfigurationExceptionWithoutRightOperandFieldInRateTypeCondition(): void
+    {
+        $field                           = $this->createProjectTotalAmountField();
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = (new ProgramEligibilityCondition(
@@ -414,36 +426,12 @@ class EligibilityConditionCheckerTest extends TestCase
     /**
      * @covers ::checkByConfiguration
      */
-    public function testCheckByEligibilityConfigurationWithCollectionRightOperandFieldInRateTypeCondition(): void
+    public function testCheckByEligibilityConfigurationExceptionWithInvalidRightOperandFieldInRateTypeCondition(): void
     {
         $financingObject = $this->createFinancingObject($this->reservation, true);
 
-        $field = new Field(
-            'alias_1',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'project',
-            'fundingMoney',
-            'MoneyInterface',
-            Project::class,
-            true,
-            'money',
-            null
-        );
-        $rightField1 = new Field(
-            'right_alias_1',
-            Field::TAG_ELIGIBILITY,
-            'test',
-            'other',
-            'financingObjects',
-            'loanMoney',
-            'MoneyInterface',
-            FinancingObject::class,
-            true,
-            'money',
-            null
-        );
+        $field                           = $this->createProjectTotalAmountField();
+        $rightField1                     = $this->createLoanMoneyField();
         $programEligibility              = new ProgramEligibility($this->reservation->getProgram(), $field);
         $programEligibilityConfiguration = new ProgramEligibilityConfiguration($programEligibility, null, null, true);
         $programEligibilityCondition1    = (new ProgramEligibilityCondition(

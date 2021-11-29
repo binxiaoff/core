@@ -265,11 +265,17 @@ class HubspotContactManagerTest extends TestCase
 
         $hubspotContact = new HubspotContact($arrUsers[0], 10);
 
-        $this->hubspotContactRepository->findOneBy(['user' => $arrUsers[0]])->shouldBeCalled()->willReturn($hubspotContact);
+        $this->hubspotContactRepository->findOneBy(['user' => $arrUsers[0]])
+            ->shouldBeCalled()
+            ->willReturn($hubspotContact)
+        ;
 
         $response->getStatusCode()->shouldBeCalled()->willReturn(Response::HTTP_OK);
 
-        $this->hubspotClient->updateContact($hubspotContact->getContactId(), $this->getFormatData())->shouldBeCalledOnce()->willReturn($response->reveal());
+        $this->hubspotClient->updateContact($hubspotContact->getContactId(), $this->getFormatData())
+            ->shouldBeCalledOnce()
+            ->willReturn($response->reveal())
+        ;
 
         $this->hubspotContactRepository->flush()->shouldBeCalledTimes(2);
 
@@ -315,7 +321,7 @@ class HubspotContactManagerTest extends TestCase
 
     private function getCompany(): Company
     {
-        return new Company('displayName', 'CompanyName', 'siren');
+        return new Company('displayName', 'siren');
     }
 
     private function getStaff(): Staff

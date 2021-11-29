@@ -12,7 +12,7 @@ trait CompanyTrait
 {
     private function createCompany(): Company
     {
-        $company = new Company('displayName', 'CompanyName', 'siren');
+        $company = new Company('displayName', 'siren');
         $company->setShortCode('KLS');
         $company->setEmailDomain('KLS');
 

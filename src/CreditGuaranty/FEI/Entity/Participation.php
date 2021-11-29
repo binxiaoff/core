@@ -103,7 +103,11 @@ class Participation
      *
      * @ApiProperty(writableLink=false)
      *
-     * @Groups({"creditGuaranty:participation:list", "creditGuaranty:participation:read", "creditGuaranty:participation:create"})
+     * @Groups({
+     *     "creditGuaranty:participation:list",
+     *     "creditGuaranty:participation:read",
+     *     "creditGuaranty:participation:create",
+     * })
      */
     private Program $program;
 
@@ -184,59 +188,10 @@ class Participation
     }
 
     /**
-     * @Groups({"creditGuaranty:participation:read", "creditGuaranty:participation:list"})
-     */
-    public function getReservationCount(): int
-    {
-        return $this->countParticipantReservationByStatus(ReservationStatus::STATUS_SENT);
-    }
-
-    /**
-     * @Groups({"creditGuaranty:participation:list"})
-     */
-    public function getAcceptedReservationCount(): int
-    {
-        return $this->countParticipantReservationByStatus(ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY);
-    }
-
-    /**
-     * @Groups({"creditGuaranty:participation:list"})
-     */
-    public function getFormalizedReservationCount(): int
-    {
-        return $this->countParticipantReservationByStatus(ReservationStatus::STATUS_CONTRACT_FORMALIZED);
-    }
-
-    /**
      * Used in an expression assert.
      */
     public function isParticipantValid(): bool
     {
         return \in_array($this->getParticipant()->getShortCode(), CARegionalBank::REGIONAL_BANKS, true);
-    }
-
-    private function countParticipantReservationByStatus(int $status): int
-    {
-        $count = 0;
-
-        foreach ($this->getProgram()->getReservations() as $reservation) {
-            if ($reservation->getManagingCompany() !== $this->getParticipant()) {
-                continue;
-            }
-
-            if (ReservationStatus::STATUS_SENT === $status && $reservation->isSent()) {
-                ++$count;
-            }
-
-            if (ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY === $status && $reservation->isAcceptedByManagingCompany()) {
-                ++$count;
-            }
-
-            if (ReservationStatus::STATUS_CONTRACT_FORMALIZED === $status && $reservation->isFormalized()) {
-                ++$count;
-            }
-        }
-
-        return $count;
     }
 }

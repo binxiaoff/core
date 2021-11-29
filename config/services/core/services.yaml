@@ -12,7 +12,7 @@ parameters:
   hubspot.base_integration_uri: '%env(HUBSPOT_BASE_INTEGRATION_URI)%'
   kls.environment: '%env(KLS_ENV)%'
   locale: fr_FR
-  mailer.error_reporting_email: tech@kls-platform.com
+  mailer.error_reporting_email: produit@kls-platform.com
   mailer.sender_address: support@kls-platform.com
   maintenance: '%env(MAINTENANCE_MODE)%'
   psn.base_uri: '%env(PSN_BASE_URI)%'
@@ -21,7 +21,7 @@ parameters:
   router.request_context.scheme: https
   security.recipients: ['tech@kls-platform.com']
   slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
-  slack.webhook.security: https://hooks.slack.com/services/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
+  slack.webhook.security: '%env(SLACK_WEBHOOK_URL_SECURITY)%'
 
 services:
   _defaults:
