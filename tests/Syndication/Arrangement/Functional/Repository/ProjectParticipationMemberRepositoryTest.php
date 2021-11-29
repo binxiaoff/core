@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace KLS\Test\Syndication\Arrangement\Functional\Repository;
 
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use KLS\Core\Repository\StaffRepository;
-use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipationMember;
 use KLS\Syndication\Arrangement\Repository\ProjectParticipationMemberRepository;
-use KLS\Syndication\Arrangement\Repository\ProjectParticipationRepository;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 /**
@@ -27,14 +23,17 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
         static::bootKernel();
 
         /** @var ProjectParticipationMemberRepository $projectParticipationMemberRepository */
-        $projectParticipationMemberRepository = static::$container->get(ProjectParticipationMemberRepository::class);
+        $projectParticipationMemberRepository = static::getContainer()
+            ->get(ProjectParticipationMemberRepository::class)
+        ;
 
         $result = $projectParticipationMemberRepository->findAll();
 
         $this->projectParticipationMembers = [];
 
         foreach ($result as $projectParticipationMember) {
-            $this->projectParticipationMembers[$this->getKey($projectParticipationMember)] = $projectParticipationMember;
+            $key                                     = $this->getKey($projectParticipationMember);
+            $this->projectParticipationMembers[$key] = $projectParticipationMember;
         }
     }
 
@@ -96,109 +95,6 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
         foreach ($result as $item) {
             static::assertContains($item->getPublicId(), $expected);
         }
-    }
-
-    /**
-     * @dataProvider providerFindByProjectParticipationAndManagerAndPermissionEnabled
-     *
-     * @covers ::findActiveByProjectParticipationAndManagerAndPermissionEnabled
-     *
-     * @throws NoResultException
-     * @throws NonUniqueResultException
-     */
-    public function testFindByProjectParticipationAndManagerAndPermissionEnabled(
-        array $projectParticipationCriteria,
-        array $managerCriteria,
-        int $permission,
-        array $expected
-    ): void {
-        /** @var ProjectParticipationRepository $projectParticipationRepository */
-        $projectParticipationRepository = static::$container->get(ProjectParticipationRepository::class);
-
-        /** @var ProjectParticipation $projectParticipation */
-        $projectParticipation = $projectParticipationRepository->createQueryBuilder('pp')
-            ->innerJoin('pp.participant', 'participant')
-            ->innerJoin('pp.project', 'project')
-            ->where('participant.publicId = :participant')
-            ->andWhere('project.publicId = :project')
-            ->setParameters($projectParticipationCriteria)
-            ->getQuery()
-            ->getSingleResult()
-        ;
-
-        /** @var StaffRepository $staffRepository */
-        $staffRepository = static::$container->get(StaffRepository::class);
-
-        $manager = $staffRepository->findOneBy($managerCriteria);
-        /** @var ProjectParticipationMemberRepository $projectParticipationMemberRepository */
-        $projectParticipationMemberRepository = static::$container->get(ProjectParticipationMemberRepository::class);
-
-        $expected = \array_map(function ($key) {
-            return $this->projectParticipationMembers[$key]->getPublicId();
-        }, $expected);
-
-        $result = $projectParticipationMemberRepository->findActiveByProjectParticipationAndManagerAndPermissionEnabled($projectParticipation, $manager, $permission);
-
-        static::assertIsArray($result);
-        static::assertCount(\count($expected), $result);
-        static::assertContainsOnlyInstancesOf(ProjectParticipationMember::class, $result);
-
-        /** @var ProjectParticipationMember $item */
-        foreach ($result as $item) {
-            static::assertContains($item->getPublicId(), $expected);
-            static::assertTrue($item->getPermissions()->has($permission));
-            static::assertSame($item->getProjectParticipation()->getPublicId(), $projectParticipation->getPublicId());
-        }
-    }
-
-    /**
-     * @return array[]
-     */
-    public function providerFindByProjectParticipationAndManagerAndPermissionEnabled(): array
-    {
-        return [
-            'It should return no result for non manager staff' => [
-                ['participant' => 'company:basic', 'project' => 'project/basic_arranger'],
-                ['publicId' => 'staff_company:basic_user-7'],
-                0,
-                [],
-            ],
-            'It should return no result for manager staff on incorrect participation' => [
-                ['participant' => 'company:example', 'project' => 'project/basic_arranger'],
-                ['publicId' => 'staff_company:basic_user-1'],
-                0,
-                [],
-            ],
-            'It should return participation members managed by given staff' => [
-                ['participant' => 'company:basic', 'project' => 'project/example_arranger'],
-                ['publicId' => 'staff_company:basic_user-1'],
-                0,
-                [
-                    'example_arranger_basic_user-4',
-                    'example_arranger_basic_user-10',
-                    'example_arranger_basic_user-3',
-                    'example_arranger_basic_user-8',
-                ],
-            ],
-            'It should return participation members managed by given staff 2' => [
-                ['participant' => 'company:basic', 'project' => 'project/example_arranger'],
-                ['publicId' => 'staff_company:basic_user-4'],
-                0,
-                [
-                    'example_arranger_basic_user-4',
-                    'example_arranger_basic_user-10',
-                ],
-            ],
-            'It should return participation members with specified permission managed by given staff ' => [
-                ['participant' => 'company:basic', 'project' => 'project/example_arranger'],
-                ['publicId' => 'staff_company:basic_user-1'],
-                1,
-                [
-                    'example_arranger_basic_user-3',
-                    'example_arranger_basic_user-8',
-                ],
-            ],
-        ];
     }
 
     private function getKey(ProjectParticipationMember $projectParticipationMember): string

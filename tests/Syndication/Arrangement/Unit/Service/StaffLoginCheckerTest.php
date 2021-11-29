@@ -39,16 +39,9 @@ class StaffLoginCheckerTest extends TestCase
         yield 'staff not CA member and signed' => [
             $this->createStaff(new CompanyGroup('Company Group'), CompanyStatus::STATUS_SIGNED),
         ];
-    }
-
-    /**
-     * @covers ::isGrantedLogin
-     */
-    public function testIsNotGrantedLogin(): void
-    {
-        $staff   = $this->createStaff();
-        $checker = new StaffLoginChecker();
-        static::assertFalse($checker->isGrantedLogin($staff));
+        yield 'staff CA member and not signed' => [
+            $this->createStaff(null, CompanyStatus::STATUS_PROSPECT),
+        ];
     }
 
     private function createStaff(?CompanyGroup $companyGroup = null, ?int $companyStatus = null): Staff
