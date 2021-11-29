@@ -89,6 +89,11 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             '406 - Fromages et caillebotte',
             '8105000 - Kiwis, frais',
         ],
+        FieldAlias::TARGET_TYPE => [
+            'Cible A',
+            'Cible B',
+            'Cible C',
+        ],
     ];
 
     private FieldRepository $fieldRepository;

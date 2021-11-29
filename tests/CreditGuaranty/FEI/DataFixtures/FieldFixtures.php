@@ -7,6 +7,7 @@ namespace KLS\Test\CreditGuaranty\FEI\DataFixtures;
 use Doctrine\Persistence\ObjectManager;
 use KLS\Core\Entity\Company;
 use KLS\CreditGuaranty\FEI\Entity\Borrower;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\Program;
@@ -17,7 +18,7 @@ class FieldFixtures extends AbstractFixtures
 {
     public function load(ObjectManager $manager): void
     {
-        foreach ($this->loadData() as $reference => $fieldData) {
+        foreach ($this->loadData() as $fieldAlias => $fieldData) {
             $field = new Field(
                 $fieldData['fieldAlias'],
                 $fieldData['tag'],
@@ -32,6 +33,7 @@ class FieldFixtures extends AbstractFixtures
                 $fieldData['predefinedItems']
             );
 
+            $reference = 'field-' . $fieldAlias;
             $this->setPublicId($field, $reference);
             $this->addReference($reference, $field);
 
@@ -43,8 +45,8 @@ class FieldFixtures extends AbstractFixtures
 
     private function loadData(): iterable
     {
-        yield 'field-beneficiary_name' => [
-            'fieldAlias'              => 'beneficiary_name',
+        yield FieldAlias::BENEFICIARY_NAME => [
+            'fieldAlias'              => FieldAlias::BENEFICIARY_NAME,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -56,8 +58,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-borrower_type' => [
-            'fieldAlias'              => 'borrower_type',
+        yield FieldAlias::BORROWER_TYPE => [
+            'fieldAlias'              => FieldAlias::BORROWER_TYPE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'list',
@@ -69,8 +71,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-young_farmer' => [
-            'fieldAlias'              => 'young_farmer',
+        yield FieldAlias::YOUNG_FARMER => [
+            'fieldAlias'              => FieldAlias::YOUNG_FARMER,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'bool',
@@ -82,8 +84,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-creation_in_progress' => [
-            'fieldAlias'              => 'creation_in_progress',
+        yield FieldAlias::CREATION_IN_PROGRESS => [
+            'fieldAlias'              => FieldAlias::CREATION_IN_PROGRESS,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'bool',
@@ -95,8 +97,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-subsidiary' => [
-            'fieldAlias'              => 'subsidiary',
+        yield FieldAlias::SUBSIDIARY => [
+            'fieldAlias'              => FieldAlias::SUBSIDIARY,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'bool',
@@ -108,8 +110,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-company_name' => [
-            'fieldAlias'              => 'company_name',
+        yield FieldAlias::COMPANY_NAME => [
+            'fieldAlias'              => FieldAlias::COMPANY_NAME,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -121,8 +123,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-activity_street' => [
-            'fieldAlias'              => 'activity_street',
+        yield FieldAlias::ACTIVITY_STREET => [
+            'fieldAlias'              => FieldAlias::ACTIVITY_STREET,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -134,8 +136,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-activity_post_code' => [
-            'fieldAlias'              => 'activity_post_code',
+        yield FieldAlias::ACTIVITY_POST_CODE => [
+            'fieldAlias'              => FieldAlias::ACTIVITY_POST_CODE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -147,8 +149,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-activity_city' => [
-            'fieldAlias'              => 'activity_city',
+        yield FieldAlias::ACTIVITY_CITY => [
+            'fieldAlias'              => FieldAlias::ACTIVITY_CITY,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -160,8 +162,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-activity_department' => [
-            'fieldAlias'              => 'activity_department',
+        yield FieldAlias::ACTIVITY_DEPARTMENT => [
+            'fieldAlias'              => FieldAlias::ACTIVITY_DEPARTMENT,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'list',
@@ -173,8 +175,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-activity_country' => [
-            'fieldAlias'              => 'activity_country',
+        yield FieldAlias::ACTIVITY_COUNTRY => [
+            'fieldAlias'              => FieldAlias::ACTIVITY_COUNTRY,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'list',
@@ -186,8 +188,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-activity_start_date' => [
-            'fieldAlias'              => 'activity_start_date',
+        yield FieldAlias::ACTIVITY_START_DATE => [
+            'fieldAlias'              => FieldAlias::ACTIVITY_START_DATE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -199,8 +201,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-siret' => [
-            'fieldAlias'              => 'siret',
+        yield FieldAlias::SIRET => [
+            'fieldAlias'              => FieldAlias::SIRET,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -212,8 +214,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-tax_number' => [
-            'fieldAlias'              => 'tax_number',
+        yield FieldAlias::TAX_NUMBER => [
+            'fieldAlias'              => FieldAlias::TAX_NUMBER,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -225,8 +227,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-legal_form' => [
-            'fieldAlias'              => 'legal_form',
+        yield FieldAlias::LEGAL_FORM => [
+            'fieldAlias'              => FieldAlias::LEGAL_FORM,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'list',
@@ -238,8 +240,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-company_naf_code' => [
-            'fieldAlias'              => 'company_naf_code',
+        yield FieldAlias::COMPANY_NAF_CODE => [
+            'fieldAlias'              => FieldAlias::COMPANY_NAF_CODE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -251,8 +253,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-employees_number' => [
-            'fieldAlias'              => 'employees_number',
+        yield FieldAlias::EMPLOYEES_NUMBER => [
+            'fieldAlias'              => FieldAlias::EMPLOYEES_NUMBER,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -264,8 +266,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'person',
             'predefinedItems'         => null,
         ];
-        yield 'field-exploitation_size' => [
-            'fieldAlias'              => 'exploitation_size',
+        yield FieldAlias::EXPLOITATION_SIZE => [
+            'fieldAlias'              => FieldAlias::EXPLOITATION_SIZE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -277,8 +279,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-turnover' => [
-            'fieldAlias'              => 'turnover',
+        yield FieldAlias::TURNOVER => [
+            'fieldAlias'              => FieldAlias::TURNOVER,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -290,8 +292,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-total_assets' => [
-            'fieldAlias'              => 'total_assets',
+        yield FieldAlias::TOTAL_ASSETS => [
+            'fieldAlias'              => FieldAlias::TOTAL_ASSETS,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -303,8 +305,21 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-receiving_grant' => [
-            'fieldAlias'              => 'receiving_grant',
+        yield FieldAlias::TARGET_TYPE => [
+            'fieldAlias'              => FieldAlias::TARGET_TYPE,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'list',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'targetType',
+            'propertyType'            => 'ProgramChoiceOption',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield FieldAlias::RECEIVING_GRANT => [
+            'fieldAlias'              => FieldAlias::RECEIVING_GRANT,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'bool',
@@ -316,8 +331,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-investment_street' => [
-            'fieldAlias'              => 'investment_street',
+        yield FieldAlias::INVESTMENT_STREET => [
+            'fieldAlias'              => FieldAlias::INVESTMENT_STREET,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -329,8 +344,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-investment_post_code' => [
-            'fieldAlias'              => 'investment_post_code',
+        yield FieldAlias::INVESTMENT_POST_CODE => [
+            'fieldAlias'              => FieldAlias::INVESTMENT_POST_CODE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -342,8 +357,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-investment_city' => [
-            'fieldAlias'              => 'investment_city',
+        yield FieldAlias::INVESTMENT_CITY => [
+            'fieldAlias'              => FieldAlias::INVESTMENT_CITY,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -355,8 +370,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-investment_department' => [
-            'fieldAlias'              => 'investment_department',
+        yield FieldAlias::INVESTMENT_DEPARTMENT => [
+            'fieldAlias'              => FieldAlias::INVESTMENT_DEPARTMENT,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'list',
@@ -368,8 +383,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-investment_country' => [
-            'fieldAlias'              => 'investment_country',
+        yield FieldAlias::INVESTMENT_COUNTRY => [
+            'fieldAlias'              => FieldAlias::INVESTMENT_COUNTRY,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'list',
@@ -381,8 +396,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-investment_thematic' => [
-            'fieldAlias'              => 'investment_thematic',
+        yield FieldAlias::INVESTMENT_THEMATIC => [
+            'fieldAlias'              => FieldAlias::INVESTMENT_THEMATIC,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'list',
@@ -394,8 +409,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-investment_type' => [
-            'fieldAlias'              => 'investment_type',
+        yield FieldAlias::INVESTMENT_TYPE => [
+            'fieldAlias'              => FieldAlias::INVESTMENT_TYPE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'list',
@@ -407,8 +422,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-aid_intensity' => [
-            'fieldAlias'              => 'aid_intensity',
+        yield FieldAlias::AID_INTENSITY => [
+            'fieldAlias'              => FieldAlias::AID_INTENSITY,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'list',
@@ -420,8 +435,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'percentage',
             'predefinedItems'         => null,
         ];
-        yield 'field-additional_guaranty' => [
-            'fieldAlias'              => 'additional_guaranty',
+        yield FieldAlias::ADDITIONAL_GUARANTY => [
+            'fieldAlias'              => FieldAlias::ADDITIONAL_GUARANTY,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'list',
@@ -433,8 +448,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-agricultural_branch' => [
-            'fieldAlias'              => 'agricultural_branch',
+        yield FieldAlias::AGRICULTURAL_BRANCH => [
+            'fieldAlias'              => FieldAlias::AGRICULTURAL_BRANCH,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'list',
@@ -446,8 +461,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-project_total_amount' => [
-            'fieldAlias'              => 'project_total_amount',
+        yield FieldAlias::PROJECT_TOTAL_AMOUNT => [
+            'fieldAlias'              => FieldAlias::PROJECT_TOTAL_AMOUNT,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -459,8 +474,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-project_contribution' => [
-            'fieldAlias'              => 'project_contribution',
+        yield FieldAlias::PROJECT_CONTRIBUTION => [
+            'fieldAlias'              => FieldAlias::PROJECT_CONTRIBUTION,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -472,8 +487,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-eligible_fei_credit' => [
-            'fieldAlias'              => 'eligible_fei_credit',
+        yield FieldAlias::ELIGIBLE_FEI_CREDIT => [
+            'fieldAlias'              => FieldAlias::ELIGIBLE_FEI_CREDIT,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -485,8 +500,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-total_fei_credit' => [
-            'fieldAlias'              => 'total_fei_credit',
+        yield FieldAlias::TOTAL_FEI_CREDIT => [
+            'fieldAlias'              => FieldAlias::TOTAL_FEI_CREDIT,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -498,8 +513,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-tangible_fei_credit' => [
-            'fieldAlias'              => 'tangible_fei_credit',
+        yield FieldAlias::TANGIBLE_FEI_CREDIT => [
+            'fieldAlias'              => FieldAlias::TANGIBLE_FEI_CREDIT,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -511,8 +526,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-intangible_fei_credit' => [
-            'fieldAlias'              => 'intangible_fei_credit',
+        yield FieldAlias::INTANGIBLE_FEI_CREDIT => [
+            'fieldAlias'              => FieldAlias::INTANGIBLE_FEI_CREDIT,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -524,8 +539,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-credit_excluding_fei' => [
-            'fieldAlias'              => 'credit_excluding_fei',
+        yield FieldAlias::CREDIT_EXCLUDING_FEI => [
+            'fieldAlias'              => FieldAlias::CREDIT_EXCLUDING_FEI,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -537,8 +552,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-project_grant' => [
-            'fieldAlias'              => 'project_grant',
+        yield FieldAlias::PROJECT_GRANT => [
+            'fieldAlias'              => FieldAlias::PROJECT_GRANT,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -550,8 +565,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-land_value' => [
-            'fieldAlias'              => 'land_value',
+        yield FieldAlias::LAND_VALUE => [
+            'fieldAlias'              => FieldAlias::LAND_VALUE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'project',
             'type'                    => 'other',
@@ -563,8 +578,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-supporting_generations_renewal' => [
-            'fieldAlias'              => 'supporting_generations_renewal',
+        yield FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => [
+            'fieldAlias'              => FieldAlias::SUPPORTING_GENERATIONS_RENEWAL,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'bool',
@@ -576,8 +591,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-financing_object_type' => [
-            'fieldAlias'              => 'financing_object_type',
+        yield FieldAlias::FINANCING_OBJECT_TYPE => [
+            'fieldAlias'              => FieldAlias::FINANCING_OBJECT_TYPE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'list',
@@ -589,8 +604,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_naf_code' => [
-            'fieldAlias'              => 'loan_naf_code',
+        yield FieldAlias::LOAN_NAF_CODE => [
+            'fieldAlias'              => FieldAlias::LOAN_NAF_CODE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'list',
@@ -602,8 +617,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-bfr_value' => [
-            'fieldAlias'              => 'bfr_value',
+        yield FieldAlias::BFR_VALUE => [
+            'fieldAlias'              => FieldAlias::BFR_VALUE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -615,8 +630,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_type' => [
-            'fieldAlias'              => 'loan_type',
+        yield FieldAlias::LOAN_TYPE => [
+            'fieldAlias'              => FieldAlias::LOAN_TYPE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'list',
@@ -628,8 +643,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_money' => [
-            'fieldAlias'              => 'loan_money',
+        yield FieldAlias::LOAN_MONEY => [
+            'fieldAlias'              => FieldAlias::LOAN_MONEY,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -641,8 +656,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'money',
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_duration' => [
-            'fieldAlias'              => 'loan_duration',
+        yield FieldAlias::LOAN_DURATION => [
+            'fieldAlias'              => FieldAlias::LOAN_DURATION,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -654,8 +669,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'month',
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_deferral' => [
-            'fieldAlias'              => 'loan_deferral',
+        yield FieldAlias::LOAN_DEFERRAL => [
+            'fieldAlias'              => FieldAlias::LOAN_DEFERRAL,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -667,8 +682,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'month',
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_periodicity' => [
-            'fieldAlias'              => 'loan_periodicity',
+        yield FieldAlias::LOAN_PERIODICITY => [
+            'fieldAlias'              => FieldAlias::LOAN_PERIODICITY,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'list',
@@ -680,8 +695,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => 'month',
             'predefinedItems'         => ['monthly', 'quarterly', 'semi_annually', 'annually'],
         ];
-        yield 'field-investment_location' => [
-            'fieldAlias'              => 'investment_location',
+        yield FieldAlias::INVESTMENT_LOCATION => [
+            'fieldAlias'              => FieldAlias::INVESTMENT_LOCATION,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -693,8 +708,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-product_category_code' => [
-            'fieldAlias'              => 'product_category_code',
+        yield FieldAlias::PRODUCT_CATEGORY_CODE => [
+            'fieldAlias'              => FieldAlias::PRODUCT_CATEGORY_CODE,
             'tag'                     => Field::TAG_ELIGIBILITY,
             'category'                => 'loan',
             'type'                    => 'list',
@@ -706,8 +721,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-program_currency' => [
-            'fieldAlias'              => 'program_currency',
+        yield FieldAlias::PROGRAM_CURRENCY => [
+            'fieldAlias'              => FieldAlias::PROGRAM_CURRENCY,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'program',
             'type'                    => 'other',
@@ -719,8 +734,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-guaranty_duration' => [
-            'fieldAlias'              => 'guaranty_duration',
+        yield FieldAlias::PROGRAM_DURATION => [
+            'fieldAlias'              => FieldAlias::PROGRAM_DURATION,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'program',
             'type'                    => 'other',
@@ -732,8 +747,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-esb_calculation_activated' => [
-            'fieldAlias'              => 'esb_calculation_activated',
+        yield FieldAlias::ESB_CALCULATION_ACTIVATED => [
+            'fieldAlias'              => FieldAlias::ESB_CALCULATION_ACTIVATED,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'program',
             'type'                    => 'bool',
@@ -745,8 +760,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_released_on_invoice' => [
-            'fieldAlias'              => 'loan_released_on_invoice',
+        yield FieldAlias::LOAN_RELEASED_ON_INVOICE => [
+            'fieldAlias'              => FieldAlias::LOAN_RELEASED_ON_INVOICE,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'program',
             'type'                    => 'bool',
@@ -758,8 +773,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-max_fei_credit' => [
-            'fieldAlias'              => 'max_fei_credit',
+        yield FieldAlias::MAX_FEI_CREDIT => [
+            'fieldAlias'              => FieldAlias::MAX_FEI_CREDIT,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'program',
             'type'                    => 'other',
@@ -771,8 +786,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-rating_model' => [
-            'fieldAlias'              => 'rating_model',
+        yield FieldAlias::RATING_MODEL => [
+            'fieldAlias'              => FieldAlias::RATING_MODEL,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'program',
             'type'                    => 'other',
@@ -784,8 +799,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-reservation_name' => [
-            'fieldAlias'              => 'reservation_name',
+        yield FieldAlias::RESERVATION_NAME => [
+            'fieldAlias'              => FieldAlias::RESERVATION_NAME,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'reservation',
             'type'                    => 'other',
@@ -797,8 +812,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-reservation_status' => [
-            'fieldAlias'              => 'reservation_status',
+        yield FieldAlias::RESERVATION_STATUS => [
+            'fieldAlias'              => FieldAlias::RESERVATION_STATUS,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'reservation',
             'type'                    => 'other',
@@ -810,8 +825,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-reservation_creation_date' => [
-            'fieldAlias'              => 'reservation_creation_date',
+        yield FieldAlias::RESERVATION_CREATION_DATE => [
+            'fieldAlias'              => FieldAlias::RESERVATION_CREATION_DATE,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'reservation',
             'type'                    => 'other',
@@ -823,8 +838,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-reservation_exclusion_date' => [
-            'fieldAlias'              => 'reservation_exclusion_date',
+        yield FieldAlias::RESERVATION_EXCLUSION_DATE => [
+            'fieldAlias'              => FieldAlias::RESERVATION_EXCLUSION_DATE,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'reservation',
             'type'                    => 'other',
@@ -836,8 +851,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-reservation_signing_date' => [
-            'fieldAlias'              => 'reservation_signing_date',
+        yield FieldAlias::RESERVATION_SIGNING_DATE => [
+            'fieldAlias'              => FieldAlias::RESERVATION_SIGNING_DATE,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'reservation',
             'type'                    => 'other',
@@ -849,8 +864,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-reservation_managing_company' => [
-            'fieldAlias'              => 'reservation_managing_company',
+        yield FieldAlias::RESERVATION_MANAGING_COMPANY => [
+            'fieldAlias'              => FieldAlias::RESERVATION_MANAGING_COMPANY,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'reservation',
             'type'                    => 'other',
@@ -862,8 +877,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-borrower_type_grade' => [
-            'fieldAlias'              => 'borrower_type_grade',
+        yield FieldAlias::BORROWER_TYPE_GRADE => [
+            'fieldAlias'              => FieldAlias::BORROWER_TYPE_GRADE,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'profile',
             'type'                    => 'other',
@@ -875,8 +890,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-project_detail' => [
-            'fieldAlias'              => 'project_detail',
+        yield FieldAlias::PROJECT_DETAIL => [
+            'fieldAlias'              => FieldAlias::PROJECT_DETAIL,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'project',
             'type'                    => 'other',
@@ -888,8 +903,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-financing_object_name' => [
-            'fieldAlias'              => 'financing_object_name',
+        yield FieldAlias::FINANCING_OBJECT_NAME => [
+            'fieldAlias'              => FieldAlias::FINANCING_OBJECT_NAME,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -902,8 +917,8 @@ class FieldFixtures extends AbstractFixtures
             'predefinedItems'         => null,
         ];
         // this reference needs to be shorter because reference is set as publicId and publicId has a character limit
-        yield 'field-loan_money_after_contract' => [
-            'fieldAlias'              => 'loan_money_after_contractualisation',
+        yield 'loan_money_after_contract' => [
+            'fieldAlias'              => FieldAlias::LOAN_MONEY_AFTER_CONTRACTUALISATION,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -915,8 +930,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-main_loan' => [
-            'fieldAlias'              => 'main_loan',
+        yield FieldAlias::MAIN_LOAN => [
+            'fieldAlias'              => FieldAlias::MAIN_LOAN,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'loan',
             'type'                    => 'bool',
@@ -928,8 +943,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_number' => [
-            'fieldAlias'              => 'loan_number',
+        yield FieldAlias::LOAN_NUMBER => [
+            'fieldAlias'              => FieldAlias::LOAN_NUMBER,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -941,8 +956,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_operation_number' => [
-            'fieldAlias'              => 'loan_operation_number',
+        yield FieldAlias::LOAN_OPERATION_NUMBER => [
+            'fieldAlias'              => FieldAlias::LOAN_OPERATION_NUMBER,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -954,8 +969,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-first_release_date' => [
-            'fieldAlias'              => 'first_release_date',
+        yield FieldAlias::FIRST_RELEASE_DATE => [
+            'fieldAlias'              => FieldAlias::FIRST_RELEASE_DATE,
             'tag'                     => Field::TAG_INFO,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -967,8 +982,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_new_maturity' => [
-            'fieldAlias'              => 'loan_new_maturity',
+        yield FieldAlias::LOAN_NEW_MATURITY => [
+            'fieldAlias'              => FieldAlias::LOAN_NEW_MATURITY,
             'tag'                     => Field::TAG_IMPORTED,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -980,8 +995,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-loan_remaining_capital' => [
-            'fieldAlias'              => 'loan_remaining_capital',
+        yield FieldAlias::LOAN_REMAINING_CAPITAL => [
+            'fieldAlias'              => FieldAlias::LOAN_REMAINING_CAPITAL,
             'tag'                     => Field::TAG_IMPORTED,
             'category'                => 'loan',
             'type'                    => 'other',
@@ -993,8 +1008,8 @@ class FieldFixtures extends AbstractFixtures
             'unit'                    => null,
             'predefinedItems'         => null,
         ];
-        yield 'field-total_gross_subsidy_equivalent' => [
-            'fieldAlias'              => 'total_gross_subsidy_equivalent',
+        yield FieldAlias::TOTAL_GROSS_SUBSIDY_EQUIVALENT => [
+            'fieldAlias'              => FieldAlias::TOTAL_GROSS_SUBSIDY_EQUIVALENT,
             'tag'                     => Field::TAG_CALCUL,
             'category'                => 'project',
             'type'                    => 'other',
