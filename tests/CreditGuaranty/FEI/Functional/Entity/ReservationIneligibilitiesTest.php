@@ -61,9 +61,9 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
 
     public function reservationsProvider(): iterable
     {
-        yield 'user-1 - reservation draft 2 - checking profile without conditions : ineligible' => [
+        yield 'user-1 - reservation 2 - checking profile without conditions : ineligible' => [
             'staff_company:basic_user-1',
-            ReservationFixtures::RESERVATION_DRAFT_2,
+            ReservationFixtures::RESERVATION_2,
             false,
             [
                 'profile' => [
@@ -73,30 +73,30 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
             ],
             'profile',
         ];
-        yield 'user-2 - reservation sent 1 - checking profile without conditions : eligible' => [
+        yield 'user-2 - reservation 3 - checking profile without conditions : eligible' => [
             'staff_company:basic_user-2',
-            ReservationFixtures::RESERVATION_SENT_1,
+            ReservationFixtures::RESERVATION_3,
             false,
             [],
             'profile',
         ];
-        yield 'user-2 - reservation sent 1 - checking profile with conditions : eligible' => [
+        yield 'user-2 - reservation 3 - checking profile with conditions : eligible' => [
             'staff_company:basic_user-2',
-            ReservationFixtures::RESERVATION_SENT_1,
+            ReservationFixtures::RESERVATION_3,
             true,
             [],
             'profile',
         ];
-        yield 'user-3 - reservation sent 1 - checking project without conditions : eligible' => [
+        yield 'user-3 - reservation 3 - checking project without conditions : eligible' => [
             'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_SENT_1,
+            ReservationFixtures::RESERVATION_3,
             false,
             [],
             'project',
         ];
-        yield 'user-3 - reservation sent 1 - checking project with conditions : ineligible' => [
+        yield 'user-3 - reservation 3 - checking project with conditions : ineligible' => [
             'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_SENT_1,
+            ReservationFixtures::RESERVATION_3,
             true,
             [
                 'project' => [
@@ -106,30 +106,30 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
             ],
             'project',
         ];
-        yield 'user-5 - reservation sent 1 - checking loan without conditions : eligible' => [
+        yield 'user-5 - reservation 3 - checking loan without conditions : eligible' => [
             'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_SENT_1,
+            ReservationFixtures::RESERVATION_3,
             false,
             [],
             'loan',
         ];
-        yield 'user-5 - reservation sent 1 - checking loan with conditions : eligible' => [
+        yield 'user-5 - reservation 3 - checking loan with conditions : eligible' => [
             'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_SENT_1,
+            ReservationFixtures::RESERVATION_3,
             true,
             [],
             'loan',
         ];
-        yield 'user-11 - reservation sent 1 - checking conditions : ineligible' => [
+        yield 'user-11 - reservation 3 - checking conditions : ineligible' => [
             'staff_company:basic_user-11',
-            ReservationFixtures::RESERVATION_SENT_1,
+            ReservationFixtures::RESERVATION_3,
             true,
             [],
             null,
         ];
-        yield 'user-3 - reservation sent 2 - checking profile without conditions : ineligible' => [
+        yield 'user-3 - reservation 4 - checking profile without conditions : ineligible' => [
             'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_SENT_2,
+            ReservationFixtures::RESERVATION_4,
             false,
             [
                 'profile' => [
@@ -139,9 +139,9 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
             ],
             'profile',
         ];
-        yield 'user-3 - reservation sent 2 - checking profile with conditions : ineligible' => [
+        yield 'user-3 - reservation 4 - checking profile with conditions : ineligible' => [
             'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_SENT_2,
+            ReservationFixtures::RESERVATION_4,
             true,
             [
                 'profile' => [
@@ -151,9 +151,9 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
             ],
             'profile',
         ];
-        yield 'user-4 - reservation sent 2 - checking project without conditions : ineligible' => [
+        yield 'user-4 - reservation 4 - checking project without conditions : ineligible' => [
             'staff_company:basic_user-4',
-            ReservationFixtures::RESERVATION_SENT_2,
+            ReservationFixtures::RESERVATION_4,
             false,
             [
                 'project' => [
@@ -163,9 +163,9 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
             ],
             'project',
         ];
-        yield 'user-4 - reservation sent 2 - checking project with conditions : ineligible' => [
+        yield 'user-4 - reservation 4 - checking project with conditions : ineligible' => [
             'staff_company:basic_user-4',
-            ReservationFixtures::RESERVATION_SENT_2,
+            ReservationFixtures::RESERVATION_4,
             true,
             [
                 'project' => [
@@ -175,16 +175,16 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
             ],
             'project',
         ];
-        yield 'user-5 - reservation sent 2 - checking loan without conditions : eligible' => [
+        yield 'user-5 - reservation 4 - checking loan without conditions : eligible' => [
             'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_SENT_2,
+            ReservationFixtures::RESERVATION_4,
             false,
             [],
             'loan',
         ];
-        yield 'user-5 - reservation sent 2 - checking loan with conditions : ineligible' => [
+        yield 'user-5 - reservation 4 - checking loan with conditions : ineligible' => [
             'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_SENT_2,
+            ReservationFixtures::RESERVATION_4,
             true,
             [
                 'loan' => [
@@ -193,9 +193,9 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
             ],
             'loan',
         ];
-        yield 'user-11 - reservation sent 2 - checking conditions : ineligible' => [
+        yield 'user-11 - reservation 4 - checking conditions : ineligible' => [
             'staff_company:basic_user-11',
-            ReservationFixtures::RESERVATION_SENT_2,
+            ReservationFixtures::RESERVATION_4,
             true,
             [
                 'profile' => [
@@ -237,18 +237,23 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
 
     public function notAllowedProvider(): iterable
     {
-        foreach ([ReservationFixtures::RESERVATION_DRAFT_1, ReservationFixtures::RESERVATION_DRAFT_2] as $reservation) {
-            yield 'user-1 - ' . $reservation => [
+        foreach (ReservationFixtures::ALL_RESERVATIONS as $reservation) {
+            yield 'user-1 - POST - ' . $reservation => [
                 'staff_company:basic_user-1',
                 $reservation,
                 Request::METHOD_POST,
             ];
-            yield 'user-2 - ' . $reservation => [
+            yield 'user-2 - PATCH - ' . $reservation => [
                 'staff_company:basic_user-2',
                 $reservation,
                 Request::METHOD_PATCH,
             ];
-            yield 'user-3 - ' . $reservation => [
+            yield 'user-2 - PUT - ' . $reservation => [
+                'staff_company:basic_user-2',
+                $reservation,
+                Request::METHOD_PUT,
+            ];
+            yield 'user-3 - DELETE - ' . $reservation => [
                 'staff_company:basic_user-3',
                 $reservation,
                 Request::METHOD_DELETE,
@@ -288,7 +293,7 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
 
     public function forbiddenProvider(): iterable
     {
-        foreach ([ReservationFixtures::RESERVATION_DRAFT_1, ReservationFixtures::RESERVATION_DRAFT_2] as $reservation) {
+        foreach (ReservationFixtures::ALL_RESERVATIONS as $reservation) {
             yield 'user-a - ' . $reservation => [
                 'staff_company:foo_user-a',
                 $reservation,

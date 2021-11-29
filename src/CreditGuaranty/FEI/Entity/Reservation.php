@@ -120,7 +120,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "method": "GET",
  *             "path": "credit_guaranty/reservations/{publicId}/ineligibilities",
  *             "controller": EligibilityChecking::class,
- *             "security": "is_granted('edit', object)",
+ *             "security": "is_granted('check_eligibility', object)",
  *             "openapi_context": {
  *                 "parameters": {
  *                     {
@@ -276,7 +276,11 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     /**
      * @ORM\Column(type="date_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     * @Groups({
+     *     "creditGuaranty:reservation:read",
+     *     "creditGuaranty:reservation:write",
+     *     "creditGuaranty:reservation:formalize"
+     * })
      */
     private ?DateTimeImmutable $signingDate = null;
 

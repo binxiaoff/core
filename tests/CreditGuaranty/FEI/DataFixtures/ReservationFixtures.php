@@ -30,10 +30,17 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class ReservationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    public const RESERVATION_DRAFT_1 = 'reservation-draft-1';
-    public const RESERVATION_DRAFT_2 = 'reservation-draft-2';
-    public const RESERVATION_SENT_1  = 'reservation-sent-1';
-    public const RESERVATION_SENT_2  = 'reservation-sent-2';
+    public const RESERVATION_1 = 'reservation-1';
+    public const RESERVATION_2 = 'reservation-2';
+    public const RESERVATION_3 = 'reservation-3';
+    public const RESERVATION_4 = 'reservation-4';
+
+    public const ALL_RESERVATIONS = [
+        self::RESERVATION_1,
+        self::RESERVATION_2,
+        self::RESERVATION_3,
+        self::RESERVATION_4,
+    ];
 
     private Generator $faker;
     private ObjectManager $entityManager;
@@ -92,8 +99,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         $this->loginStaff($addedBy);
 
-        yield self::RESERVATION_DRAFT_1 => [
-            'name'     => 'Reservation draft_1',
+        yield self::RESERVATION_1 => [
+            'name'     => 'Reservation 1',
             'program'  => $program,
             'borrower' => [
                 FieldAlias::YOUNG_FARMER         => true,
@@ -107,8 +114,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'addedBy'          => $addedBy,
             'currentStatus'    => ReservationStatus::STATUS_DRAFT,
         ];
-        yield self::RESERVATION_DRAFT_2 => [
-            'name'     => 'Reservation draft_2',
+        yield self::RESERVATION_2 => [
+            'name'     => 'Reservation 2',
             'program'  => $program,
             'borrower' => [
                 FieldAlias::YOUNG_FARMER         => false,
@@ -122,8 +129,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'addedBy'          => $addedBy,
             'currentStatus'    => ReservationStatus::STATUS_DRAFT,
         ];
-        yield self::RESERVATION_SENT_1 => [
-            'name'     => 'Reservation sent_1',
+        yield self::RESERVATION_3 => [
+            'name'     => 'Reservation 3',
             'program'  => $program,
             'borrower' => [
                 FieldAlias::YOUNG_FARMER         => true,
@@ -142,10 +149,10 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 ['mainLoan' => false, FieldAlias::LOAN_DURATION => 6],
             ],
             'addedBy'       => $addedBy,
-            'currentStatus' => ReservationStatus::STATUS_SENT,
+            'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
-        yield self::RESERVATION_SENT_2 => [
-            'name'     => 'Reservation sent_2',
+        yield self::RESERVATION_4 => [
+            'name'     => 'Reservation 4',
             'program'  => $program,
             'borrower' => [
                 FieldAlias::YOUNG_FARMER         => false,
@@ -163,7 +170,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 ['mainLoan' => true, FieldAlias::LOAN_DURATION => 2],
             ],
             'addedBy'       => $addedBy,
-            'currentStatus' => ReservationStatus::STATUS_SENT,
+            'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
     }
 

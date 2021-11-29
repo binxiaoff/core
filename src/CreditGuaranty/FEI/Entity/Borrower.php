@@ -113,14 +113,14 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     /**
      * @ORM\Column(length=100, nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write", "creditGuaranty:borrower:formalize"})
      */
     private ?string $companyName = null;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write", "creditGuaranty:borrower:formalize"})
      */
     private ?DateTimeImmutable $activityStartDate = null;
 
@@ -130,7 +130,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Length(max=200)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write", "creditGuaranty:borrower:formalize"})
      */
     private ?string $registrationNumber = null;
 
