@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @internal
  */
-class ReservationCheckInegibilitiesTest extends AbstractApiTest
+class ReservationIneligibilitiesTest extends AbstractApiTest
 {
     private const ENDPOINT_RESERVATION_INELIGIBILITIES = '/credit_guaranty/reservations/{publicId}/ineligibilities';
 
@@ -30,7 +30,7 @@ class ReservationCheckInegibilitiesTest extends AbstractApiTest
     }
 
     /**
-     * @dataProvider successfullProvider
+     * @dataProvider reservationsProvider
      */
     public function testGetReservationIneligibilities(
         string $staffPublicId,
@@ -59,7 +59,7 @@ class ReservationCheckInegibilitiesTest extends AbstractApiTest
         self::assertJsonContains(['ineligibles' => $ineligibles]);
     }
 
-    public function successfullProvider(): iterable
+    public function reservationsProvider(): iterable
     {
         yield 'user-1 - reservation draft 2 - checking profile without conditions : ineligible' => [
             'staff_company:basic_user-1',

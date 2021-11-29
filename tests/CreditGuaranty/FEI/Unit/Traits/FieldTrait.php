@@ -64,6 +64,23 @@ trait FieldTrait
         );
     }
 
+    protected function createActivityStartDateField(): Field
+    {
+        return new Field(
+            FieldAlias::ACTIVITY_START_DATE,
+            Field::TAG_ELIGIBILITY,
+            'profile',
+            'other',
+            'borrower',
+            'activityStartDate',
+            'DateTimeImmutable',
+            Borrower::class,
+            false,
+            null,
+            null
+        );
+    }
+
     protected function createAdditionalGuarantyField(): Field
     {
         return new Field(
@@ -477,7 +494,7 @@ trait FieldTrait
         return new Field(
             FieldAlias::REGISTRATION_NUMBER,
             Field::TAG_ELIGIBILITY,
-            'borrower',
+            'profile',
             'other',
             'borrower',
             'registrationNumber',

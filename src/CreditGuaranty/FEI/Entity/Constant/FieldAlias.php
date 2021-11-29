@@ -107,6 +107,11 @@ class FieldAlias extends AbstractEnum
         self::TOTAL_FEI_CREDIT,
     ];
 
+    public const CREATION_IN_PROGRESS_RELATED_FIELDS = [
+        self::ACTIVITY_START_DATE,
+        self::REGISTRATION_NUMBER,
+    ];
+
     //
     // Reporting field aliases
     //
