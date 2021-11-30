@@ -144,6 +144,82 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "path": "/credit_guaranty/programs/{publicId}/financing_objects",
  *             "security": "is_granted('reporting', object)",
  *             "output": false,
+ *             "openapi_context": {
+ *                 "parameters": {
+ *                     {
+ *                         "in": "query",
+ *                         "name": "id",
+ *                         "type": "integer",
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "id[]",
+ *                         "schema": {
+ *                             "type": "array",
+ *                             "items": {"type": "integer"},
+ *                             "collectionFormat": "multi",
+ *                         },
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "itemsPerPage",
+ *                         "type": "integer",
+ *                         "description": "The items number per page (100 by default)",
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "page",
+ *                         "type": "integer",
+ *                         "description": "The page number (1 by default)",
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "search",
+ *                         "type": "string",
+ *                         "description": "The search filter on text values of reporting",
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "order",
+ *                         "schema": {
+ *                             "type": "object",
+ *                         },
+ *                         "style": "deepObject",
+ *                         "explode": true,
+ *                         "description": "The order filter (i.e. order[field_alias]=direction)",
+ *                         "required": false,
+ *                     },
+ *                 },
+ *                 "requestBody": {
+ *                     "content": {
+ *                         "application/x-www-form-urlencoded": {
+ *                             "schema": {
+ *                                 "type": "object",
+ *                                 "properties": {
+ *                                     "reportingFirstDate": {"type": "date"},
+ *                                     "reportingLastDate": {"type": "date"},
+ *                                     "reportingValidationDate": {"type": "date"},
+ *                                 },
+ *                             },
+ *                         },
+ *                     },
+ *                 },
+ *                 "responses": {
+ *                     "200": {
+ *                         "description": "OK",
+ *                         "content": {
+ *                             "application/json": {
+ *                                 "schema": {"type": "object"},
+ *                             },
+ *                         },
+ *                     },
+ *                 },
+ *             },
  *         },
  *     },
  *     collectionOperations={
