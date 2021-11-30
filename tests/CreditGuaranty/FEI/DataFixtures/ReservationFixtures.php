@@ -33,13 +33,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     public const RESERVATION_1 = 'reservation-1';
     public const RESERVATION_2 = 'reservation-2';
     public const RESERVATION_3 = 'reservation-3';
-    public const RESERVATION_4 = 'reservation-4';
 
     public const ALL_RESERVATIONS = [
         self::RESERVATION_1,
         self::RESERVATION_2,
         self::RESERVATION_3,
-        self::RESERVATION_4,
     ];
 
     private Generator $faker;
@@ -103,21 +101,6 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'name'     => 'Reservation 1',
             'program'  => $program,
             'borrower' => [
-                FieldAlias::YOUNG_FARMER         => true,
-                FieldAlias::CREATION_IN_PROGRESS => true,
-                FieldAlias::SUBSIDIARY           => true,
-                FieldAlias::TURNOVER             => 0,
-                FieldAlias::TOTAL_ASSETS         => 0,
-            ],
-            'project'          => [],
-            'financingObjects' => [],
-            'addedBy'          => $addedBy,
-            'currentStatus'    => ReservationStatus::STATUS_DRAFT,
-        ];
-        yield self::RESERVATION_2 => [
-            'name'     => 'Reservation 2',
-            'program'  => $program,
-            'borrower' => [
                 FieldAlias::YOUNG_FARMER         => false,
                 FieldAlias::CREATION_IN_PROGRESS => true,
                 FieldAlias::SUBSIDIARY           => false,
@@ -129,8 +112,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'addedBy'          => $addedBy,
             'currentStatus'    => ReservationStatus::STATUS_DRAFT,
         ];
-        yield self::RESERVATION_3 => [
-            'name'     => 'Reservation 3',
+        yield self::RESERVATION_2 => [
+            'name'     => 'Reservation 2',
             'program'  => $program,
             'borrower' => [
                 FieldAlias::YOUNG_FARMER         => true,
@@ -151,26 +134,26 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             'addedBy'       => $addedBy,
             'currentStatus' => ReservationStatus::STATUS_DRAFT,
         ];
-        yield self::RESERVATION_4 => [
-            'name'     => 'Reservation 4',
+        yield self::RESERVATION_3 => [
+            'name'     => 'Reservation 3',
             'program'  => $program,
             'borrower' => [
-                FieldAlias::YOUNG_FARMER         => false,
-                FieldAlias::CREATION_IN_PROGRESS => false,
+                FieldAlias::YOUNG_FARMER         => true,
+                FieldAlias::CREATION_IN_PROGRESS => true,
                 FieldAlias::SUBSIDIARY           => true,
                 FieldAlias::TURNOVER             => 2048,
-                FieldAlias::TOTAL_ASSETS         => 42,
+                FieldAlias::TOTAL_ASSETS         => 10000,
             ],
             'project' => [
-                FieldAlias::RECEIVING_GRANT      => false,
+                FieldAlias::RECEIVING_GRANT      => true,
                 FieldAlias::TOTAL_FEI_CREDIT     => 100,
                 FieldAlias::CREDIT_EXCLUDING_FEI => 42,
             ],
             'financingObjects' => [
-                ['mainLoan' => true, FieldAlias::LOAN_DURATION => 2],
+                ['mainLoan' => true, FieldAlias::LOAN_DURATION => 4],
             ],
             'addedBy'       => $addedBy,
-            'currentStatus' => ReservationStatus::STATUS_DRAFT,
+            'currentStatus' => ReservationStatus::STATUS_SENT,
         ];
     }
 
@@ -214,7 +197,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         $reservation->getBorrower()
             ->setBeneficiaryName('Borrower Name')
-            ->setBorrowerType($this->findProgramChoiceOption($program, 'field-borrower_type', 'Installé'))
+            ->setBorrowerType(
+                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::BORROWER_TYPE, 'Installé')
+            )
             ->setYoungFarmer($data[FieldAlias::YOUNG_FARMER])
             ->setCreationInProgress($data[FieldAlias::CREATION_IN_PROGRESS])
             ->setSubsidiary($data[FieldAlias::SUBSIDIARY])
@@ -223,15 +208,22 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
-            ->setAddressDepartment($this->findProgramChoiceOption($program, 'field-activity_department', '75'))
-            ->setAddressCountry($this->findProgramChoiceOption($program, 'field-activity_country', 'FR'))
+            ->setAddressDepartment(
+                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::ACTIVITY_DEPARTMENT, '75')
+            )
+            ->setAddressCountry($this->findProgramChoiceOption($program, 'field-' . FieldAlias::ACTIVITY_COUNTRY, 'FR'))
             ->setRegistrationNumber('12 23 45 678 987')
-            ->setLegalForm($this->findProgramChoiceOption($program, 'field-legal_form', 'SAS'))
-            ->setCompanyNafCode($this->findProgramChoiceOption($program, 'field-company_naf_code', '0001A'))
+            ->setLegalForm($this->findProgramChoiceOption($program, 'field-' . FieldAlias::LEGAL_FORM, 'SAS'))
+            ->setCompanyNafCode(
+                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::COMPANY_NAF_CODE, '0001A')
+            )
             ->setEmployeesNumber(42)
-            ->setExploitationSize($this->findProgramChoiceOption($program, 'field-exploitation_size', '42'))
+            ->setExploitationSize(
+                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::EXPLOITATION_SIZE, '42')
+            )
             ->setTurnover(new NullableMoney('EUR', (string) $data[FieldAlias::TURNOVER]))
             ->setTotalAssets(new NullableMoney('EUR', (string) $data[FieldAlias::TOTAL_ASSETS]))
+            ->setTargetType($this->findProgramChoiceOption($program, 'field-' . FieldAlias::TARGET_TYPE))
             ->setGrade('B')
         ;
     }
@@ -242,32 +234,32 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $project = $reservation->getProject();
 
         $project
-            ->addInvestmentThematic(
-                $this->findProgramChoiceOption(
-                    $program,
-                    'field-investment_thematic',
-                    'Thématique : ' . $this->faker->sentence
-                )
-            )
-            ->addInvestmentThematic(
-                $this->findProgramChoiceOption(
-                    $program,
-                    'field-investment_thematic',
-                    'Thématique : ' . $this->faker->sentence
-                )
-            )
-            ->setInvestmentType(
-                $this->findProgramChoiceOption($program, 'field-investment_type', 'Type : ' . $this->faker->sentence)
-            )
+            ->addInvestmentThematic($this->findProgramChoiceOption(
+                $program,
+                'field-' . FieldAlias::INVESTMENT_THEMATIC,
+                'Renouvellement et installation'
+            ))
+            ->addInvestmentThematic($this->findProgramChoiceOption(
+                $program,
+                'field-' . FieldAlias::INVESTMENT_THEMATIC,
+                'Mieux répondre / renforcer'
+            ))
+            ->setInvestmentType($this->findProgramChoiceOption(
+                $program,
+                'field-' . FieldAlias::INVESTMENT_TYPE,
+                'Type : ' . $this->faker->sentence
+            ))
             ->setDetail($this->faker->sentence)
-            ->setAidIntensity($this->findProgramChoiceOption($program, 'field-aid_intensity', '0.40'))
-            ->setAdditionalGuaranty(
-                $this->findProgramChoiceOption($program, 'field-additional_guaranty', $this->faker->sentence(3))
-            )
+            ->setAidIntensity($this->findProgramChoiceOption($program, 'field-' . FieldAlias::AID_INTENSITY, '0.40'))
+            ->setAdditionalGuaranty($this->findProgramChoiceOption(
+                $program,
+                'field-' . FieldAlias::ADDITIONAL_GUARANTY,
+                $this->faker->sentence(3)
+            ))
             ->setAgriculturalBranch(
                 $this->findProgramChoiceOption(
                     $program,
-                    'field-agricultural_branch',
+                    'field-' . FieldAlias::AGRICULTURAL_BRANCH,
                     'Branch N: ' . $this->faker->sentence
                 )
             )
@@ -275,9 +267,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
             ->setAddressDepartment(
-                $this->findProgramChoiceOption($program, 'field-investment_department', '75')
+                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::INVESTMENT_DEPARTMENT, '75')
             )
-            ->setAddressCountry($this->findProgramChoiceOption($program, 'field-investment_country', 'FR'))
+            ->setAddressCountry(
+                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::INVESTMENT_COUNTRY, 'FR')
+            )
             ->setFundingMoney(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setContribution(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setEligibleFeiCredit(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
@@ -300,17 +294,25 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
 
         return (new FinancingObject($reservation, $loanMoney, $data['mainLoan'], $this->faker->sentence(3, true)))
             ->setSupportingGenerationsRenewal(true)
-            ->setFinancingObjectType(
-                $this->findProgramChoiceOption($program, 'field-financing_object_type', $this->faker->text(255))
-            )
-            ->setLoanNafCode($this->findProgramChoiceOption($program, 'field-loan_naf_code', '0001A'))
+            ->setFinancingObjectType($this->findProgramChoiceOption(
+                $program,
+                'field-' . FieldAlias::FINANCING_OBJECT_TYPE,
+                $this->faker->text(255)
+            ))
+            ->setLoanNafCode($this->findProgramChoiceOption($program, 'field-' . FieldAlias::LOAN_NAF_CODE, '0001A'))
             ->setBfrValue(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setLoanType($this->findProgramChoiceOption($program, 'field-loan_type', 'short_term'))
+            ->setLoanType($this->findProgramChoiceOption($program, 'field-' . FieldAlias::LOAN_TYPE, 'short_term'))
             ->setLoanDuration($data[FieldAlias::LOAN_DURATION])
             ->setLoanDeferral($this->faker->numberBetween(0, 12))
-            ->setLoanPeriodicity($this->findProgramChoiceOption($program, 'field-loan_periodicity', 'monthly'))
-            ->setInvestmentLocation($this->findProgramChoiceOption($program, 'field-investment_location', 'Paris'))
-            ->setInvestmentLocation($this->findProgramChoiceOption($program, 'field-product_category_code'))
+            ->setLoanPeriodicity(
+                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::LOAN_PERIODICITY, 'monthly')
+            )
+            ->setInvestmentLocation(
+                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::INVESTMENT_LOCATION, 'Paris')
+            )
+            ->setProductCategoryCode(
+                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::PRODUCT_CATEGORY_CODE)
+            )
         ;
     }
 

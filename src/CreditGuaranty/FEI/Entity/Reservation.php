@@ -181,7 +181,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     /**
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:update:draft"})
      */
     private ?string $name;
 
@@ -276,11 +276,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     /**
      * @ORM\Column(type="date_immutable", nullable=true)
      *
-     * @Groups({
-     *     "creditGuaranty:reservation:read",
-     *     "creditGuaranty:reservation:write",
-     *     "creditGuaranty:reservation:formalize"
-     * })
+     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:update:accepted"})
      */
     private ?DateTimeImmutable $signingDate = null;
 

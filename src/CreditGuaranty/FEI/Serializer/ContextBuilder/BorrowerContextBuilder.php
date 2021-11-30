@@ -33,14 +33,8 @@ class BorrowerContextBuilder implements SerializerContextBuilderInterface
             /** @var Borrower $borrower */
             $borrower = $this->iriConverter->getItemFromIri($context['uri']);
 
-            if ($borrower->getReservation()->isAcceptedByManagingCompany()) {
-                $index = \array_search('creditGuaranty:borrower:write', $context['groups']);
-
-                if (false !== $index) {
-                    unset($context['groups'][$index]);
-                }
-
-                $context['groups'][] = 'creditGuaranty:borrower:formalize';
+            if ($borrower->getReservation()->isInDraft()) {
+                $context['groups'][] = 'creditGuaranty:borrower:update:draft';
             }
         }
 

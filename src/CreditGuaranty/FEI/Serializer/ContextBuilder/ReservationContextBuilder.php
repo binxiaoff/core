@@ -33,14 +33,11 @@ class ReservationContextBuilder implements SerializerContextBuilderInterface
             /** @var Reservation $reservation */
             $reservation = $this->iriConverter->getItemFromIri($context['uri']);
 
+            if ($reservation->isInDraft()) {
+                $context['groups'][] = 'creditGuaranty:reservation:update:draft';
+            }
             if ($reservation->isAcceptedByManagingCompany()) {
-                $index = \array_search('creditGuaranty:reservation:write', $context['groups']);
-
-                if (false !== $index) {
-                    unset($context['groups'][$index]);
-                }
-
-                $context['groups'][] = 'creditGuaranty:reservation:formalize';
+                $context['groups'][] = 'creditGuaranty:reservation:update:accepted';
             }
         }
 

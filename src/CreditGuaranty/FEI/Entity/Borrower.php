@@ -32,11 +32,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  *     denormalizationContext={
  *         "groups": {
- *             "creditGuaranty:borrower:write",
+ *             "creditGuaranty:borrower:update",
  *             "creditGuaranty:programChoiceOption:write",
  *             "nullableMoney:write",
  *         },
- *         "openapi_definition_name": "write",
+ *         "openapi_definition_name": "update",
  *     },
  *     itemOperations={
  *         "get": {
@@ -66,7 +66,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read"})
      */
     private Reservation $reservation;
 
@@ -75,7 +75,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\NotBlank(allowNull=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?string $beneficiaryName = null;
 
@@ -85,42 +85,42 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     private ?ProgramChoiceOption $borrowerType = null;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?bool $youngFarmer = null;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?bool $creationInProgress = null;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?bool $subsidiary = null;
 
     /**
      * @ORM\Column(length=100, nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write", "creditGuaranty:borrower:formalize"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update"})
      */
     private ?string $companyName = null;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write", "creditGuaranty:borrower:formalize"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update"})
      */
     private ?DateTimeImmutable $activityStartDate = null;
 
@@ -130,7 +130,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      * @Assert\NotBlank(allowNull=true)
      * @Assert\Length(max=200)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write", "creditGuaranty:borrower:formalize"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update"})
      */
     private ?string $registrationNumber = null;
 
@@ -140,7 +140,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     private ?ProgramChoiceOption $legalForm = null;
 
@@ -150,7 +150,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     private ?ProgramChoiceOption $companyNafCode = null;
 
@@ -159,7 +159,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Positive
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?int $employeesNumber = null;
 
@@ -169,7 +169,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     private ?ProgramChoiceOption $exploitationSize = null;
 
@@ -178,7 +178,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Valid
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private NullableMoney $turnover;
 
@@ -187,7 +187,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Valid
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private NullableMoney $totalAssets;
 
@@ -197,7 +197,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?ProgramChoiceOption $targetType = null;
 
@@ -209,7 +209,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *     message="CreditGuaranty.Borrower.grade.invalid"
      * )
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?string $grade = null;
 
@@ -326,7 +326,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     public function setAddressStreet(?string $street): Borrower
     {
@@ -344,7 +344,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     public function setAddressPostCode(?string $postCode): Borrower
     {
@@ -362,7 +362,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     public function setAddressCity(?string $city): Borrower
     {
@@ -386,7 +386,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     public function setAddressDepartment(?ProgramChoiceOption $department): Borrower
     {
@@ -410,7 +410,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     public function setAddressCountry(?ProgramChoiceOption $country): Borrower
     {

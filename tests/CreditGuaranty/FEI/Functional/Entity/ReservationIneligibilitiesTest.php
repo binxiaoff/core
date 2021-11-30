@@ -61,152 +61,134 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
 
     public function reservationsProvider(): iterable
     {
-        yield 'user-1 - reservation 2 - checking profile without conditions : ineligible' => [
+        yield 'user-1 - reservation 1 - checking without conditions : ineligible' => [
             'staff_company:basic_user-1',
-            ReservationFixtures::RESERVATION_2,
+            ReservationFixtures::RESERVATION_1,
             false,
             [
                 'profile' => [
                     'young_farmer',
                     'subsidiary',
                 ],
+                'project' => [
+                    'investment_street',
+                    'investment_post_code',
+                    'investment_city',
+                    'investment_department',
+                    'investment_country',
+                    'investment_thematic',
+                    'investment_type',
+                    'aid_intensity',
+                    'additional_guaranty',
+                    'agricultural_branch',
+                    'project_contribution',
+                    'eligible_fei_credit',
+                    'total_fei_credit',
+                    'tangible_fei_credit',
+                    'intangible_fei_credit',
+                    'credit_excluding_fei',
+                    'project_grant',
+                    'land_value',
+                ],
+                'loan' => [],
             ],
-            'profile',
+            null,
         ];
-        yield 'user-2 - reservation 3 - checking profile without conditions : eligible' => [
-            'staff_company:basic_user-2',
-            ReservationFixtures::RESERVATION_3,
-            false,
-            [],
-            'profile',
-        ];
-        yield 'user-2 - reservation 3 - checking profile with conditions : eligible' => [
-            'staff_company:basic_user-2',
-            ReservationFixtures::RESERVATION_3,
-            true,
-            [],
-            'profile',
-        ];
-        yield 'user-3 - reservation 3 - checking project without conditions : eligible' => [
-            'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_3,
-            false,
-            [],
-            'project',
-        ];
-        yield 'user-3 - reservation 3 - checking project with conditions : ineligible' => [
-            'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_3,
+        yield 'user-1 - reservation 1 - checking with conditions : ineligible' => [
+            'staff_company:basic_user-1',
+            ReservationFixtures::RESERVATION_1,
             true,
             [
-                'project' => [
-                    'investment_thematic',
-                    'total_fei_credit',
+                'profile' => [
+                    'young_farmer',
+                    'subsidiary',
+                    'turnover',
                 ],
+                'project' => [
+                    'investment_street',
+                    'investment_post_code',
+                    'investment_city',
+                    'investment_department',
+                    'investment_country',
+                    'investment_thematic',
+                    'investment_type',
+                    'aid_intensity',
+                    'additional_guaranty',
+                    'agricultural_branch',
+                    'project_contribution',
+                    'eligible_fei_credit',
+                    'total_fei_credit',
+                    'tangible_fei_credit',
+                    'intangible_fei_credit',
+                    'credit_excluding_fei',
+                    'project_grant',
+                    'land_value',
+                ],
+                'loan' => [],
             ],
+            null,
+        ];
+        yield 'user-2 - reservation 2 - checking profile without conditions : eligible' => [
+            'staff_company:basic_user-2',
+            ReservationFixtures::RESERVATION_2,
+            false,
+            [],
+            'profile',
+        ];
+        yield 'user-2 - reservation 2 - checking profile with conditions : eligible' => [
+            'staff_company:basic_user-2',
+            ReservationFixtures::RESERVATION_2,
+            true,
+            [],
+            'profile',
+        ];
+        yield 'user-3 - reservation 2 - checking project without conditions : eligible' => [
+            'staff_company:basic_user-3',
+            ReservationFixtures::RESERVATION_2,
+            false,
+            [],
             'project',
         ];
-        yield 'user-5 - reservation 3 - checking loan without conditions : eligible' => [
-            'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_3,
+        yield 'user-3 - reservation 2 - checking project with conditions : ineligible' => [
+            'staff_company:basic_user-3',
+            ReservationFixtures::RESERVATION_2,
+            true,
+            ['project' => ['total_fei_credit']],
+            'project',
+        ];
+        yield 'user-4 - reservation 2 - checking loan without conditions : eligible' => [
+            'staff_company:basic_user-4',
+            ReservationFixtures::RESERVATION_2,
             false,
             [],
             'loan',
         ];
-        yield 'user-5 - reservation 3 - checking loan with conditions : eligible' => [
-            'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_3,
+        yield 'user-4 - reservation 2 - checking loan with conditions : eligible' => [
+            'staff_company:basic_user-4',
+            ReservationFixtures::RESERVATION_2,
             true,
             [],
             'loan',
         ];
-        yield 'user-11 - reservation 3 - checking conditions : ineligible' => [
-            'staff_company:basic_user-11',
-            ReservationFixtures::RESERVATION_3,
-            true,
+        yield 'user-5 - reservation 2 - checking without conditions : eligible' => [
+            'staff_company:basic_user-5',
+            ReservationFixtures::RESERVATION_2,
+            false,
             [],
             null,
         ];
-        yield 'user-3 - reservation 4 - checking profile without conditions : ineligible' => [
-            'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_4,
-            false,
-            [
-                'profile' => [
-                    'young_farmer',
-                    'creation_in_progress',
-                ],
-            ],
-            'profile',
-        ];
-        yield 'user-3 - reservation 4 - checking profile with conditions : ineligible' => [
-            'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_4,
-            true,
-            [
-                'profile' => [
-                    'young_farmer',
-                    'creation_in_progress',
-                ],
-            ],
-            'profile',
-        ];
-        yield 'user-4 - reservation 4 - checking project without conditions : ineligible' => [
-            'staff_company:basic_user-4',
-            ReservationFixtures::RESERVATION_4,
-            false,
-            [
-                'project' => [
-                    'investment_thematic',
-                    'project_grant',
-                ],
-            ],
-            'project',
-        ];
-        yield 'user-4 - reservation 4 - checking project with conditions : ineligible' => [
-            'staff_company:basic_user-4',
-            ReservationFixtures::RESERVATION_4,
-            true,
-            [
-                'project' => [
-                    'investment_thematic',
-                    'project_grant',
-                ],
-            ],
-            'project',
-        ];
-        yield 'user-5 - reservation 4 - checking loan without conditions : eligible' => [
+        yield 'user-5 - reservation 2 - checking with conditions : ineligible' => [
             'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_4,
-            false,
-            [],
-            'loan',
-        ];
-        yield 'user-5 - reservation 4 - checking loan with conditions : ineligible' => [
-            'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_4,
+            ReservationFixtures::RESERVATION_2,
             true,
-            [
-                'loan' => [
-                    'loan_duration',
-                ],
-            ],
-            'loan',
+            ['project' => ['total_fei_credit']],
+            null,
         ];
-        yield 'user-11 - reservation 4 - checking conditions : ineligible' => [
+        yield 'user-11 - reservation 3 - checking with conditions : eligible' => [
             'staff_company:basic_user-11',
-            ReservationFixtures::RESERVATION_4,
+            ReservationFixtures::RESERVATION_3,
             true,
-            [
-                'profile' => [
-                    'young_farmer',
-                    'creation_in_progress',
-                ],
-                'project' => [
-                    'investment_thematic',
-                    'project_grant',
-                ],
-            ],
+            [],
             null,
         ];
     }
