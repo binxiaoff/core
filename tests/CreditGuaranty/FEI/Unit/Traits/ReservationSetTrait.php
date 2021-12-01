@@ -58,7 +58,7 @@ trait ReservationSetTrait
             ->setAddressPostCode('75042')
             ->setAddressDepartment(new ProgramChoiceOption($program, 'department', $activityDepartmentField))
             ->setAddressCountry(new ProgramChoiceOption($program, 'FR', $activityCountryField))
-            ->setSiret(\str_repeat('1', 14))
+            ->setRegistrationNumber('12 23 45 678 987')
             ->setLegalForm(new ProgramChoiceOption($program, 'legal form', $legalFormField))
             ->setEmployeesNumber(42)
             ->setTurnover(new NullableMoney('EUR', '128'))

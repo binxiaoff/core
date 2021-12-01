@@ -567,8 +567,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setSubsidiary($this->faker->boolean)
             ->setCompanyName($this->faker->company)
             ->setActivityStartDate(new DateTimeImmutable())
-            ->setSiret((string) $this->faker->numberBetween(10000, 99999))
-            ->setTaxNumber('12 23 45 678 987')
+            ->setRegistrationNumber('12 23 45 678 987')
             ->setLegalForm(
                 $this->findProgramChoiceOption($program, FieldAlias::LEGAL_FORM, $data[FieldAlias::LEGAL_FORM])
             )
