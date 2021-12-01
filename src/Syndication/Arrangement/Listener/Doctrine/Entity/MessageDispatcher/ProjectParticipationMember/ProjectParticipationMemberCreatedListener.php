@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace KLS\Syndication\Arrangement\Listener\Doctrine\Entity\MessageDispatcher\ProjectParticipationMember;
 
-use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\PostFlushListener;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipationMember;
 use KLS\Syndication\Arrangement\Message\ProjectParticipationMember\ProjectParticipationMemberCreated;
 
 class ProjectParticipationMemberCreatedListener
 {
-    use MessageDispatcherTrait;
+    private PostFlushListener $postFlushListener;
+
+    public function __construct(PostFlushListener $postFlushListener)
+    {
+        $this->postFlushListener = $postFlushListener;
+    }
 
     public function postPersist(ProjectParticipationMember $projectParticipationMember): void
     {
-        $this->messageBus->dispatch(new ProjectParticipationMemberCreated($projectParticipationMember));
+        $this->postFlushListener->addMessage(new ProjectParticipationMemberCreated($projectParticipationMember));
     }
 }
