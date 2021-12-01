@@ -227,8 +227,10 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     public const OFFER_VISIBILITY_PARTICIPANT = 'participant';
     public const OFFER_VISIBILITY_PUBLIC      = 'public';
 
-    public const SERIALIZER_GROUP_ADMIN_READ = 'project:admin:read'; // Additional group that is available for admin (admin user or arranger)
-    public const SERIALIZER_GROUP_GCA_READ   = 'project:gca:read'; // Additional group that is available for gca (crédit agricole group) staff member
+    // Additional group that is available for admin (admin user or arranger)
+    public const SERIALIZER_GROUP_ADMIN_READ = 'project:admin:read';
+    // Additional group that is available for gca (crédit agricole group) staff member
+    public const SERIALIZER_GROUP_GCA_READ = 'project:gca:read';
 
     public const FIELD_CURRENT_STATUS = 'currentStatus';
     public const FIELD_DESCRIPTION    = 'description';
@@ -387,7 +389,13 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     /**
      * @var ProjectParticipation[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Arrangement\Entity\ProjectParticipation", mappedBy="project", cascade={"persist"}, orphanRemoval=true, fetch="EAGER")
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Arrangement\Entity\ProjectParticipation",
+     *     mappedBy="project",
+     *     cascade={"persist"},
+     *     orphanRemoval=true,
+     *     fetch="EAGER"
+     * )
      *
      * @MaxDepth(2)
      *
@@ -400,7 +408,11 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     /**
      * @var ProjectOrganizer[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Arrangement\Entity\ProjectOrganizer", mappedBy="project", cascade={"persist"})
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Arrangement\Entity\ProjectOrganizer",
+     *     mappedBy="project",
+     *     cascade={"persist"}
+     * )
      */
     private Collection $organizers;
 
@@ -417,7 +429,12 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     /**
      * @var Tranche[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Arrangement\Entity\Tranche", mappedBy="project", cascade={"persist"}, orphanRemoval=true)
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Arrangement\Entity\Tranche",
+     *     mappedBy="project",
+     *     cascade={"persist"},
+     *     orphanRemoval=true
+     * )
      *
      * @Assert\Valid
      *
@@ -439,7 +456,13 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     /**
      * @var ProjectStatus[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Arrangement\Entity\ProjectStatus", mappedBy="project", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Arrangement\Entity\ProjectStatus",
+     *     mappedBy="project",
+     *     orphanRemoval=true,
+     *     cascade={"persist"},
+     *     fetch="EAGER"
+     * )
      * @ORM\OrderBy({"added": "ASC"})
      *
      * @Groups({"project:read"})
@@ -821,11 +844,23 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
         });
 
         if (1 < $filtered->count()) {
-            throw new DomainException(\sprintf('There are more than one participations for arranger (id: %d) on project (id: %s)', $this->getArranger()->getId(), $this->getId()));
+            throw new DomainException(
+                \sprintf(
+                    'There are more than one participations for arranger (id: %d) on project (id: %s)',
+                    $this->getArranger()->getId(),
+                    $this->getId()
+                )
+            );
         }
 
         if (0 === $filtered->count()) {
-            throw new DomainException(\sprintf('There is no participation for arranger (id: %d) on project (id: %s)', $this->getArranger()->getId(), $this->getId()));
+            throw new DomainException(
+                \sprintf(
+                    'There is no participation for arranger (id: %d) on project (id: %s)',
+                    $this->getArranger()->getId(),
+                    $this->getId()
+                )
+            );
         }
 
         return $filtered->first();
@@ -847,6 +882,14 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     public function getRun(): ?ProjectOrganizer
     {
         return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_RUN);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getAgent(): ?ProjectOrganizer
+    {
+        return $this->getUniqueOrganizer(ProjectOrganizer::DUTY_PROJECT_ORGANIZER_AGENT);
     }
 
     /**
@@ -968,7 +1011,8 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     public function addProjectParticipation(ProjectParticipation $projectParticipation): Project
     {
         $callback = function (int $key, ProjectParticipation $pp) use ($projectParticipation): bool {
-            return $projectParticipation->getProject() === $pp->getProject() && $projectParticipation->getParticipant() === $pp->getParticipant();
+            return $projectParticipation->getProject()     === $pp->getProject()
+                && $projectParticipation->getParticipant() === $pp->getParticipant();
         };
 
         if (false === $this->projectParticipations->exists($callback)) {
@@ -1094,18 +1138,27 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
      */
     public function setInterestExpressionEnabled(?bool $interestExpressionEnabled): Project
     {
-        if (null === $this->getCurrentStatus() || ProjectStatus::STATUS_DRAFT === $this->getCurrentStatus()->getStatus()) {
+        if (
+            null === $this->getCurrentStatus()
+            || ProjectStatus::STATUS_DRAFT === $this->getCurrentStatus()->getStatus()
+        ) {
             $this->interestExpressionEnabled = $interestExpressionEnabled;
 
             foreach ($this->projectParticipations as $participation) {
                 if ($this->interestExpressionEnabled) {
                     $invitationRequest = $participation->getInvitationRequest();
-                    $participation->setInterestRequest(new RangedOfferWithFee($invitationRequest->getMoney(), $invitationRequest->getFeeRate()));
+                    $participation->setInterestRequest(
+                        new RangedOfferWithFee($invitationRequest->getMoney(), $invitationRequest->getFeeRate())
+                    );
                     $participation->setInvitationRequest(new OfferWithFee());
                 } else {
                     $interestRequest = $participation->getInterestRequest();
-                    $participation->setInvitationRequest(new OfferWithFee($interestRequest->getMoney(), $interestRequest->getFeeRate()));
-                    $this->interestExpressionDeadline = null; // Must reset interestExpression deadline as this date should not be filled if there is no interestRequest phase
+                    $participation->setInvitationRequest(
+                        new OfferWithFee($interestRequest->getMoney(), $interestRequest->getFeeRate())
+                    );
+                    // Must reset interestExpression deadline as this date
+                    // should not be filled if there is no interestRequest phase
+                    $this->interestExpressionDeadline = null;
                     $participation->setInterestRequest(new RangedOfferWithFee());
                 }
             }
@@ -1232,7 +1285,10 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
      */
     public function validateParticipantReplyDeadline(ExecutionContextInterface $context)
     {
-        if ($this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION) && null === $this->getParticipantReplyDeadline()) {
+        if (
+            $this->hasCompletedStatus(ProjectStatus::STATUS_INTEREST_EXPRESSION)
+            && null === $this->getParticipantReplyDeadline()
+        ) {
             $context->buildViolation('Syndication.Project.participantReplyDeadline.required')
                 ->atPath('participantReplyDeadline')
                 ->addViolation()
@@ -1282,7 +1338,8 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     {
         $organizers = new ArrayCollection();
 
-        // Ugly foreach on the Organizer (hopefully we don't have many organisers on a project), as the Criteria doesn't support the json syntax.
+        // Ugly foreach on the Organizer (hopefully we don't have many organisers on a project),
+        // as the Criteria doesn't support the json syntax.
         foreach ($this->getOrganizers() as $organizer) {
             if ($organizer->hasRole($role)) {
                 $organizers->add($organizer);
@@ -1295,7 +1352,12 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     private function getUniqueOrganizer(string $role): ?ProjectOrganizer
     {
         if (false === ProjectOrganizer::isUniqueRole($role)) {
-            throw new RuntimeException(\sprintf('Role "%s" is not unique. Cannot get project Participation corresponding to the role.', $role));
+            throw new RuntimeException(
+                \sprintf(
+                    'Role "%s" is not unique. Cannot get project Participation corresponding to the role.',
+                    $role
+                )
+            );
         }
 
         return $this->getOrganizersByRole($role)->first() ?: null;

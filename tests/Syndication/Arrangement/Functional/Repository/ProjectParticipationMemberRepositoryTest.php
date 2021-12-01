@@ -50,6 +50,7 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
                     'example_arranger_example_user-9',
                     'example_arranger_example_user-10',
                     'basic_arranger_example_user-9',
+                    'finished_example_user-9',
                 ],
             ],
             'It should yield no result for non manager staff' => [
