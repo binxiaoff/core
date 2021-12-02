@@ -8,10 +8,12 @@ use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 use Faker\Provider as Faker;
+use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Listener\Doctrine\Lifecycle\StatusCreatedListener;
 use KLS\Syndication\Arrangement\Entity\Project;
+use KLS\Syndication\Arrangement\Entity\ProjectOrganizer;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipation;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipationMember;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipationTranche;
@@ -52,7 +54,11 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
             $manager->persist($tranche);
         }
 
-        $projectParticipations = [...$this->getAdditionalProjectParticipations($project), $project->getArrangerProjectParticipation()];
+        $additionalProjectParticipation = $this->getAdditionalProjectParticipations($project);
+        $projectParticipations          = [
+            ...$additionalProjectParticipation,
+            $project->getArrangerProjectParticipation(),
+        ];
 
         foreach ($projectParticipations as $projectParticipation) {
             foreach ($this->getProjectParticipationMembers($projectParticipation) as $projectParticipationMember) {
@@ -69,6 +75,17 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
                     $manager->persist($projectParticipationTranche);
                 }
             }
+        }
+
+        foreach ($additionalProjectParticipation as $participation) {
+            $company = $participation->getParticipant();
+
+            $manager->persist(new ProjectOrganizer(
+                $company,
+                $project,
+                $this->getSubmitterStaff(),
+                $this->getProjectOrganizerRoles($company)
+            ));
         }
 
         $manager->persist($project);
@@ -110,20 +127,21 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
         return [];
     }
 
-    /**
-     * @return ?ProjectParticipationTranche
-     */
-    protected function getProjectParticipationTranche(ProjectParticipation $projectParticipation, Tranche $tranche): ?ProjectParticipationTranche
-    {
+    protected function getProjectParticipationTranche(
+        ProjectParticipation $projectParticipation,
+        Tranche $tranche
+    ): ?ProjectParticipationTranche {
         return null;
     }
 
-    /**
-     * @return int
-     */
-    protected function getStatus()
+    protected function getStatus(): int
     {
         return ProjectStatus::STATUS_DRAFT;
+    }
+
+    protected function getProjectOrganizerRoles(Company $company): iterable
+    {
+        return [];
     }
 
     /**
@@ -161,7 +179,11 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
                 break;
 
             case ProjectStatus::STATUS_ALLOCATION:
-                $statuses = [ProjectStatus::STATUS_INTEREST_EXPRESSION, ProjectStatus::STATUS_PARTICIPANT_REPLY, ProjectStatus::STATUS_ALLOCATION];
+                $statuses = [
+                    ProjectStatus::STATUS_INTEREST_EXPRESSION,
+                    ProjectStatus::STATUS_PARTICIPANT_REPLY,
+                    ProjectStatus::STATUS_ALLOCATION,
+                ];
 
                 break;
 
