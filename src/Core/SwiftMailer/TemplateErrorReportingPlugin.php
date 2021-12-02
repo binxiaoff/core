@@ -12,7 +12,7 @@ class TemplateErrorReportingPlugin implements Swift_Events_SendListener
     private bool   $enableErrorDelivery;
     private string $errorReportingEmail;
 
-    public function __construct(bool $enableErrorDelivery, string $errorReportingEmail)
+    public function __construct(bool $enableErrorDelivery = false, ?string $errorReportingEmail = null)
     {
         $this->enableErrorDelivery = $enableErrorDelivery;
         $this->errorReportingEmail = $errorReportingEmail;
@@ -20,13 +20,13 @@ class TemplateErrorReportingPlugin implements Swift_Events_SendListener
 
     public function beforeSendPerformed(Swift_Events_SendEvent $event): void
     {
-        if ($this->enableErrorDelivery) {
-            $message = $event->getMessage();
-            if ($message instanceof MailjetMessage) {
-                $message
-                    ->enableErrorDelivery()
-                    ->setTemplateErrorEmail($this->errorReportingEmail)
-                ;
+        $message = $event->getMessage();
+
+        if ($message instanceof MailjetMessage) {
+            $message->setTemplateErrorEmail($this->errorReportingEmail);
+
+            if ($this->enableErrorDelivery) {
+                $message->enableErrorDelivery();
             }
         }
     }
