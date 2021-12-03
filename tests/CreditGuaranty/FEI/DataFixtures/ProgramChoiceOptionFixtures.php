@@ -31,20 +31,25 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
      */
     public function load(ObjectManager $manager): void
     {
+        $programs = [
+            $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED),
+            $this->getReference(ProgramFixtures::REFERENCE_PAUSED),
+        ];
+
         /** @var Program $program */
-        $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
+        foreach ($programs as $program) {
+            foreach ($this->loadData() as $fieldReference => $descriptions) {
+                /** @var Field $field */
+                $field = $this->getReference($fieldReference);
 
-        foreach ($this->loadData() as $fieldReference => $descriptions) {
-            /** @var Field $field */
-            $field = $this->getReference($fieldReference);
-
-            foreach ($descriptions as $description) {
-                $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
-                $manager->persist($programChoiceOption);
+                foreach ($descriptions as $description) {
+                    $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
+                    $manager->persist($programChoiceOption);
+                }
             }
-        }
 
-        $manager->flush();
+            $manager->flush();
+        }
     }
 
     private function loadData(): array
@@ -79,6 +84,8 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             ],
             'field-' . FieldAlias::INVESTMENT_LOCATION => [
                 'Paris',
+                'Seine-et-Marne',
+                'Val-de-Marne',
             ],
             'field-' . FieldAlias::INVESTMENT_THEMATIC => [
                 'Renouvellement et installation',
