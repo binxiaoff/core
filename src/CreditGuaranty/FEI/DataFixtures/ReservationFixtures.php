@@ -458,6 +458,42 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             $participantShortCode = \mb_strtolower(\array_pop($participationParts));
             $referenceSuffix      = \sprintf('%s_%s', $program->getId(), $participantShortCode);
 
+            $initFinancingObjects = [
+                [
+                    FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                    FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                    FieldAlias::LOAN_DURATION                  => 50,
+                ],
+                [
+                    FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                    FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
+                    FieldAlias::LOAN_DURATION                  => 30,
+                ],
+                [
+                    FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                    FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
+                    FieldAlias::LOAN_DURATION                  => 12,
+                ],
+                [
+                    FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                    FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
+                    FieldAlias::LOAN_DURATION                  => 48,
+                ],
+                [
+                    FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                    FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                    FieldAlias::LOAN_DURATION                  => 70,
+                ],
+            ];
+
+            $financingObjects = [];
+
+            foreach (\range(1, 20) as $index) {
+                foreach ($initFinancingObjects as $financingObject) {
+                    $financingObjects[] = $financingObject;
+                }
+            }
+
             foreach (\range(1, 10) as $index) {
                 yield \sprintf('%s_%s_%s', self::RESERVATION_CONTRACT_FORMALIZED, $referenceSuffix, $index) => [
                     'name'     => \sprintf('Reservation contractualisée %s (%s)', $index, $participantShortCode),
@@ -479,35 +515,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
                         FieldAlias::INTANGIBLE_FEI_CREDIT => 300,
                     ],
-                    'financingObjects' => [
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                            FieldAlias::LOAN_DURATION                  => 50,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                            FieldAlias::LOAN_DURATION                  => 30,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
-                            FieldAlias::LOAN_DURATION                  => 12,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
-                            FieldAlias::LOAN_DURATION                  => 48,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                            FieldAlias::LOAN_DURATION                  => 70,
-                        ],
-                    ],
-                    'addedBy'       => $staff,
-                    'currentStatus' => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
+                    'financingObjects' => $financingObjects,
+                    'addedBy'          => $staff,
+                    'currentStatus'    => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
                 ];
             }
         }

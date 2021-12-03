@@ -70,8 +70,11 @@ class ReportingQueryGenerator
         $this->cleanFilters($fields, $filters);
 
         foreach ($filters as $filterKey => $filter) {
-            if (ReportingFilter::FILTER_ORDER === $filterKey) {
-                $query->addOrder($filter);
+            if (ReportingFilter::FILTER_ID === $filterKey) {
+                $query->addClause([
+                    'expression' => 'financingObjects.id IN (:financingObjectIds)',
+                    'parameter'  => ['financingObjectIds', \is_string($filter) ? [$filter] : $filter],
+                ]);
 
                 continue;
             }
@@ -97,6 +100,12 @@ class ReportingQueryGenerator
                         'parameter'  => ['search', '%' . $filters['search'] . '%'], // @todo be careful of special chars
                     ]);
                 }
+
+                continue;
+            }
+
+            if (ReportingFilter::FILTER_ORDER === $filterKey) {
+                $query->addOrder($filter);
 
                 continue;
             }
@@ -151,6 +160,30 @@ class ReportingQueryGenerator
             }
 
             // we ignore invalid format of existent filters like API Platform
+
+            if (ReportingFilter::FILTER_ID === $filterKey) {
+                if (\is_string($filterValue) && false === \is_numeric($filterValue)) {
+                    unset($filters[$filterKey]);
+
+                    continue;
+                }
+
+                if (\is_array($filterValue)) {
+                    if (empty($filterValue)) {
+                        unset($filters[$filterKey]);
+
+                        continue;
+                    }
+
+                    foreach ($filterValue as $value) {
+                        if (false === \is_numeric($value)) {
+                            unset($filters[$filterKey]);
+                        }
+                    }
+                }
+
+                continue;
+            }
 
             if (ReportingFilter::FILTER_SEARCH === $filterKey) {
                 if (false === \is_string($filterValue)) {

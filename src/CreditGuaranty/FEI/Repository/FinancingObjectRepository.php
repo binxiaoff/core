@@ -40,4 +40,26 @@ class FinancingObjectRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->clear();
     }
+
+    public function bulkUpdate(array $ids, array $data): void
+    {
+        if (empty($ids) || empty($data)) {
+            return;
+        }
+
+        $queryBuilder = $this->createQueryBuilder('fo')
+            ->update()
+            ->where('fo.id IN (:ids)')
+            ->setParameter('ids', $ids)
+        ;
+
+        foreach ($data as $property => $value) {
+            $queryBuilder
+                ->set('fo.' . $property, ':' . $property)
+                ->setParameter($property, $value)
+            ;
+        }
+
+        $queryBuilder->getQuery()->execute();
+    }
 }

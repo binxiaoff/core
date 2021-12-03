@@ -14,6 +14,7 @@ class ReportingFilter extends AbstractEnum
     // Keys
     //
 
+    public const FILTER_ID     = 'id';
     public const FILTER_SEARCH = 'search';
     public const FILTER_ORDER  = 'order';
 
@@ -40,6 +41,7 @@ class ReportingFilter extends AbstractEnum
     ];
 
     public const ALLOWED_FILTER_KEYS = [
+        self::FILTER_ID,
         self::FILTER_SEARCH,
         ...self::FIELD_ALIAS_FILTER_KEYS,
         self::FILTER_ORDER,
