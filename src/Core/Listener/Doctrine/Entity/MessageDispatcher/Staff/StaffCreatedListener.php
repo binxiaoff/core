@@ -5,15 +5,20 @@ declare(strict_types=1);
 namespace KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\Staff;
 
 use KLS\Core\Entity\Staff;
-use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\PostFlushListener;
 use KLS\Core\Message\Staff\StaffCreated;
 
 class StaffCreatedListener
 {
-    use MessageDispatcherTrait;
+    private PostFlushListener $postFlushListener;
+
+    public function __construct(PostFlushListener $postFlushListener)
+    {
+        $this->postFlushListener = $postFlushListener;
+    }
 
     public function postPersist(Staff $staff): void
     {
-        $this->messageBus->dispatch(new StaffCreated($staff));
+        $this->postFlushListener->addMessage(new StaffCreated($staff));
     }
 }
