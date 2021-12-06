@@ -17,7 +17,7 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
     // user-defined list type fields
     private const FIELDS = [
         'field-activity_department' => [
-            'department',
+            '75',
         ],
         'field-activity_country' => [
             'FR',
@@ -41,7 +41,7 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'FR',
         ],
         'field-investment_department' => [
-            'department',
+            '75',
         ],
         'field-investment_location' => [
             'Paris',

@@ -37,9 +37,9 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'FR',
         ],
         FieldAlias::ACTIVITY_DEPARTMENT => [
-            'Paris',
-            'Seine-et-Marne',
-            'Val-de-Marne',
+            '75',
+            '77',
+            '94',
         ],
         FieldAlias::AID_INTENSITY => [
             '0.20', '0.40', '0.60', '0.80',
@@ -62,9 +62,9 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'FR',
         ],
         FieldAlias::INVESTMENT_DEPARTMENT => [
-            'Paris',
-            'Seine-et-Marne',
-            'Val-de-Marne',
+            '75',
+            '77',
+            '94',
         ],
         FieldAlias::INVESTMENT_LOCATION => [
             'Paris', 'Nantes', 'Lyon', 'Marseille', 'Nice',

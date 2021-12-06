@@ -216,7 +216,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
-            ->setAddressDepartment($this->findProgramChoiceOption($program, 'field-activity_department', 'department'))
+            ->setAddressDepartment($this->findProgramChoiceOption($program, 'field-activity_department', '75'))
             ->setAddressCountry($this->findProgramChoiceOption($program, 'field-activity_country', 'FR'))
             ->setRegistrationNumber('12 23 45 678 987')
             ->setLegalForm($this->findProgramChoiceOption($program, 'field-legal_form', 'SAS'))
@@ -268,11 +268,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
             ->setAddressDepartment(
-                $this->findProgramChoiceOption(
-                    $program,
-                    'field-investment_department',
-                    'department'
-                )
+                $this->findProgramChoiceOption($program, 'field-investment_department', '75')
             )
             ->setAddressCountry($this->findProgramChoiceOption($program, 'field-investment_country', 'FR'))
             ->setFundingMoney(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
