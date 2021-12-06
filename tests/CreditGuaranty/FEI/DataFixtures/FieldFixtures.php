@@ -33,9 +33,8 @@ class FieldFixtures extends AbstractFixtures
                 $fieldData['predefinedItems']
             );
 
-            $reference = 'field-' . $fieldAlias;
-            $this->setPublicId($field, $reference);
-            $this->addReference($reference, $field);
+            $this->setPublicId($field, $fieldAlias);
+            $this->addReference($fieldAlias, $field);
 
             $manager->persist($field);
         }
@@ -104,6 +103,138 @@ class FieldFixtures extends AbstractFixtures
             'type'                    => 'bool',
             'reservationPropertyName' => 'borrower',
             'propertyPath'            => 'subsidiary',
+            'propertyType'            => 'bool',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield FieldAlias::ECONOMICALLY_VIABLE => [
+            'fieldAlias'              => FIEldAlias::ECONOMICALLY_VIABLE,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'economicallyViable',
+            'propertyType'            => 'bool',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        // this reference needs to be shorter because reference is set as publicId and publicId has a character limit
+        yield 'loan_dates_after_application_date' => [
+            'fieldAlias'              => FieldAlias::LOAN_SUPPORTING_DOCUMENTS_DATES_AFTER_APPLICATION,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'loanSupportingDocumentsDatesAfterApplication',
+            'propertyType'            => 'bool',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield FieldAlias::BENEFITING_PROFIT_TRANSFER => [
+            'fieldAlias'              => FieldAlias::BENEFITING_PROFIT_TRANSFER,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'benefitingProfitTransfer',
+            'propertyType'            => 'bool',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield FieldAlias::LOAN_ALLOWED_REFINANCE_RESTRUCTURE => [
+            'fieldAlias'              => FieldAlias::LOAN_ALLOWED_REFINANCE_RESTRUCTURE,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'loanAllowedRefinanceRestructure',
+            'propertyType'            => 'bool',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield FieldAlias::PROJECT_RECEIVED_FEAGA_OCM_FUNDING => [
+            'fieldAlias'              => FieldAlias::PROJECT_RECEIVED_FEAGA_OCM_FUNDING,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'projectReceivedFeagaOcmFunding',
+            'propertyType'            => 'bool',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield FieldAlias::LISTED_ON_STOCK_MARKET => [
+            'fieldAlias'              => FIELDAlias::LISTED_ON_STOCK_MARKET,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'listedOnStockMarket',
+            'propertyType'            => 'bool',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        // this reference needs to be shorter because reference is set as publicId and publicId has a character limit
+        yield 'subject_unperformed_recovery_order' => [
+            'fieldAlias'              => FieldAlias::SUBJECT_OF_UNPERFORMED_RECOVERY_ORDER,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'subjectOfUnperformedRecoveryOrder',
+            'propertyType'            => 'bool',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield FieldAlias::SUBJECT_OF_RESTRUCTURING_PLAN => [
+            'fieldAlias'              => FieldAlias::SUBJECT_OF_RESTRUCTURING_PLAN,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'subjectOfRestructuringPlan',
+            'propertyType'            => 'bool',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield FieldAlias::IN_NON_COOPERATIVE_JURISDICTION => [
+            'fieldAlias'              => FieldAlias::IN_NON_COOPERATIVE_JURISDICTION,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'inNonCooperativeJurisdiction',
+            'propertyType'            => 'bool',
+            'objectClass'             => Borrower::class,
+            'comparable'              => true,
+            'unit'                    => null,
+            'predefinedItems'         => null,
+        ];
+        yield FieldAlias::TRANSACTION_AFFECTED => [
+            'fieldAlias'              => FieldAlias::TRANSACTION_AFFECTED,
+            'tag'                     => Field::TAG_ELIGIBILITY,
+            'category'                => 'profile',
+            'type'                    => 'bool',
+            'reservationPropertyName' => 'borrower',
+            'propertyPath'            => 'transactionAffected',
             'propertyType'            => 'bool',
             'objectClass'             => Borrower::class,
             'comparable'              => true,
