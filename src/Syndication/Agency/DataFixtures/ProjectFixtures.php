@@ -46,8 +46,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     private ValidatorInterface $validator;
     private UserPasswordEncoderInterface $passwordEncoder;
 
-    public function __construct(TokenStorageInterface $tokenStorage, ValidatorInterface $validator, UserPasswordEncoderInterface $passwordEncoder)
-    {
+    public function __construct(
+        TokenStorageInterface $tokenStorage,
+        ValidatorInterface $validator,
+        UserPasswordEncoderInterface $passwordEncoder
+    ) {
         parent::__construct($tokenStorage);
         $this->validator       = $validator;
         $this->passwordEncoder = $passwordEncoder;
@@ -92,8 +95,19 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $publishedProject->publish();
 
         // TODO Rework this part of the fixtures (a builder or a factory would be more appropriate)
-        foreach ([Covenant::NATURE_FINANCIAL_ELEMENT, Covenant::NATURE_FINANCIAL_RATIO, Covenant::NATURE_DOCUMENT, Covenant::NATURE_CONTROL] as $nature) {
-            $unpublishedCovenant = $this->createCovenant($publishedProject, $nature, Covenant::RECURRENCE_12M, new DateTimeImmutable('-2 years'));
+        foreach (
+            [
+                Covenant::NATURE_FINANCIAL_ELEMENT,
+                Covenant::NATURE_FINANCIAL_RATIO,
+                Covenant::NATURE_DOCUMENT, Covenant::NATURE_CONTROL,
+            ] as $nature
+        ) {
+            $unpublishedCovenant = $this->createCovenant(
+                $publishedProject,
+                $nature,
+                Covenant::RECURRENCE_12M,
+                new DateTimeImmutable('-2 years')
+            );
             $unpublishedCovenant->setName($nature . '-unpublished');
             $publishedProject->addCovenant($unpublishedCovenant);
 
@@ -103,7 +117,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
                 }
             }
 
-            $publishedCovenant = $this->createCovenant($publishedProject, $nature, Covenant::RECURRENCE_12M, new DateTimeImmutable('-2 years'));
+            $publishedCovenant = $this->createCovenant(
+                $publishedProject,
+                $nature,
+                Covenant::RECURRENCE_12M,
+                new DateTimeImmutable('-2 years')
+            );
             $publishedCovenant->setName($nature . '-published');
             $publishedCovenant->publish();
             $publishedProject->addCovenant($publishedCovenant);
@@ -120,7 +139,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
                     foreach ([true, false] as $shared) {
                         $archivedOptions = $shared ? [true, false] : [false];
                         foreach ($archivedOptions as $archived) {
-                            $covenant = $this->createCovenant($publishedProject, $nature, Covenant::RECURRENCE_12M, new DateTimeImmutable('-1 years'));
+                            $covenant = $this->createCovenant(
+                                $publishedProject,
+                                $nature,
+                                Covenant::RECURRENCE_12M,
+                                new DateTimeImmutable('-1 years')
+                            );
 
                             $name = $nature . ($validation ? '-yes' : '-no')
                                 . ($raison ? '-' . $raison : '')
@@ -173,7 +197,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
                 }
             }
         }
-        $invalidCovenant = $this->createCovenant($publishedProject, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_3M, new DateTimeImmutable('-2 years'));
+        $invalidCovenant = $this->createCovenant(
+            $publishedProject,
+            Covenant::NATURE_CONTROL,
+            Covenant::RECURRENCE_3M,
+            new DateTimeImmutable('-2 years')
+        );
         $invalidCovenant->publish();
         $invalidCovenant->getTerms()[0]->setValidation(false);
         $invalidCovenant->getTerms()[1]->setValidation(true)->share();
@@ -182,7 +211,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $invalidCovenant->getTerms()[3]->setValidation(true)->share()->archive();
         $publishedProject->addCovenant($invalidCovenant);
 
-        $breachCovenant = $this->createCovenant($publishedProject, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_12M, new DateTimeImmutable('-3 years'));
+        $breachCovenant = $this->createCovenant(
+            $publishedProject,
+            Covenant::NATURE_CONTROL,
+            Covenant::RECURRENCE_12M,
+            new DateTimeImmutable('-3 years')
+        );
         $breachCovenant->publish();
         $breachCovenant->getTerms()[0]->setValidation(false);
         $breachCovenant->getTerms()[0]->setBreach(true);
@@ -196,7 +230,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $breachCovenant->getTerms()[2]->share()->archive();
         $publishedProject->addCovenant($breachCovenant);
 
-        $waiverCovenant = $this->createCovenant($publishedProject, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_12M, new DateTimeImmutable('-1 years'));
+        $waiverCovenant = $this->createCovenant(
+            $publishedProject,
+            Covenant::NATURE_CONTROL,
+            Covenant::RECURRENCE_12M,
+            new DateTimeImmutable('-1 years')
+        );
         $waiverCovenant->publish();
         $waiverCovenant->getTerms()[0]->setValidation(false);
         $waiverCovenant->getTerms()[0]->setBreach(true);
@@ -246,7 +285,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
                 foreach ($project->getStatuses() as $statusHistory) {
                     if (Project::STATUS_PUBLISHED === $statusHistory->getStatus()) {
-                        $this->forcePropertyValue($statusHistory, 'added', (new DateTimeImmutable($end))->modify('- 2 day'));
+                        $this->forcePropertyValue(
+                            $statusHistory,
+                            'added',
+                            (new DateTimeImmutable($end))->modify('- 2 day')
+                        );
                         $this->save($manager, $statusHistory);
                     }
                 }
@@ -309,7 +352,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $this->faker->name,
             new Money('EUR', '5000000'),
             new DateTimeImmutable('now'),
-            new DateTimeImmutable('+1 year')
+            new DateTimeImmutable('+1 year'),
         );
 
         $project->setCompanyGroupTag($staff->getAvailableCompanyGroupTags()[0]);
@@ -351,7 +394,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $participations = [
             ...\array_map(
                 fn ($company) => $this->createParticipation($project, $this->getReference($company)),
-                [CompanyFixtures::COMPANY_MANY_STAFF, CompanyFixtures::COMPANY_MANY_STAFF, CompanyFixtures::COMPANIES[0]]
+                [
+                    CompanyFixtures::COMPANY_MANY_STAFF,
+                    CompanyFixtures::COMPANY_MANY_STAFF,
+                    CompanyFixtures::COMPANIES[0],
+                ]
             ),
             ...\array_map(
                 fn ($company) => $this->createParticipation($project, $this->getReference($company), true),
@@ -371,7 +418,13 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         /** @var Participation $participation */
         foreach ($project->getParticipations() as $participation) {
             foreach ($project->getTranches() as $tranche) {
-                $participation->addAllocation(new ParticipationTrancheAllocation($participation, $tranche, new Money('EUR', '20000')));
+                $participation->addAllocation(
+                    new ParticipationTrancheAllocation(
+                        $participation,
+                        $tranche,
+                        new Money('EUR', '20000')
+                    )
+                );
             }
         }
 
@@ -383,7 +436,11 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     private function withPublishableCovenants(Project $project): ProjectFixtures
     {
-        $financialCovenant = $this->createCovenant($project, Covenant::NATURE_FINANCIAL_ELEMENT, Covenant::RECURRENCE_12M);
+        $financialCovenant = $this->createCovenant(
+            $project,
+            Covenant::NATURE_FINANCIAL_ELEMENT,
+            Covenant::RECURRENCE_12M
+        );
 
         $covenantRules = \array_map(
             fn ($index) => $this->createCovenantRule($financialCovenant, $index),
@@ -398,8 +455,18 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $covenants = [
             $this->createCovenant($project, Covenant::NATURE_DOCUMENT, Covenant::RECURRENCE_12M),
             $this->createCovenant($project, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_12M),
-            $this->createCovenant($project, Covenant::NATURE_DOCUMENT, Covenant::RECURRENCE_12M, new DateTimeImmutable('-1 years')),
-            $this->createCovenant($project, Covenant::NATURE_CONTROL, Covenant::RECURRENCE_12M, new DateTimeImmutable('-1 years')),
+            $this->createCovenant(
+                $project,
+                Covenant::NATURE_DOCUMENT,
+                Covenant::RECURRENCE_12M,
+                new DateTimeImmutable('-1 years')
+            ),
+            $this->createCovenant(
+                $project,
+                Covenant::NATURE_CONTROL,
+                Covenant::RECURRENCE_12M,
+                new DateTimeImmutable('-1 years')
+            ),
             $financialCovenant,
         ];
 
@@ -422,8 +489,17 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setIban($this->faker->iban('fr'))
             ->setBic('AGRIFRPP907')
             ->setHeadOffice($this->faker->address)
-            ->setRcs(\implode(' ', ['RCS', \mb_strtoupper($this->faker->city), $this->faker->randomDigit % 2 ? 'A' : 'B', $project->getAgent()->getMatriculationNumber()]))
+            ->setRcs(\implode(
+                ' ',
+                [
+                    'RCS',
+                    \mb_strtoupper($this->faker->city),
+                    $this->faker->randomDigit % 2 ? 'A' : 'B',
+                    $project->getAgent()->getMatriculationNumber(),
+                ]
+            ))
             ->setCapital(new NullableMoney('EUR', '300000'))
+            ->setVariableCapital(null)
             ->setBankInstitution('bank institution')
             ->setBankAddress($this->faker->address)
             ->setCorporateName($this->faker->company)
@@ -432,7 +508,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         return $this;
     }
 
-    private function withPublishableSyndicationModality(Project $project)
+    private function withPublishableSyndicationModality(Project $project): ProjectFixtures
     {
         $project->getPrimaryParticipationPool()->setSyndicationType(SyndicationType::PRIMARY);
         $project->getPrimaryParticipationPool()->setParticipationType(ParticipationType::DIRECT);
@@ -516,8 +592,12 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     /**
      * @throws Exception
      */
-    private function createBorrowerMember(Borrower $borrower, ObjectManager $manager, bool $referent = false, bool $signatory = false): BorrowerMember
-    {
+    private function createBorrowerMember(
+        Borrower $borrower,
+        ObjectManager $manager,
+        bool $referent = false,
+        bool $signatory = false
+    ): BorrowerMember {
         $user = new User($this->faker->email);
         $user->setLastName($this->faker->lastName);
         $user->setFirstName($this->faker->firstName);
@@ -539,10 +619,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     /**
      * @throws Exception
-     *
-     * @return Tranche
      */
-    private function createTranche(Project $project)
+    private function createTranche(Project $project): Tranche
     {
         $tranche = new Tranche(
             $project,
@@ -564,11 +642,14 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
     /**
      * @throws Exception
      */
-    private function createParticipation(Project $project, Company $participant, bool $secondary = false): Participation
-    {
+    private function createParticipation(
+        Project $project,
+        Company $participant,
+        bool $secondary = false
+    ): Participation {
         $participation = new Participation(
             $project->getParticipationPools()[$secondary],
-            $participant,
+            $participant
         );
 
         $participation->setLegalForm(LegalForm::SARL)
@@ -585,11 +666,13 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     /**
      * @throws Exception
-     *
-     * @return Covenant
      */
-    private function createCovenant(Project $project, string $nature, ?string $recurrence = null, ?DateTimeImmutable $startDate = null)
-    {
+    private function createCovenant(
+        Project $project,
+        string $nature,
+        ?string $recurrence = null,
+        ?DateTimeImmutable $startDate = null
+    ): Covenant {
         $covenant = new Covenant(
             $project,
             $this->faker->title,
@@ -604,10 +687,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         return $covenant;
     }
 
-    /**
-     * @return CovenantRule
-     */
-    private function createCovenantRule(Covenant $covenant, int $year)
+    private function createCovenantRule(Covenant $covenant, int $year): CovenantRule
     {
         return new CovenantRule(
             $covenant,
@@ -616,10 +696,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         );
     }
 
-    /**
-     * @return MarginRule
-     */
-    private function createMarginRule(Covenant $covenant, iterable $tranches)
+    private function createMarginRule(Covenant $covenant, iterable $tranches): MarginRule
     {
         $marginRule = new MarginRule($covenant, new Inequality(MathOperator::INFERIOR_OR_EQUAL, '0.9'));
 

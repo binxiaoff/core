@@ -16,6 +16,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
+ *     attributes={
+ *         "validation_groups": {Borrower::class, "getCurrentValidationGroups"},
+ *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:borrower:read",
@@ -84,7 +87,9 @@ class Borrower extends AbstractProjectPartaker
     /**
      * @var Collection|BorrowerMember[]
      *
-     * @ORM\OneToMany(targetEntity=BorrowerMember::class, mappedBy="borrower", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToMany(
+     *     targetEntity=BorrowerMember::class, mappedBy="borrower", cascade={"persist", "remove"}, orphanRemoval=true
+     * )
      *
      * @Assert\Valid
      * @Assert\All({
@@ -344,5 +349,23 @@ class Borrower extends AbstractProjectPartaker
     public function isCompleted()
     {
         return $this->getBankInstitution() && $this->getBankAddress() && $this->getIban() && $this->getBic();
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function hasVariableCapital(): ?bool
+    {
+        return $this->variableCapital;
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setVariableCapital(?bool $variableCapital): AbstractProjectPartaker
+    {
+        $this->variableCapital = $variableCapital;
+
+        return $this;
     }
 }

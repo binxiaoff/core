@@ -32,6 +32,9 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * "money:read" is needed for allocation.
  *
  * @ApiResource(
+ *     attributes={
+ *         "validation_groups": {Participation::class, "getCurrentValidationGroups"},
+ *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
@@ -55,7 +58,6 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                 "openapi_definition_name": "collection-post-write",
  *             },
  *             "security_post_denormalize": "is_granted('create', object)",
- *             "validation_groups": {Participation::class, "getCurrentValidationGroups"},
  *         },
  *     },
  *     itemOperations={
@@ -74,7 +76,6 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                 "openapi_definition_name": "item-patch-write",
  *             },
  *             "security": "is_granted('edit', object)",
- *             "validation_groups": {Participation::class, "getCurrentValidationGroups"},
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)",
@@ -146,7 +147,8 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @UniqueEntity(fields={"pool", "participant"})
  *
- * TODO The .publicId might be dropped in favor of using iri for filter when https://github.com/api-platform/core/issues/3575 is solved
+ * TODO The .publicId might be dropped in favor of using iri for filter when
+ * https://github.com/api-platform/core/issues/3575 is solved
  * @ApiFilter(
  *     filterClass=SearchFilter::class,
  *     properties={"participant.publicId": "exact", "pool.project.publicId": "exact"}
@@ -170,7 +172,11 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
     /**
      * @var Collection|ParticipationMember[]
      *
-     * @ORM\OneToMany(targetEntity=ParticipationMember::class, mappedBy="participation", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToMany(
+     *     targetEntity=ParticipationMember::class, mappedBy="participation",
+     *     cascade={"persist", "remove"},
+     *     orphanRemoval=true
+     * )
      *
      * @Assert\Valid
      * @Assert\All({
@@ -251,7 +257,12 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
     /**
      * @var ParticipationTrancheAllocation[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=ParticipationTrancheAllocation::class, cascade={"persist", "remove"}, mappedBy="participation", orphanRemoval=true)
+     * @ORM\OneToMany(
+     *     targetEntity=ParticipationTrancheAllocation::class,
+     *     cascade={"persist", "remove"},
+     *     mappedBy="participation",
+     *     orphanRemoval=true
+     * )
      *
      * @Assert\Count(min="1", groups={"published"})
      * @Assert\Valid
@@ -281,7 +292,10 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
         Company $participant,
         ?NullableMoney $capital = null
     ) {
-        parent::__construct($participant->getSiren() ?? '', $capital ?? new NullableMoney($pool->getProject()->getCurrency(), '0'));
+        parent::__construct(
+            $participant->getSiren() ?? '',
+            $capital ?? new NullableMoney($pool->getProject()->getCurrency(), '0')
+        );
         $this->pool                     = $pool;
         $this->participant              = $participant;
         $this->prorata                  = false;
@@ -409,7 +423,11 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
      */
     public function getFinalAllocation(): MoneyInterface
     {
-        $result = MoneyCalculator::sum($this->allocations->map(fn (ParticipationTrancheAllocation $allocation) => $allocation->getAllocation())->toArray());
+        $result = MoneyCalculator::sum(
+            $this->allocations->map(
+                fn (ParticipationTrancheAllocation $allocation) => $allocation->getAllocation()
+            )->toArray()
+        );
 
         if (null === $result->getCurrency()) {
             $result = new NullableMoney($this->getProject()->getCurrency(), $result->getAmount() ?? '0');
@@ -613,29 +631,12 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
         return $this;
     }
 
-    /**
-     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups.
-     *
-     * @param Participation $participation
-     *
-     * @return array|string[]
-     */
-    public static function getCurrentValidationGroups(self $participation): array
-    {
-        $validationGroups = ['Default', 'Project'];
-
-        if ($participation->getProject()->isPublished()) {
-            $validationGroups[] = 'published';
-        }
-
-        return $validationGroups;
-    }
-
     public function addAllocation(ParticipationTrancheAllocation $participationTrancheAllocation): Participation
     {
         if (
             false === $this->allocations->exists(
-                fn ($key, ParticipationTrancheAllocation $item) => $item->getTranche() === $participationTrancheAllocation->getTranche()
+                fn ($key, ParticipationTrancheAllocation $item) => $item->getTranche()
+                    === $participationTrancheAllocation->getTranche()
             )
         ) {
             $this->allocations->add($participationTrancheAllocation);
@@ -734,5 +735,23 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
                 ->addViolation()
             ;
         }
+    }
+
+    /**
+     * @Groups({"agency:participation:read"})
+     */
+    public function hasVariableCapital(): ?bool
+    {
+        return $this->variableCapital;
+    }
+
+    /**
+     * @Groups({"agency:participation:write"})
+     */
+    public function setVariableCapital(?bool $variableCapital): AbstractProjectPartaker
+    {
+        $this->variableCapital = $variableCapital;
+
+        return $this;
     }
 }
