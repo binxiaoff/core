@@ -8,7 +8,6 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Persistence\Mapping\MappingException;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 
 /**
@@ -31,14 +30,6 @@ class FinancingObjectRepository extends ServiceEntityRepository
     public function flush(): void
     {
         $this->getEntityManager()->flush();
-    }
-
-    /**
-     * @throws MappingException
-     */
-    public function clear(): void
-    {
-        $this->getEntityManager()->clear();
     }
 
     public function bulkUpdate(array $ids, array $data): void

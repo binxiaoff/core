@@ -81,7 +81,6 @@ class ProgramVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
-            && $program->isPaused()
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_REPORTING);
     }
