@@ -39,9 +39,9 @@ class ProgramDistributedValidator extends ConstraintValidator
         }
 
         $countFieldsByCategory = [
-            'borrower' => 0,
-            'project'  => 0,
-            'loan'     => 0,
+            'profile' => 0,
+            'project' => 0,
+            'loan'    => 0,
         ];
         $emptyListTypeConfigurations = 0;
 
