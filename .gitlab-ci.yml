@@ -162,3 +162,10 @@ stages:
   environment:
     name: cg
     url: https://api.cg.kls-platform.com
+
+🚀 sandbox:
+  stage: 🚀 deploy
+  extends: .deploy-api
+  environment:
+    name: sandbox
+    url: https://api.sandbox.kls-platform.com
