@@ -40,6 +40,57 @@ class FieldFixtures extends AbstractSQLFixtures
             'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
         ),
         (
+            'ac3be9c4-c845-4a4b-b4c7-2feed75b44d7', 'eligibility', 'profile', 'bool',
+            'economically_viable', 'borrower', 'economicallyViable', 'bool',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
+        (
+            '7e16ca3f-604e-41db-92a9-2402dd016772', 'eligibility', 'profile', 'bool',
+            'loan_supporting_documents_dates_after_application', 'borrower',
+            'loanSupportingDocumentsDatesAfterApplication', 'bool',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
+        (
+            '8349e76f-2ad3-40cf-b900-d88c7e252044', 'eligibility', 'profile', 'bool',
+            'benefiting_profit_transfer', 'borrower', 'benefitingProfitTransfer', 'bool',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
+        (
+            '05575342-ec82-4305-989b-116bb3057032', 'eligibility', 'profile', 'bool',
+            'loan_allowed_refinance_restructure', 'borrower', 'loanAllowedRefinanceRestructure',
+            'bool', 'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
+        (
+            '5ee963ec-23a3-4cc2-9603-f9a29b775926', 'eligibility', 'profile', 'bool',
+            'project_received_feaga_ocm_funding', 'borrower', 'projectReceivedFeagaOcmFunding', 'bool',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
+        (
+            '7aaee610-5fdd-424f-9810-538092d98d40', 'eligibility', 'profile', 'bool',
+            'listed_on_stock_market', 'borrower', 'listedOnStockMarket', 'bool',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
+        (
+            '1f46fbaa-bda6-42df-8477-4bb33458c6a7', 'eligibility', 'profile', 'bool',
+            'subject_of_unperformed_recovery_order', 'borrower', 'subjectOfUnperformedRecoveryOrder', 'bool',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
+        (
+            '021f4a70-bed9-4b67-b4f1-36b06f1c44b0', 'eligibility', 'profile', 'bool',
+            'subject_of_restructuring_plan', 'borrower', 'subjectOfRestructuringPlan', 'bool',
+            'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
+        (
+            '794a4c46-83be-494c-8982-4665e2ce7489', 'eligibility', 'profile', 'bool',
+            'in_non_cooperative_jurisdiction', 'borrower', 'inNonCooperativeJurisdiction',
+            'bool', 'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
+        (
+            '8fd62489-0571-4bad-b968-880daf6a8516', 'eligibility', 'profile', 'bool',
+            'transaction_affected', 'borrower', 'transactionAffected',
+            'bool', 'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 1, NULL, NULL
+        ),
+        (
             '56d4b239-8b5a-41f0-9e65-4ced292b0c0c', 'eligibility', 'profile', 'other',
             'company_name', 'borrower', 'companyName', 'string',
             'KLS\\CreditGuaranty\\FEI\\Entity\\Borrower', 0, NULL, NULL

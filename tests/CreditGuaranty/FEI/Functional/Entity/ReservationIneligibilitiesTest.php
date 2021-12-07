@@ -219,7 +219,7 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
 
     public function notAllowedProvider(): iterable
     {
-        foreach (ReservationFixtures::ALL_RESERVATIONS as $reservation) {
+        foreach (ReservationFixtures::ALL_PROGRAM_COMMERCIALIZED_RESERVATIONS as $reservation) {
             yield 'user-1 - POST - ' . $reservation => [
                 'staff_company:basic_user-1',
                 $reservation,
@@ -275,7 +275,7 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
 
     public function forbiddenProvider(): iterable
     {
-        foreach (ReservationFixtures::ALL_RESERVATIONS as $reservation) {
+        foreach (ReservationFixtures::ALL_PROGRAM_COMMERCIALIZED_RESERVATIONS as $reservation) {
             yield 'user-a - ' . $reservation => [
                 'staff_company:foo_user-a',
                 $reservation,

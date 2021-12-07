@@ -38,14 +38,19 @@ class ProgramEligibilityFixtures extends AbstractFixtures implements DependentFi
     {
         $fields = $this->fieldRepository->findBy(['tag' => Field::TAG_ELIGIBILITY]);
 
+        $programs = [
+            $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED),
+            $this->getReference(ProgramFixtures::REFERENCE_PAUSED),
+        ];
+
         /** @var Program $program */
-        $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
+        foreach ($programs as $program) {
+            foreach ($fields as $field) {
+                $programEligibility = new ProgramEligibility($program, $field);
+                $manager->persist($programEligibility);
+            }
 
-        foreach ($fields as $field) {
-            $programEligibility = new ProgramEligibility($program, $field);
-            $manager->persist($programEligibility);
+            $manager->flush();
         }
-
-        $manager->flush();
     }
 }

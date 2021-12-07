@@ -7,8 +7,10 @@ namespace KLS\Test\CreditGuaranty\FEI\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use KLS\Core\Entity\Staff;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
+use KLS\CreditGuaranty\FEI\Entity\ReportingTemplateField;
 use KLS\Test\Core\DataFixtures\AbstractFixtures;
 
 class ReportingTemplateFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -19,26 +21,66 @@ class ReportingTemplateFixtures extends AbstractFixtures implements DependentFix
     public function getDependencies(): array
     {
         return [
+            FieldFixtures::class,
             ProgramFixtures::class,
         ];
     }
 
     public function load(ObjectManager $manager): void
     {
+        foreach ($this->loadData() as $reference => $reportingTemplateData) {
+            $reportingTemplate = new ReportingTemplate(
+                $reportingTemplateData['program'],
+                $reportingTemplateData['name'],
+                $reportingTemplateData['addedBy']
+            );
+
+            $this->setPublicId($reportingTemplate, $reference);
+            $this->addReference($reference, $reportingTemplate);
+            $manager->persist($reportingTemplate);
+
+            foreach ($reportingTemplateData['fields'] as $field) {
+                $reportingTemplateField = new ReportingTemplateField($reportingTemplate, $field);
+                $manager->persist($reportingTemplateField);
+            }
+
+            $manager->flush();
+        }
+    }
+
+    private function loadData(): iterable
+    {
         /** @var Program $program */
         $program = $this->getReference(ProgramFixtures::REFERENCE_PAUSED);
         /** @var Staff $addedBy */
         $addedBy = $program->getManagingCompany()->getStaff()->current();
 
-        foreach (\range(1, 3) as $index) {
-            $reference = 'reporting-template-' . $index;
-
-            $reportingTemplate = new ReportingTemplate($program, 'Template ' . $index, $addedBy);
-            $this->setPublicId($reportingTemplate, $reference);
-            $this->addReference($reference, $reportingTemplate);
-            $manager->persist($reportingTemplate);
-        }
-
-        $manager->flush();
+        yield 'reporting-template-1' => [
+            'program' => $program,
+            'name'    => 'Template 1',
+            'addedBy' => $addedBy,
+            'fields'  => [
+                $this->getReference(FieldAlias::CREATION_IN_PROGRESS),
+                $this->getReference(FieldAlias::BENEFICIARY_NAME),
+                $this->getReference(FieldAlias::COMPANY_NAME),
+                $this->getReference(FieldAlias::ACTIVITY_DEPARTMENT),
+                $this->getReference(FieldAlias::RECEIVING_GRANT),
+                $this->getReference(FieldAlias::AID_INTENSITY),
+                $this->getReference(FieldAlias::PROJECT_GRANT),
+                $this->getReference(FieldAlias::SUPPORTING_GENERATIONS_RENEWAL),
+                $this->getReference(FieldAlias::FINANCING_OBJECT_NAME),
+                $this->getReference(FieldAlias::LOAN_DURATION),
+                $this->getReference(FieldAlias::INVESTMENT_LOCATION),
+                $this->getReference(FieldAlias::RESERVATION_NAME),
+                $this->getReference(FieldAlias::BORROWER_TYPE_GRADE),
+                $this->getReference(FieldAlias::LOAN_NEW_MATURITY),
+            ],
+        ];
+        yield 'reporting-template-2' => [
+            'program' => $program,
+            'name'    => 'Template 2',
+            'addedBy' => $addedBy,
+            'fields'  => [],
+        ];
     }
 }
