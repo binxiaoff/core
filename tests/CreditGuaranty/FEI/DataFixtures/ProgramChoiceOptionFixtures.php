@@ -55,62 +55,62 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
     private function loadData(): array
     {
         return [
-            'field-' . FieldAlias::ACTIVITY_DEPARTMENT => [
+            FieldAlias::ACTIVITY_DEPARTMENT => [
                 '75',
             ],
-            'field-' . FieldAlias::ACTIVITY_COUNTRY => [
+            FieldAlias::ACTIVITY_COUNTRY => [
                 'FR',
             ],
-            'field-' . FieldAlias::AID_INTENSITY => [
+            FieldAlias::AID_INTENSITY => [
                 '0.20', '0.40', '0.60', '0.80',
             ],
-            'field-' . FieldAlias::BORROWER_TYPE => [
+            FieldAlias::BORROWER_TYPE => [
                 'Installé',
                 'En reconversion',
                 'Agriculture',
                 'Apiculteur',
             ],
-            'field-' . FieldAlias::COMPANY_NAF_CODE => [
+            FieldAlias::COMPANY_NAF_CODE => [
                 '0001A',
             ],
-            'field-' . FieldAlias::EXPLOITATION_SIZE => [
+            FieldAlias::EXPLOITATION_SIZE => [
                 '42',
             ],
-            'field-' . FieldAlias::INVESTMENT_COUNTRY => [
+            FieldAlias::INVESTMENT_COUNTRY => [
                 'FR',
             ],
-            'field-' . FieldAlias::INVESTMENT_DEPARTMENT => [
+            FieldAlias::INVESTMENT_DEPARTMENT => [
                 '75',
             ],
-            'field-' . FieldAlias::INVESTMENT_LOCATION => [
+            FieldAlias::INVESTMENT_LOCATION => [
                 'Paris',
                 'Seine-et-Marne',
                 'Val-de-Marne',
             ],
-            'field-' . FieldAlias::INVESTMENT_THEMATIC => [
+            FieldAlias::INVESTMENT_THEMATIC => [
                 'Renouvellement et installation',
                 'Mieux répondre / renforcer',
                 'Transformation',
                 'Accompagner',
                 'Mettre à niveau',
             ],
-            'field-' . FieldAlias::LEGAL_FORM => [
+            FieldAlias::LEGAL_FORM => [
                 'SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS',
             ],
-            'field-' . FieldAlias::LOAN_NAF_CODE => [
+            FieldAlias::LOAN_NAF_CODE => [
                 '0001A',
             ],
-            'field-' . FieldAlias::LOAN_TYPE => [
+            FieldAlias::LOAN_TYPE => [
                 'term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment',
             ],
-            'field-' . FieldAlias::PRODUCT_CATEGORY_CODE => [
+            FieldAlias::PRODUCT_CATEGORY_CODE => [
                 '1 - ANIMAUX',
                 '6 - PLANTES',
                 '7 - LÉGUMES',
                 '8 - FRUITS',
                 '10 - CÉRÉALES',
             ],
-            'field-' . FieldAlias::TARGET_TYPE => [
+            FieldAlias::TARGET_TYPE => [
                 'Cible A',
                 'Cible B',
             ],

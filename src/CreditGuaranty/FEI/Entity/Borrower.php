@@ -111,6 +111,97 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?bool $subsidiary = null;
 
     /**
+     * L’emprunteur est-il considéré comme étant économiquement viable ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $economicallyViable = null;
+
+    /**
+     * L’emprunteur bénéficie-t-il du transfert de bénéfice,
+     * à savoir d’une réduction du taux et une limitation des garanties ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $benefitingProfitTransfer = null;
+
+    /**
+     * L’emprunteur est-il côté sur un marché boursier ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $listedOnStockMarket = null;
+
+    /**
+     * L’emprunteur est-il établi dans une juridiction Non coopérative ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $inNonCooperativeJurisdiction = null;
+
+    /**
+     * L’emprunteur fait-il l’objet d’une injonction de récupération non exécutée ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $subjectOfUnperformedRecoveryOrder = null;
+
+    /**
+     * L’emprunteur fait-il l’objet d’un plan de restructuration (aide au sauvetage, aide à la restructuration) ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $subjectOfRestructuringPlan = null;
+
+    /**
+     * Le projet a-t-il bénéficié d’un financement du FEAGA/OCM pour le même objet ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $projectReceivedFeagaOcmFunding = null;
+
+    /**
+     * Les dates des justificatifs de l’objet du prêt sont postérieurs à celle de la demande du prêt ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $loanSupportingDocumentsDatesAfterApplication = null;
+
+    /**
+     * Le prêt permet-il de refinancer ou restructurer un prêt existant ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $loanAllowedRefinanceRestructure = null;
+
+    /**
+     * La transaction est-elle affectée par une irrégularité ou une fraude ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $transactionAffected = null;
+
+    /**
      * @ORM\Column(length=100, nullable=true)
      *
      * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update"})
@@ -301,6 +392,126 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     public function setSubsidiary(?bool $subsidiary): Borrower
     {
         $this->subsidiary = $subsidiary;
+
+        return $this;
+    }
+
+    public function isEconomicallyViable(): ?bool
+    {
+        return $this->economicallyViable;
+    }
+
+    public function setEconomicallyViable(?bool $economicallyViable): Borrower
+    {
+        $this->economicallyViable = $economicallyViable;
+
+        return $this;
+    }
+
+    public function isBenefitingProfitTransfer(): ?bool
+    {
+        return $this->benefitingProfitTransfer;
+    }
+
+    public function setBenefitingProfitTransfer(?bool $benefitingProfitTransfer): Borrower
+    {
+        $this->benefitingProfitTransfer = $benefitingProfitTransfer;
+
+        return $this;
+    }
+
+    public function isListedOnStockMarket(): ?bool
+    {
+        return $this->listedOnStockMarket;
+    }
+
+    public function setListedOnStockMarket(?bool $listedOnStockMarket): Borrower
+    {
+        $this->listedOnStockMarket = $listedOnStockMarket;
+
+        return $this;
+    }
+
+    public function isInNonCooperativeJurisdiction(): ?bool
+    {
+        return $this->inNonCooperativeJurisdiction;
+    }
+
+    public function setInNonCooperativeJurisdiction(?bool $inNonCooperativeJurisdiction): Borrower
+    {
+        $this->inNonCooperativeJurisdiction = $inNonCooperativeJurisdiction;
+
+        return $this;
+    }
+
+    public function isSubjectOfUnperformedRecoveryOrder(): ?bool
+    {
+        return $this->subjectOfUnperformedRecoveryOrder;
+    }
+
+    public function setSubjectOfUnperformedRecoveryOrder(?bool $subjectOfUnperformedRecoveryOrder): Borrower
+    {
+        $this->subjectOfUnperformedRecoveryOrder = $subjectOfUnperformedRecoveryOrder;
+
+        return $this;
+    }
+
+    public function isSubjectOfRestructuringPlan(): ?bool
+    {
+        return $this->subjectOfRestructuringPlan;
+    }
+
+    public function setSubjectOfRestructuringPlan(?bool $subjectOfRestructuringPlan): Borrower
+    {
+        $this->subjectOfRestructuringPlan = $subjectOfRestructuringPlan;
+
+        return $this;
+    }
+
+    public function isProjectReceivedFeagaOcmFunding(): ?bool
+    {
+        return $this->projectReceivedFeagaOcmFunding;
+    }
+
+    public function setProjectReceivedFeagaOcmFunding(?bool $projectReceivedFeagaOcmFunding): Borrower
+    {
+        $this->projectReceivedFeagaOcmFunding = $projectReceivedFeagaOcmFunding;
+
+        return $this;
+    }
+
+    public function isLoanSupportingDocumentsDatesAfterApplication(): ?bool
+    {
+        return $this->loanSupportingDocumentsDatesAfterApplication;
+    }
+
+    public function setLoanSupportingDocumentsDatesAfterApplication(?bool $value): Borrower
+    {
+        $this->loanSupportingDocumentsDatesAfterApplication = $value;
+
+        return $this;
+    }
+
+    public function isLoanAllowedRefinanceRestructure(): ?bool
+    {
+        return $this->loanAllowedRefinanceRestructure;
+    }
+
+    public function setLoanAllowedRefinanceRestructure(?bool $loanAllowedRefinanceRestructure): Borrower
+    {
+        $this->loanAllowedRefinanceRestructure = $loanAllowedRefinanceRestructure;
+
+        return $this;
+    }
+
+    public function isTransactionAffected(): ?bool
+    {
+        return $this->transactionAffected;
+    }
+
+    public function setTransactionAffected(?bool $transactionAffected): Borrower
+    {
+        $this->transactionAffected = $transactionAffected;
 
         return $this;
     }

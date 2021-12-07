@@ -304,32 +304,42 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $reservation->getBorrower()
             ->setBeneficiaryName('Borrower Name')
             ->setBorrowerType(
-                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::BORROWER_TYPE, 'Installé')
+                $this->findProgramChoiceOption($program, FieldAlias::BORROWER_TYPE, 'Installé')
             )
             ->setYoungFarmer($data[FieldAlias::YOUNG_FARMER])
             ->setCreationInProgress($data[FieldAlias::CREATION_IN_PROGRESS])
             ->setSubsidiary($data[FieldAlias::SUBSIDIARY])
+            ->setEconomicallyViable(true)
+            ->setBenefitingProfitTransfer(true)
+            ->setListedOnStockMarket(true)
+            ->setInNonCooperativeJurisdiction(true)
+            ->setSubjectOfUnperformedRecoveryOrder(true)
+            ->setSubjectOfRestructuringPlan(true)
+            ->setProjectReceivedFeagaOcmFunding(true)
+            ->setLoanSupportingDocumentsDatesAfterApplication(true)
+            ->setLoanAllowedRefinanceRestructure(true)
+            ->setTransactionAffected(true)
             ->setCompanyName('Borrower Company')
             ->setActivityStartDate(new DateTimeImmutable())
             ->setAddressStreet($this->faker->streetAddress)
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
             ->setAddressDepartment(
-                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::ACTIVITY_DEPARTMENT, '75')
+                $this->findProgramChoiceOption($program, FieldAlias::ACTIVITY_DEPARTMENT, '75')
             )
-            ->setAddressCountry($this->findProgramChoiceOption($program, 'field-' . FieldAlias::ACTIVITY_COUNTRY, 'FR'))
+            ->setAddressCountry($this->findProgramChoiceOption($program, FieldAlias::ACTIVITY_COUNTRY, 'FR'))
             ->setRegistrationNumber('12 23 45 678 987')
-            ->setLegalForm($this->findProgramChoiceOption($program, 'field-' . FieldAlias::LEGAL_FORM, 'SAS'))
+            ->setLegalForm($this->findProgramChoiceOption($program, FieldAlias::LEGAL_FORM, 'SAS'))
             ->setCompanyNafCode(
-                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::COMPANY_NAF_CODE, '0001A')
+                $this->findProgramChoiceOption($program, FieldAlias::COMPANY_NAF_CODE, '0001A')
             )
             ->setEmployeesNumber(42)
             ->setExploitationSize(
-                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::EXPLOITATION_SIZE, '42')
+                $this->findProgramChoiceOption($program, FieldAlias::EXPLOITATION_SIZE, '42')
             )
             ->setTurnover(new NullableMoney('EUR', (string) $data[FieldAlias::TURNOVER]))
             ->setTotalAssets(new NullableMoney('EUR', (string) $data[FieldAlias::TOTAL_ASSETS]))
-            ->setTargetType($this->findProgramChoiceOption($program, 'field-' . FieldAlias::TARGET_TYPE))
+            ->setTargetType($this->findProgramChoiceOption($program, FieldAlias::TARGET_TYPE))
             ->setGrade('B')
         ;
     }
@@ -342,30 +352,30 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $project
             ->addInvestmentThematic($this->findProgramChoiceOption(
                 $program,
-                'field-' . FieldAlias::INVESTMENT_THEMATIC,
+                FieldAlias::INVESTMENT_THEMATIC,
                 'Renouvellement et installation'
             ))
             ->addInvestmentThematic($this->findProgramChoiceOption(
                 $program,
-                'field-' . FieldAlias::INVESTMENT_THEMATIC,
+                FieldAlias::INVESTMENT_THEMATIC,
                 'Mieux répondre / renforcer'
             ))
             ->setInvestmentType($this->findProgramChoiceOption(
                 $program,
-                'field-' . FieldAlias::INVESTMENT_TYPE,
+                FieldAlias::INVESTMENT_TYPE,
                 'Type : ' . $this->faker->sentence
             ))
             ->setDetail($this->faker->sentence)
-            ->setAidIntensity($this->findProgramChoiceOption($program, 'field-' . FieldAlias::AID_INTENSITY, '0.40'))
+            ->setAidIntensity($this->findProgramChoiceOption($program, FieldAlias::AID_INTENSITY, '0.40'))
             ->setAdditionalGuaranty($this->findProgramChoiceOption(
                 $program,
-                'field-' . FieldAlias::ADDITIONAL_GUARANTY,
+                FieldAlias::ADDITIONAL_GUARANTY,
                 $this->faker->sentence(3)
             ))
             ->setAgriculturalBranch(
                 $this->findProgramChoiceOption(
                     $program,
-                    'field-' . FieldAlias::AGRICULTURAL_BRANCH,
+                    FieldAlias::AGRICULTURAL_BRANCH,
                     'Branch N: ' . $this->faker->sentence
                 )
             )
@@ -373,10 +383,10 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setAddressCity($this->faker->city)
             ->setAddressPostCode($this->faker->postcode)
             ->setAddressDepartment(
-                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::INVESTMENT_DEPARTMENT, '75')
+                $this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_DEPARTMENT, '75')
             )
             ->setAddressCountry(
-                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::INVESTMENT_COUNTRY, 'FR')
+                $this->findProgramChoiceOption($program, FieldAlias::INVESTMENT_COUNTRY, 'FR')
             )
             ->setFundingMoney(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setContribution(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
@@ -404,24 +414,24 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setSupportingGenerationsRenewal(true)
             ->setFinancingObjectType($this->findProgramChoiceOption(
                 $program,
-                'field-' . FieldAlias::FINANCING_OBJECT_TYPE,
+                FieldAlias::FINANCING_OBJECT_TYPE,
                 $this->faker->text(255)
             ))
-            ->setLoanNafCode($this->findProgramChoiceOption($program, 'field-' . FieldAlias::LOAN_NAF_CODE, '0001A'))
+            ->setLoanNafCode($this->findProgramChoiceOption($program, FieldAlias::LOAN_NAF_CODE, '0001A'))
             ->setBfrValue(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
-            ->setLoanType($this->findProgramChoiceOption($program, 'field-' . FieldAlias::LOAN_TYPE, 'short_term'))
+            ->setLoanType($this->findProgramChoiceOption($program, FieldAlias::LOAN_TYPE, 'short_term'))
             ->setLoanDuration($data[FieldAlias::LOAN_DURATION])
             ->setLoanDeferral($this->faker->numberBetween(0, 12))
             ->setLoanPeriodicity(
-                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::LOAN_PERIODICITY, 'monthly')
+                $this->findProgramChoiceOption($program, FieldAlias::LOAN_PERIODICITY, 'monthly')
             )
             ->setInvestmentLocation($this->findProgramChoiceOption(
                 $program,
-                'field-' . FieldAlias::INVESTMENT_LOCATION,
+                FieldAlias::INVESTMENT_LOCATION,
                 $data[FieldAlias::INVESTMENT_LOCATION]
             ))
             ->setProductCategoryCode(
-                $this->findProgramChoiceOption($program, 'field-' . FieldAlias::PRODUCT_CATEGORY_CODE)
+                $this->findProgramChoiceOption($program, FieldAlias::PRODUCT_CATEGORY_CODE)
             )
         ;
     }
