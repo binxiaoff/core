@@ -101,6 +101,7 @@ class FieldAlias extends AbstractEnum
         self::LOAN_NAF_CODE,
         self::LOAN_PERIODICITY,
         self::LOAN_TYPE,
+        self::PRODUCT_CATEGORY_CODE,
         self::TARGET_TYPE,
     ];
 
