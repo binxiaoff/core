@@ -14,6 +14,7 @@ class FieldAlias extends AbstractEnum
 
     // User-defined list
     public const ACTIVITY_COUNTRY      = 'activity_country';
+    public const ACTIVITY_DEPARTMENT   = 'activity_department';
     public const ADDITIONAL_GUARANTY   = 'additional_guaranty';
     public const AGRICULTURAL_BRANCH   = 'agricultural_branch';
     public const AID_INTENSITY         = 'aid_intensity';
@@ -22,6 +23,7 @@ class FieldAlias extends AbstractEnum
     public const EXPLOITATION_SIZE     = 'exploitation_size';
     public const FINANCING_OBJECT_TYPE = 'financing_object_type';
     public const INVESTMENT_COUNTRY    = 'investment_country';
+    public const INVESTMENT_DEPARTMENT = 'investment_department';
     public const INVESTMENT_LOCATION   = 'investment_location';
     public const INVESTMENT_THEMATIC   = 'investment_thematic';
     public const INVESTMENT_TYPE       = 'investment_type';
@@ -52,17 +54,15 @@ class FieldAlias extends AbstractEnum
     public const YOUNG_FARMER                                      = 'young_farmer';
 
     // Other
-    public const ACTIVITY_CITY         = 'activity_city';
-    public const ACTIVITY_DEPARTMENT   = 'activity_department';
-    public const ACTIVITY_POST_CODE    = 'activity_post_code';
-    public const ACTIVITY_STREET       = 'activity_street';
-    public const BENEFICIARY_NAME      = 'beneficiary_name';
-    public const COMPANY_NAME          = 'company_name';
-    public const INVESTMENT_CITY       = 'investment_city';
-    public const INVESTMENT_DEPARTMENT = 'investment_department';
-    public const INVESTMENT_POST_CODE  = 'investment_post_code';
-    public const INVESTMENT_STREET     = 'investment_street';
-    public const REGISTRATION_NUMBER   = 'registration_number';
+    public const ACTIVITY_CITY        = 'activity_city';
+    public const ACTIVITY_POST_CODE   = 'activity_post_code';
+    public const ACTIVITY_STREET      = 'activity_street';
+    public const BENEFICIARY_NAME     = 'beneficiary_name';
+    public const COMPANY_NAME         = 'company_name';
+    public const INVESTMENT_CITY      = 'investment_city';
+    public const INVESTMENT_POST_CODE = 'investment_post_code';
+    public const INVESTMENT_STREET    = 'investment_street';
+    public const REGISTRATION_NUMBER  = 'registration_number';
     // number
     public const BFR_VALUE             = 'bfr_value';
     public const CREDIT_EXCLUDING_FEI  = 'credit_excluding_fei';

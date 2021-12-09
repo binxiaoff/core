@@ -9,6 +9,7 @@ use Doctrine\Persistence\ObjectManager;
 use KLS\Core\DataFixtures\AbstractFixtures;
 use KLS\Core\Entity\Constant\LegalForm;
 use KLS\Core\Entity\Constant\LoanType;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Repository\ProgramChoiceOptionRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConfigurationRepository;
@@ -19,14 +20,14 @@ class ProgramEligibilityConfigurationFixtures extends AbstractFixtures implement
 {
     private const INELIGIBLE_FIELDS = [
         // profile
-        'creation_in_progress' => true,
-        'legal_form'           => LegalForm::SELAS,
+        FieldAlias::CREATION_IN_PROGRESS => true,
+        FieldAlias::LEGAL_FORM           => LegalForm::SELAS,
         // project
-        'receiving_grant' => false,
-        'aid_intensity'   => '0.20',
+        FieldAlias::RECEIVING_GRANT => false,
+        FieldAlias::AID_INTENSITY   => '0.20',
         // loan
-        'supporting_generations_renewal' => false,
-        'loan_type'                      => LoanType::STAND_BY,
+        FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => false,
+        FieldAlias::LOAN_TYPE                      => LoanType::STAND_BY,
     ];
 
     private ProgramChoiceOptionRepository $programChoiceOptionRepository;
@@ -52,21 +53,22 @@ class ProgramEligibilityConfigurationFixtures extends AbstractFixtures implement
     {
         return [
             ProgramEligibilityFixtures::class,
-            ProgramChoiceOptionFixtures::class,
         ];
     }
 
     public function load(ObjectManager $manager): void
     {
         $allProgramEligibilities          = $this->programEligibilityRepository->findAll();
-        $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programEligibility' => $allProgramEligibilities]);
+        $programEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy([
+            'programEligibility' => $allProgramEligibilities,
+        ]);
 
         foreach ($programEligibilityConfigurations as $programEligibilityConfiguration) {
             $field = $programEligibilityConfiguration->getProgramEligibility()->getField();
 
             if (false === \array_key_exists($field->getFieldAlias(), self::INELIGIBLE_FIELDS)) {
-                $programEligibilityConfiguration->setEligible(true);
-
+                // a ProgramEligibilityConfiguration is initialized while creating a ProgramEligibility
+                // and is eligible by default
                 continue;
             }
 
@@ -75,8 +77,6 @@ class ProgramEligibilityConfigurationFixtures extends AbstractFixtures implement
             if (Field::TYPE_BOOL === $field->getType()) {
                 if ((bool) $programEligibilityConfiguration->getValue() === $ineligibleValue) {
                     $programEligibilityConfiguration->setEligible(false);
-                } else {
-                    $programEligibilityConfiguration->setEligible(true);
                 }
             }
 
@@ -89,8 +89,6 @@ class ProgramEligibilityConfigurationFixtures extends AbstractFixtures implement
 
                 if ($programChoiceOption === $programEligibilityConfiguration->getProgramChoiceOption()) {
                     $programEligibilityConfiguration->setEligible(false);
-                } else {
-                    $programEligibilityConfiguration->setEligible(true);
                 }
             }
         }

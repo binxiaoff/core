@@ -11,30 +11,33 @@ use Exception;
 use KLS\Core\DataFixtures\AbstractFixtures;
 use KLS\Core\DataFixtures\CompanyGroupFixtures;
 use KLS\Core\DataFixtures\StaffFixtures;
-use KLS\Core\Entity\CompanyGroupTag;
 use KLS\Core\Entity\Constant\CARatingType;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
-use KLS\Core\Entity\Staff;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramStatus;
 
 class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    public const ALL_PROGRAMS = [
-        self::REFERENCE_DRAFT,
-        self::REFERENCE_PAUSED,
-        self::REFERENCE_COMMERCIALIZED,
-        self::REFERENCE_CANCELLED_CORPORATE,
-        self::REFERENCE_CANCELLED_AGRICULTURE,
-    ];
+    public const PROGRAM_AGRICULTURE_DRAFT          = 'program:ad';
+    public const PROGRAM_AGRICULTURE_COMMERCIALIZED = 'program:ac';
+    public const PROGRAM_AGRICULTURE_PAUSED         = 'program:ap';
+    public const PROGRAM_AGRICULTURE_ARCHIVED       = 'program:aa';
+    public const PROGRAM_CORPORATE_DRAFT            = 'program:cd';
+    public const PROGRAM_CORPORATE_COMMERCIALIZED   = 'program:cc';
+    public const PROGRAM_CORPORATE_PAUSED           = 'program:cp';
+    public const PROGRAM_CORPORATE_ARCHIVED         = 'program:ca';
 
-    public const REFERENCE_COMMERCIALIZED         = 'program-commercialized';
-    public const REFERENCE_PAUSED                 = 'program-paused';
-    private const REFERENCE_DRAFT                 = 'program-draft';
-    private const REFERENCE_CANCELLED             = 'program-cancelled';
-    private const REFERENCE_CANCELLED_CORPORATE   = self::REFERENCE_CANCELLED . '-' . CompanyGroupFixtures::CORPORATE;
-    private const REFERENCE_CANCELLED_AGRICULTURE = self::REFERENCE_CANCELLED . '-' . CompanyGroupFixtures::AGRICULTURE;
+    public const ALL_PROGRAMS = [
+        self::PROGRAM_AGRICULTURE_DRAFT,
+        self::PROGRAM_AGRICULTURE_COMMERCIALIZED,
+        self::PROGRAM_AGRICULTURE_PAUSED,
+        self::PROGRAM_AGRICULTURE_ARCHIVED,
+        self::PROGRAM_CORPORATE_DRAFT,
+        self::PROGRAM_CORPORATE_COMMERCIALIZED,
+        self::PROGRAM_CORPORATE_PAUSED,
+        self::PROGRAM_CORPORATE_ARCHIVED,
+    ];
 
     /**
      * @return string[]
@@ -52,20 +55,17 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
      */
     public function load(ObjectManager $manager): void
     {
-        foreach ($this->loadData() as $reference => $programDatum) {
-            $program = $this->buildProgram($programDatum);
+        foreach ($this->loadData() as $reference => $programData) {
+            $program = $this->buildProgram($programData);
             $manager->persist($program);
 
-            /** @var Staff $addedBy */
-            $addedBy = $this->getReference($programDatum['addedBy']);
-
-            if (ProgramStatus::STATUS_PAUSED === $programDatum['currentStatus']) {
-                $status = new ProgramStatus($program, ProgramStatus::STATUS_DISTRIBUTED, $addedBy);
+            if (ProgramStatus::STATUS_PAUSED === $programData['currentStatus']) {
+                $status = new ProgramStatus($program, ProgramStatus::STATUS_DISTRIBUTED, $programData['addedBy']);
                 $manager->persist($status);
             }
 
-            if (ProgramStatus::STATUS_DRAFT !== $programDatum['currentStatus']) {
-                $status = new ProgramStatus($program, $programDatum['currentStatus'], $addedBy);
+            if (ProgramStatus::STATUS_DRAFT !== $programData['currentStatus']) {
+                $status = new ProgramStatus($program, $programData['currentStatus'], $programData['addedBy']);
                 $manager->persist($status);
             }
 
@@ -77,115 +77,151 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     private function loadData(): iterable
     {
-        yield self::REFERENCE_DRAFT => [
-            'name'                 => 'Programme en brouillon',
-            'companyGroupTag'      => CompanyGroupFixtures::CORPORATE,
-            'funds'                => ['currency' => 'EUR', 'amount' => '100000000'],
-            'addedBy'              => StaffFixtures::CASA,
-            'currentStatus'        => ProgramStatus::STATUS_DRAFT,
-            'cappedAt'             => \random_int(10, 40) / 100,
-            'description'          => 'La description pour le programme en brouillon',
-            'distributionDeadline' => new DateTimeImmutable(),
-        ];
-        yield self::REFERENCE_COMMERCIALIZED => [
-            'name'                 => 'Programme commercialisé',
-            'companyGroupTag'      => CompanyGroupFixtures::AGRICULTURE,
-            'funds'                => ['currency' => 'EUR', 'amount' => '300000000'],
-            'addedBy'              => StaffFixtures::CASA,
-            'currentStatus'        => ProgramStatus::STATUS_DISTRIBUTED,
-            'cappedAt'             => \random_int(10, 40) / 100,
-            'description'          => 'La description pour le programme en distribution',
-            'distributionDeadline' => new DateTimeImmutable(),
-            'distributionProcess'  => [
-                'Création d’un dossier emprunteur',
-                'Vérification de l’éligibilité',
-                'Réservation validée par FIN BO',
-                'Edition de l’offre de prêt et de ses annexes',
-                'Signature du client et contractualisation',
-                'Renseignement du N° de prêt et montant des réalisations',
-            ],
-            'guarantyDuration'        => 240,
-            'guarantyCoverage'        => '0.07',
-            'guarantyCost'            => '0.10',
-            'maxFeiCredit'            => ['currency' => 'EUR', 'amount' => '20000'],
-            'reservationDuration'     => 2,
-            'esbCalculationActivated' => $this->faker->boolean,
-            'loanReleasedOnInvoice'   => $this->faker->boolean,
-        ];
-        yield self::REFERENCE_PAUSED => [
-            'name'                    => 'Programme en pause',
-            'companyGroupTag'         => CompanyGroupFixtures::CORPORATE,
-            'funds'                   => ['currency' => 'EUR', 'amount' => '400000000'],
-            'addedBy'                 => StaffFixtures::CASA,
-            'currentStatus'           => ProgramStatus::STATUS_PAUSED,
-            'esbCalculationActivated' => $this->faker->boolean,
-            'loanReleasedOnInvoice'   => $this->faker->boolean,
-        ];
+        // we create a cancelled program for only this two companyGroupTags because these are valid
+        // (cf Program::isCompanyGroupTagValid)
+        $companyGroupTagReferences = [CompanyGroupFixtures::AGRICULTURE, CompanyGroupFixtures::CORPORATE];
 
-        // we create a cancelled program for only this two companyGroupTags because these are valid (cf Program::isCompanyGroupTagValid)
-        foreach ([CompanyGroupFixtures::CORPORATE, CompanyGroupFixtures::AGRICULTURE] as $index => $companyGroupTageReference) {
-            yield \sprintf('%s-%s', self::REFERENCE_CANCELLED, $companyGroupTageReference) => [
-                'name'            => \sprintf('Programme annulé %s', $index + 1),
-                'companyGroupTag' => $companyGroupTageReference,
-                'funds'           => ['currency' => 'EUR', 'amount' => '200000000'],
-                'addedBy'         => StaffFixtures::CASA,
-                'currentStatus'   => ProgramStatus::STATUS_ARCHIVED,
+        foreach ($companyGroupTagReferences as $companyGroupTagReference) {
+            $companyGroupTagName = \mb_substr(
+                $companyGroupTagReference,
+                \mb_strrpos($companyGroupTagReference, '_') + 1
+            );
+
+            yield \sprintf('program:%sd', \mb_substr($companyGroupTagName, 0, 1)) => [
+                'name' => \sprintf(
+                    'Programme %sD',
+                    \mb_strtoupper(\mb_substr($companyGroupTagName, 0, 1))
+                ),
+                'description'          => $this->faker->sentence,
+                'addedBy'              => $this->getReference(StaffFixtures::CASA),
+                'companyGroupTag'      => $this->getReference($companyGroupTagReference),
+                'cappedAt'             => \random_int(10, 40) / 100,
+                'funds'                => new Money('EUR', (string) 100000000),
+                'distributionDeadline' => new DateTimeImmutable(),
+                'currentStatus'        => ProgramStatus::STATUS_DRAFT,
+            ];
+            yield \sprintf('program:%sc', \mb_substr($companyGroupTagName, 0, 1)) => [
+                'name' => \sprintf(
+                    'Programme %sC',
+                    \mb_strtoupper(\mb_substr($companyGroupTagName, 0, 1))
+                ),
+                'description'          => $this->faker->sentence,
+                'addedBy'              => $this->getReference(StaffFixtures::CASA),
+                'companyGroupTag'      => $this->getReference($companyGroupTagReference),
+                'cappedAt'             => \random_int(10, 40) / 100,
+                'funds'                => new Money('EUR', (string) 300000000),
+                'distributionDeadline' => new DateTimeImmutable(),
+                'distributionProcess'  => [
+                    'Création d’un dossier emprunteur',
+                    'Vérification de l’éligibilité',
+                    'Réservation validée par FIN BO',
+                    'Edition de l’offre de prêt et de ses annexes',
+                    'Signature du client et contractualisation',
+                    'Renseignement du N° de prêt et montant des réalisations',
+                ],
+                'guarantyDuration'        => 240,
+                'guarantyCoverage'        => '0.07',
+                'guarantyCost'            => '0.10',
+                'reservationDuration'     => 2,
+                'maxFeiCredit'            => new NullableMoney('EUR', (string) 20000),
+                'esbCalculationActivated' => $this->faker->boolean,
+                'loanReleasedOnInvoice'   => $this->faker->boolean,
+                'currentStatus'           => ProgramStatus::STATUS_DISTRIBUTED,
+            ];
+            yield \sprintf('program:%sp', \mb_substr($companyGroupTagName, 0, 1)) => [
+                'name' => \sprintf(
+                    'Programme %sP',
+                    \mb_strtoupper(\mb_substr($companyGroupTagName, 0, 1))
+                ),
+                'description'          => $this->faker->sentence,
+                'addedBy'              => $this->getReference(StaffFixtures::CASA),
+                'companyGroupTag'      => $this->getReference($companyGroupTagReference),
+                'cappedAt'             => \random_int(10, 40) / 100,
+                'funds'                => new Money('EUR', (string) 400000000),
+                'distributionDeadline' => new DateTimeImmutable(),
+                'distributionProcess'  => [
+                    'Création d’un dossier emprunteur',
+                    'Vérification de l’éligibilité',
+                    'Réservation validée par FIN BO',
+                    'Edition de l’offre de prêt et de ses annexes',
+                    'Signature du client et contractualisation',
+                    'Renseignement du N° de prêt et montant des réalisations',
+                ],
+                'guarantyDuration'        => 240,
+                'guarantyCoverage'        => '0.07',
+                'guarantyCost'            => '0.10',
+                'reservationDuration'     => 2,
+                'maxFeiCredit'            => new NullableMoney('EUR', (string) 20000),
+                'esbCalculationActivated' => $this->faker->boolean,
+                'loanReleasedOnInvoice'   => $this->faker->boolean,
+                'currentStatus'           => ProgramStatus::STATUS_PAUSED,
+            ];
+            yield \sprintf('program:%sa', \mb_substr($companyGroupTagName, 0, 1)) => [
+                'name' => \sprintf(
+                    'Programme %sA',
+                    \mb_strtoupper(\mb_substr($companyGroupTagName, 0, 1))
+                ),
+                'description'     => $this->faker->sentence,
+                'addedBy'         => $this->getReference(StaffFixtures::CASA),
+                'companyGroupTag' => $this->getReference($companyGroupTagReference),
                 'cappedAt'        => \random_int(10, 40) / 100,
+                'funds'           => new Money('EUR', (string) 200000000),
+                'currentStatus'   => ProgramStatus::STATUS_ARCHIVED,
             ];
         }
     }
 
-    private function buildProgram(array $programDatum): Program
+    private function buildProgram(array $programData): Program
     {
-        /** @var Staff $addedBy */
-        $addedBy = $this->getReference($programDatum['addedBy']);
-        /** @var CompanyGroupTag $companyGroupTag */
-        $companyGroupTag = $this->getReference($programDatum['companyGroupTag']);
+        $program = new Program(
+            $programData['name'],
+            $programData['companyGroupTag'],
+            $programData['funds'],
+            $programData['addedBy']
+        );
 
-        $program = new Program($programDatum['name'], $companyGroupTag, new Money($programDatum['funds']['currency'], $programDatum['funds']['amount']), $addedBy);
-
-        if (false === empty($programDatum['cappedAt'])) {
-            $program->setCappedAt((string) $programDatum['cappedAt']);
+        if (false === empty($programData['description'])) {
+            $program->setDescription($programData['description']);
         }
 
-        if (false === empty($programDatum['description'])) {
-            $program->setDescription($programDatum['description']);
+        if (false === empty($programData['cappedAt'])) {
+            $program->setCappedAt((string) $programData['cappedAt']);
         }
 
-        if (false === empty($programDatum['distributionDeadline'])) {
-            $program->setDistributionDeadline($programDatum['distributionDeadline']);
+        if (false === empty($programData['distributionDeadline'])) {
+            $program->setDistributionDeadline($programData['distributionDeadline']);
         }
 
-        if (false === empty($programDatum['distributionProcess'])) {
-            $program->setDistributionProcess($programDatum['distributionProcess']);
+        if (false === empty($programData['distributionProcess'])) {
+            $program->setDistributionProcess($programData['distributionProcess']);
         }
 
-        if (false === empty($programDatum['guarantyDuration'])) {
-            $program->setGuarantyDuration($programDatum['guarantyDuration']);
+        if (false === empty($programData['guarantyDuration'])) {
+            $program->setGuarantyDuration($programData['guarantyDuration']);
         }
 
-        if (false === empty($programDatum['guarantyCoverage'])) {
-            $program->setGuarantyCoverage($programDatum['guarantyCoverage']);
+        if (false === empty($programData['guarantyCoverage'])) {
+            $program->setGuarantyCoverage($programData['guarantyCoverage']);
         }
 
-        if (false === empty($programDatum['guarantyCost'])) {
-            $program->setGuarantyCost($programDatum['guarantyCost']);
+        if (false === empty($programData['guarantyCost'])) {
+            $program->setGuarantyCost($programData['guarantyCost']);
         }
 
-        if (false === empty($programDatum['maxFeiCredit'])) {
-            $program->setMaxFeiCredit(new NullableMoney($programDatum['maxFeiCredit']['currency'], $programDatum['maxFeiCredit']['amount']));
+        if (false === empty($programData['reservationDuration'])) {
+            $program->setReservationDuration($programData['reservationDuration']);
         }
 
-        if (false === empty($programDatum['reservationDuration'])) {
-            $program->setReservationDuration($programDatum['reservationDuration']);
+        if (false === empty($programData['maxFeiCredit'])) {
+            $program->setMaxFeiCredit($programData['maxFeiCredit']);
         }
 
-        if (false === empty($programDatum['esbCalculationActivated'])) {
-            $program->setEsbCalculationActivated($programDatum['esbCalculationActivated']);
+        if (false === empty($programData['esbCalculationActivated'])) {
+            $program->setEsbCalculationActivated($programData['esbCalculationActivated']);
         }
 
-        if (false === empty($programDatum['loanReleasedOnInvoice'])) {
-            $program->setLoanReleasedOnInvoice($programDatum['loanReleasedOnInvoice']);
+        if (false === empty($programData['loanReleasedOnInvoice'])) {
+            $program->setLoanReleasedOnInvoice($programData['loanReleasedOnInvoice']);
         }
 
         $cARatingType = CARatingType::getConstList();

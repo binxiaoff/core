@@ -51,7 +51,6 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
     {
         return [
             ProgramEligibilityConfigurationFixtures::class,
-            ReservationFixtures::class,
         ];
     }
 
@@ -60,78 +59,97 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
      */
     public function load(ObjectManager $manager): void
     {
+        $programs = $this->getReferences([
+            ProgramFixtures::PROGRAM_AGRICULTURE_COMMERCIALIZED,
+            ProgramFixtures::PROGRAM_AGRICULTURE_PAUSED,
+            ProgramFixtures::PROGRAM_AGRICULTURE_ARCHIVED,
+            ProgramFixtures::PROGRAM_CORPORATE_COMMERCIALIZED,
+            ProgramFixtures::PROGRAM_CORPORATE_PAUSED,
+            ProgramFixtures::PROGRAM_CORPORATE_ARCHIVED,
+        ]);
+
         /** @var Program $program */
-        $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
+        foreach ($programs as $program) {
+            foreach ($this->loadData($program) as $fieldAlias => $conditionItems) {
+                $programEligibility = $this->programEligibilityRepository->findOneBy([
+                    'program' => $program,
+                    'field'   => $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]),
+                ]);
 
-        foreach ($this->loadData($program) as $fieldAlias => $conditionItems) {
-            $programEligibility = $this->programEligibilityRepository->findOneBy([
-                'program' => $program,
-                'field'   => $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]),
-            ]);
-
-            foreach ($conditionItems as $condition) {
-                $programEligibilityConfiguration = $this->getProgramEligibilityConfiguration(
-                    $programEligibility,
-                    $condition['configurationValue'],
-                    $condition['configurationOption']
-                );
-
-                if (false === ($programEligibilityConfiguration instanceof ProgramEligibilityConfiguration)) {
+                if (false === ($programEligibility instanceof ProgramEligibility)) {
                     continue;
                 }
 
-                $leftOperandField = $this->fieldRepository->findOneBy([
-                    'fieldAlias' => $condition['leftOperandAlias'],
-                ]);
-                $rightOperandField = (null !== $condition['rightOperandAlias'])
-                    ? $this->fieldRepository->findOneBy(['fieldAlias' => $condition['rightOperandAlias']])
-                    : null
-                ;
+                foreach ($conditionItems as $condition) {
+                    $programEligibilityConfiguration = $this->getProgramEligibilityConfiguration(
+                        $programEligibility,
+                        $condition['configurationValue'],
+                        $condition['configurationOption']
+                    );
 
-                $programEligibilityCondition = new ProgramEligibilityCondition(
-                    $programEligibilityConfiguration,
-                    $leftOperandField,
-                    $rightOperandField,
-                    $condition['operator'],
-                    $condition['type']
-                );
-
-                if (null !== $condition['value']) {
-                    $programEligibilityCondition->setValue((string) $condition['value']);
-                } else {
-                    foreach ($condition['programChoiceOptions'] as $programChoiceOption) {
-                        $programEligibilityCondition->addProgramChoiceOption($programChoiceOption);
+                    if (false === ($programEligibilityConfiguration instanceof ProgramEligibilityConfiguration)) {
+                        continue;
                     }
+
+                    $programEligibilityCondition = new ProgramEligibilityCondition(
+                        $programEligibilityConfiguration,
+                        $condition['leftOperandField'],
+                        $condition['rightOperandField'],
+                        $condition['operator'],
+                        $condition['type']
+                    );
+
+                    if (null !== $condition['value']) {
+                        $programEligibilityCondition->setValue((string) $condition['value']);
+                    }
+                    if (
+                        null === $programEligibilityCondition->getValue()
+                        && false === empty($condition['programChoiceOptions'])
+                    ) {
+                        foreach ($condition['programChoiceOptions'] as $programChoiceOption) {
+                            $programEligibilityCondition->addProgramChoiceOption($programChoiceOption);
+                        }
+                    }
+
+                    $manager->persist($programEligibilityCondition);
                 }
-
-                $manager->persist($programEligibilityCondition);
             }
-        }
 
-        $manager->flush();
+            $manager->flush();
+        }
     }
 
-    private function loadData(Program $program): array
+    private function loadData(Program $program): iterable
     {
+        // operand fields
+        $legalFormField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::LEGAL_FORM,
+        ]);
+        $tangibleFeiCreditField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::TANGIBLE_FEI_CREDIT,
+        ]);
+        $intangibleFeiCreditField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::INTANGIBLE_FEI_CREDIT,
+        ]);
+        $investmentThematicField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::INVESTMENT_THEMATIC,
+        ]);
+        $loanDurationField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::LOAN_DURATION,
+        ]);
+        $youngFarmerField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::YOUNG_FARMER,
+        ]);
+
         // programChoiceOptions
         $investmentThematicOptions = $this->programChoiceOptionRepository->findBy([
             'program' => $program,
-            'field'   => $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::INVESTMENT_THEMATIC]),
+            'field'   => $investmentThematicField,
         ]);
-        $sarlOption = $this->programChoiceOptionRepository->findOneBy([
+        $legalFormOptions = $this->programChoiceOptionRepository->findBy([
             'program'     => $program,
-            'field'       => $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LEGAL_FORM]),
-            'description' => LegalForm::SARL,
-        ]);
-        $saOption = $this->programChoiceOptionRepository->findOneBy([
-            'program'     => $program,
-            'field'       => $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LEGAL_FORM]),
-            'description' => LegalForm::SA,
-        ]);
-        $sasOption = $this->programChoiceOptionRepository->findOneBy([
-            'program'     => $program,
-            'field'       => $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LEGAL_FORM]),
-            'description' => LegalForm::SAS,
+            'field'       => $legalFormField,
+            'description' => [LegalForm::SARL, LegalForm::SA, LegalForm::SAS],
         ]);
         $signatureCommitmentOption = $this->programChoiceOptionRepository->findOneBy([
             'program'     => $program,
@@ -139,68 +157,72 @@ class ProgramEligibilityConditionFixtures extends AbstractFixtures implements De
             'description' => LoanType::SIGNATURE_COMMITMENT,
         ]);
 
-        return [
-            FieldAlias::CREATION_IN_PROGRESS => [
-                [
-                    'configurationValue'   => '0',
-                    'configurationOption'  => null,
-                    'type'                 => ProgramEligibilityCondition::VALUE_TYPE_LIST,
-                    'leftOperandAlias'     => FieldAlias::LEGAL_FORM,
-                    'rightOperandAlias'    => null,
-                    'operator'             => MathOperator::INFERIOR,
-                    'value'                => null,
-                    'programChoiceOptions' => [$sarlOption, $saOption, $sasOption],
-                ],
+        yield FieldAlias::CREATION_IN_PROGRESS => [
+            [
+                'configurationValue'   => '0',
+                'configurationOption'  => null,
+                'type'                 => ProgramEligibilityCondition::VALUE_TYPE_LIST,
+                'leftOperandField'     => $legalFormField,
+                'rightOperandField'    => null,
+                'operator'             => MathOperator::INFERIOR,
+                'value'                => null,
+                'programChoiceOptions' => $legalFormOptions,
             ],
-            FieldAlias::TANGIBLE_FEI_CREDIT => [
-                [
-                    'configurationValue'   => null,
-                    'configurationOption'  => null,
-                    'type'                 => ProgramEligibilityCondition::VALUE_TYPE_RATE,
-                    'leftOperandAlias'     => FieldAlias::TANGIBLE_FEI_CREDIT,
-                    'rightOperandAlias'    => FieldAlias::INTANGIBLE_FEI_CREDIT,
-                    'operator'             => MathOperator::SUPERIOR,
-                    'value'                => 0.10,
-                    'programChoiceOptions' => [],
-                ],
+        ];
+        yield FieldAlias::TANGIBLE_FEI_CREDIT => [
+            [
+                'configurationValue'   => null,
+                'configurationOption'  => null,
+                'type'                 => ProgramEligibilityCondition::VALUE_TYPE_RATE,
+                'leftOperandField'     => $tangibleFeiCreditField,
+                'rightOperandField'    => $intangibleFeiCreditField,
+                'operator'             => MathOperator::SUPERIOR,
+                'value'                => 0.10,
+                'programChoiceOptions' => [],
             ],
-            FieldAlias::INVESTMENT_THEMATIC => [
+        ];
+        yield FieldAlias::LOAN_DURATION => [
+            [
+                'configurationValue'   => null,
+                'configurationOption'  => null,
+                'type'                 => ProgramEligibilityCondition::VALUE_TYPE_VALUE,
+                'leftOperandField'     => $loanDurationField,
+                'rightOperandField'    => null,
+                'operator'             => MathOperator::INFERIOR_OR_EQUAL,
+                'value'                => 70,
+                'programChoiceOptions' => [],
+            ],
+        ];
+
+        // ProgramChoiceOption(s) may be missing because they are created depending ProgramEligibilities
+        if (false === empty($investmentThematicOptions)) {
+            yield FieldAlias::INVESTMENT_THEMATIC => [
                 [
                     'configurationValue'   => null,
                     'configurationOption'  => $investmentThematicOptions[1],
                     'type'                 => ProgramEligibilityCondition::VALUE_TYPE_LIST,
-                    'leftOperandAlias'     => FieldAlias::INVESTMENT_THEMATIC,
-                    'rightOperandAlias'    => null,
+                    'leftOperandField'     => $investmentThematicField,
+                    'rightOperandField'    => null,
                     'operator'             => MathOperator::EQUAL,
                     'value'                => null,
                     'programChoiceOptions' => [$investmentThematicOptions[2], $investmentThematicOptions[3]],
                 ],
-            ],
-            FieldAlias::LOAN_DURATION => [
-                [
-                    'configurationValue'   => null,
-                    'configurationOption'  => null,
-                    'type'                 => ProgramEligibilityCondition::VALUE_TYPE_VALUE,
-                    'leftOperandAlias'     => FieldAlias::LOAN_DURATION,
-                    'rightOperandAlias'    => null,
-                    'operator'             => MathOperator::INFERIOR_OR_EQUAL,
-                    'value'                => 70,
-                    'programChoiceOptions' => [],
-                ],
-            ],
-            FieldAlias::LOAN_TYPE => [
+            ];
+        }
+        if (null !== $signatureCommitmentOption) {
+            yield FieldAlias::LOAN_TYPE => [
                 [
                     'configurationValue'   => null,
                     'configurationOption'  => $signatureCommitmentOption,
                     'type'                 => ProgramEligibilityCondition::VALUE_TYPE_BOOL,
-                    'leftOperandAlias'     => FieldAlias::YOUNG_FARMER,
-                    'rightOperandAlias'    => null,
+                    'leftOperandField'     => $youngFarmerField,
+                    'rightOperandField'    => null,
                     'operator'             => MathOperator::EQUAL,
                     'value'                => true,
                     'programChoiceOptions' => [],
                 ],
-            ],
-        ];
+            ];
+        }
     }
 
     private function getProgramEligibilityConfiguration(

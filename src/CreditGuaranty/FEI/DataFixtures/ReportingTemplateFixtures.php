@@ -38,32 +38,45 @@ class ReportingTemplateFixtures extends AbstractFixtures implements DependentFix
 
     public function load(ObjectManager $manager): void
     {
-        /** @var Program $program */
-        $program = $this->getReference(ProgramFixtures::REFERENCE_PAUSED);
+        $programs = $this->getReferences([
+            ProgramFixtures::PROGRAM_AGRICULTURE_PAUSED,
+            ProgramFixtures::PROGRAM_CORPORATE_PAUSED,
+        ]);
+
         /** @var Staff $staff */
         $staff = $this->getReference(StaffFixtures::CASA);
 
-        foreach (\range(1, 3) as $i) {
-            $reportingTemplate = new ReportingTemplate($program, \sprintf('Reporting template P%s #%s', $program->getId(), $i), $staff);
-            $manager->persist($reportingTemplate);
-            $this->addReference(\sprintf('reporting_template_p%s_%s', $program->getId(), $i), $reportingTemplate);
+        /** @var Program $program */
+        foreach ($programs as $program) {
+            foreach (\range(1, 3) as $i) {
+                $reportingTemplate = new ReportingTemplate(
+                    $program,
+                    \sprintf('PG%sRT %s', $program->getId(), $i),
+                    $staff
+                );
+                $manager->persist($reportingTemplate);
+                $this->addReference(\sprintf('reporting_template_p%s_%s', $program->getId(), $i), $reportingTemplate);
+            }
         }
 
         $manager->flush();
 
         $fields = $this->fieldRepository->findAll();
 
-        foreach (\range(1, 2) as $i) {
-            /** @var ReportingTemplate $reportingTemplate */
-            $reportingTemplate = $this->getReference(\sprintf('reporting_template_p%s_%s', $program->getId(), $i));
+        /** @var Program $program */
+        foreach ($programs as $program) {
+            foreach (\range(1, 2) as $i) {
+                /** @var ReportingTemplate $reportingTemplate */
+                $reportingTemplate = $this->getReference(\sprintf('reporting_template_p%s_%s', $program->getId(), $i));
 
-            \shuffle($fields);
-            foreach ($fields as $field) {
-                $reportingTemplateField = new ReportingTemplateField($reportingTemplate, $field);
-                $manager->persist($reportingTemplateField);
+                \shuffle($fields);
+                foreach ($fields as $field) {
+                    $reportingTemplateField = new ReportingTemplateField($reportingTemplate, $field);
+                    $manager->persist($reportingTemplateField);
+                }
             }
-        }
 
-        $manager->flush();
+            $manager->flush();
+        }
     }
 }
