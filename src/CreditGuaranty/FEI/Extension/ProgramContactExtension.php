@@ -47,7 +47,10 @@ class ProgramContactExtension implements QueryCollectionExtensionInterface
         $rootAlias          = $queryBuilder->getRootAliases()[0];
 
         $queryBuilder
-            // add distinct() if results are missing
+            // distinct keyword allows retrieving expected results
+            // otherwise it can return a part of results
+            // because of the left join (duplicates) and the limit by default to 60
+            ->distinct()
             ->innerJoin("{$rootAlias}.program", $programAlias)
             ->leftJoin(
                 Participation::class,
