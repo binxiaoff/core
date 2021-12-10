@@ -43,8 +43,13 @@ class ProgramExtension implements QueryCollectionExtensionInterface
         $programAlias       = $queryBuilder->getRootAliases()[0];
         $participationAlias = $queryNameGenerator->generateJoinAlias('participations');
 
-        // add distinct() if results are missing
-        $queryBuilder->leftJoin("{$programAlias}.participations", $participationAlias);
+        $queryBuilder
+            // distinct keyword allows retrieving expected results
+            // otherwise it can return a part of results
+            // because of the left join (duplicates) and the limit by default to 60
+            ->distinct()
+            ->leftJoin("{$programAlias}.participations", $participationAlias)
+        ;
 
         $this->applyProgramManagerOrParticipantFilter($staff, $queryBuilder, $programAlias, $participationAlias);
     }

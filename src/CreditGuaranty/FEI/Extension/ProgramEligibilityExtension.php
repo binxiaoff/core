@@ -46,7 +46,10 @@ class ProgramEligibilityExtension implements QueryCollectionExtensionInterface
         $participationAlias = 'pa';
 
         $queryBuilder
-            // add distinct() if results are missing
+            // distinct keyword allows retrieving expected results
+            // otherwise it can return a part of results
+            // because of the left join (duplicates) and the limit by default to 60
+            ->distinct()
             ->innerJoin("{$queryBuilder->getRootAliases()[0]}.program", $programAlias)
             // it needs to join participation to get programEligibility fields for generating reservation request forms
             ->leftJoin(
