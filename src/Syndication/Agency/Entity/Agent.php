@@ -22,6 +22,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
+ *     attributes={
+ *         "validation_groups": {Agent::class, "getCurrentValidationGroups"},
+ *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:agent:read",
@@ -117,7 +120,9 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
     /**
      * @var Collection|AgentMember[]
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Agency\Entity\AgentMember", mappedBy="agent", cascade={"persist", "remove"})
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Agency\Entity\AgentMember", mappedBy="agent", cascade={"persist", "remove"}
+     * )
      *
      * @Assert\Count(min=1)
      * @Assert\Valid
@@ -413,5 +418,23 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
     public function getConfidentialDrive(): Drive
     {
         return $this->confidentialDrive;
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
+    public function hasVariableCapital(): ?bool
+    {
+        return $this->variableCapital;
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setVariableCapital(?bool $variableCapital): AbstractProjectPartaker
+    {
+        $this->variableCapital = $variableCapital;
+
+        return $this;
     }
 }

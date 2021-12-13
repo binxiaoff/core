@@ -141,7 +141,7 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
 
             $agencyParticipation = new Participation(
                 $agencyProject->getPrimaryParticipationPool(),
-                $arrangementParticipation->getParticipant()
+                $arrangementParticipation->getParticipant(),
             );
             //addParticipation will check if the participant has already been added.
             $agencyProject->addParticipation($agencyParticipation);

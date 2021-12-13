@@ -40,7 +40,7 @@ class DraftProjectFixtures extends AbstractProjectFixtures
             'riskGroupName',
             new Money('EUR', '200000000'),
             new \DateTimeImmutable(),
-            new \DateTimeImmutable()
+            new \DateTimeImmutable(),
         );
 
         $this->setPublicId($project, static::getName());

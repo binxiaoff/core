@@ -14,6 +14,7 @@ use KLS\Core\Entity\User;
 use KLS\Core\Validator\Constraints\Siren as AssertSiren;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ORM\MappedSuperclass
@@ -87,8 +88,13 @@ abstract class AbstractProjectPartaker
     protected ?string $rcs;
 
     /**
-     * TODO Move this field to borrower (agent and participant do not need a capital).
+     * @ORM\Column(type="boolean", nullable=true)
      *
+     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
+     */
+    protected ?bool $variableCapital;
+
+    /**
      * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
@@ -97,10 +103,13 @@ abstract class AbstractProjectPartaker
      */
     private NullableMoney $capital;
 
-    public function __construct(string $matriculationNumber, ?NullableMoney $capital = null)
-    {
+    public function __construct(
+        string $matriculationNumber,
+        ?NullableMoney $capital = null
+    ) {
+        $this->capital             = (null !== $capital && $capital->isValid()) ? $capital : new NullableMoney();
         $this->matriculationNumber = $matriculationNumber;
-        $this->capital             = $capital ?? new NullableMoney();
+        $this->variableCapital     = !$this->capital->isValid();
         $this->rcs                 = null;
         $this->added               = new DateTimeImmutable();
         $this->setPublicId();
@@ -277,5 +286,53 @@ abstract class AbstractProjectPartaker
     public function getSignatory(): Collection
     {
         return $this->members->filter(fn (AbstractProjectMember $member) => $member->isSignatory());
+    }
+
+    public function hasVariableCapital(): ?bool
+    {
+        return $this->variableCapital;
+    }
+
+    public function setVariableCapital(?bool $variableCapital): AbstractProjectPartaker
+    {
+        $this->variableCapital = $variableCapital;
+
+        return $this;
+    }
+
+    /**
+     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups.
+     *
+     * @param AbstractProjectPartaker $abstractProjectPartaker
+     *
+     * @return array|string[]
+     */
+    public static function getCurrentValidationGroups(self $abstractProjectPartaker): array
+    {
+        $validationGroups = ['Default', 'AbstractProjectPartaker'];
+
+        if ($abstractProjectPartaker->getProject()->isPublished()) {
+            $validationGroups[] = 'published';
+        }
+
+        return $validationGroups;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateCapital(ExecutionContextInterface $context): void
+    {
+        if (
+            ($this->hasVariableCapital() && $this->getCapital()->isValid())
+            || (false === $this->hasVariableCapital() && false === $this->getCapital()->isValid())
+        ) {
+            $context->buildViolation(
+                'Agency.Agent.notValidCapital'
+            )
+                ->atPath('variableCapital')
+                ->addViolation()
+            ;
+        }
     }
 }

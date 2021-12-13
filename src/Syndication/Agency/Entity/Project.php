@@ -302,7 +302,9 @@ class Project implements DriveCarrierInterface
     public const STATUS_FINISHED  = -20;
 
     /**
-     * @ORM\OneToOne(targetEntity="KLS\Syndication\Agency\Entity\Agent", mappedBy="project", cascade={"persist", "remove"})
+     * @ORM\OneToOne(
+     *     targetEntity="KLS\Syndication\Agency\Entity\Agent", mappedBy="project", cascade={"persist", "remove"}
+     * )
      *
      * @Assert\Valid
      *
@@ -363,7 +365,9 @@ class Project implements DriveCarrierInterface
      *
      * @var Collection|ParticipationPool[]
      *
-     * @ORM\OneToMany(targetEntity=ParticipationPool::class, mappedBy="project", indexBy="secondary", cascade={"persist", "remove"})
+     * @ORM\OneToMany(
+     *     targetEntity=ParticipationPool::class, mappedBy="project", indexBy="secondary", cascade={"persist", "remove"}
+     * )
      *
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
@@ -376,7 +380,11 @@ class Project implements DriveCarrierInterface
     /**
      * @var Collection|Tranche[]
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Agency\Entity\Tranche", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Agency\Entity\Tranche",
+     *     mappedBy="project",
+     *     orphanRemoval=true, cascade={"persist", "remove"}
+     * )
      *
      * @Assert\Valid
      * @Assert\All({
@@ -393,7 +401,11 @@ class Project implements DriveCarrierInterface
     /**
      * @var Borrower[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Agency\Entity\Borrower", mappedBy="project", orphanRemoval=true, cascade={"persist", "remove"})
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Agency\Entity\Borrower",
+     *     mappedBy="project",
+     *     orphanRemoval=true, cascade={"persist", "remove"}
+     * )
      *
      * @Assert\Valid
      * @Assert\Count(min="1", groups={"published"})
@@ -465,7 +477,9 @@ class Project implements DriveCarrierInterface
     /**
      * @var iterable|ProjectStatusHistory[]
      *
-     * @ORM\OneToMany(targetEntity="ProjectStatusHistory", orphanRemoval=true, mappedBy="project", cascade={"persist", "remove"})
+     * @ORM\OneToMany(
+     *     targetEntity="ProjectStatusHistory", orphanRemoval=true, mappedBy="project", cascade={"persist", "remove"}
+     * )
      *
      * @Assert\All({
      *     @Assert\Expression("value.getProject() === this")
@@ -548,7 +562,10 @@ class Project implements DriveCarrierInterface
         $this->borrowers          = new ArrayCollection();
         $this->tranches           = new ArrayCollection();
         $this->covenants          = new ArrayCollection();
-        $this->participationPools = new ArrayCollection([false => new ParticipationPool($this, false), true => new ParticipationPool($this, true)]);
+        $this->participationPools = new ArrayCollection([
+            false => new ParticipationPool($this, false),
+            true  => new ParticipationPool($this, true),
+        ]);
 
         $this->agent = new Agent($this, $addedBy->getCompany());
         $this->agent->addMember(new AgentMember($this->agent, $addedBy->getUser()));
@@ -816,7 +833,9 @@ class Project implements DriveCarrierInterface
     }
 
     /**
-     * @ApiProperty(security="is_granted('agent', object) || is_granted('borrower', object) || is_granted('primary_participant', object)")
+     * @ApiProperty(
+     *     security="is_granted('agent', object) || is_granted('borrower', object) || is_granted('primary_participant',object)"
+     * )
      *
      * @Groups({"agency:project:read"})
      */
@@ -1043,7 +1062,9 @@ class Project implements DriveCarrierInterface
     {
         if (
             ($this->currentStatus > 0)
-            && $this->statuses->exists(fn ($key, ProjectStatusHistory $statusHistory) => $statusHistory->getStatus() > $this->currentStatus)
+            && $this->statuses->exists(
+                fn ($key, ProjectStatusHistory $statusHistory) => $statusHistory->getStatus() > $this->currentStatus
+            )
         ) {
             $context->buildViolation('Agency.Project.passedStatus')
                 ->setParameter('status', (string) $this->currentStatus)
@@ -1082,7 +1103,11 @@ class Project implements DriveCarrierInterface
         \reset($statuses);
 
         while (($status = \current($statuses))) {
-            if (false === $this->statuses->exists(fn ($_, ProjectStatusHistory $history) => $history->getStatus() === $status)) {
+            if (
+                false === $this->statuses->exists(
+                    fn ($_, ProjectStatusHistory $history) => $history->getStatus() === $status
+                )
+            ) {
                 $context->buildViolation('Agency.Project.missingStatus', [
                     '{{ missingStatus }}' => $status,
                     '{{ nextStatus }}'    => $this->currentStatus,
@@ -1095,7 +1120,9 @@ class Project implements DriveCarrierInterface
 
     public function findBorrowerBySiren(string $siren): ?Borrower
     {
-        return $this->borrowers->filter(fn (Borrower $borrower) => $borrower->getMatriculationNumber() === $siren)->first() ?: null;
+        return $this->borrowers->filter(
+            fn (Borrower $borrower) => $borrower->getMatriculationNumber() === $siren
+        )->first() ?: null;
     }
 
     /**
