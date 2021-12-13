@@ -27,6 +27,12 @@ services:
       $decorated: '@.inner'
       $iriConverter: '@ApiPlatform\Core\Api\IriConverterInterface'
 
+  KLS\CreditGuaranty\FEI\Serializer\ContextBuilder\FinancingObjectContextBuilder:
+    decorates: 'api_platform.serializer.context_builder'
+    arguments:
+      $decorated: '@.inner'
+      $iriConverter: '@ApiPlatform\Core\Api\IriConverterInterface'
+
   KLS\CreditGuaranty\FEI\Serializer\ContextBuilder\ProjectContextBuilder:
     decorates: 'api_platform.serializer.context_builder'
     arguments:
