@@ -11,21 +11,31 @@ class FinancingObjectVoter extends AbstractEntityVoter
 {
     protected function canCreate(FinancingObject $financingObject): bool
     {
-        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $financingObject->getReservation());
+        $reservation = $financingObject->getReservation();
+
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $reservation);
     }
 
     protected function canView(FinancingObject $financingObject): bool
     {
-        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_VIEW, $financingObject->getReservation());
+        $reservation = $financingObject->getReservation();
+
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_VIEW, $reservation);
     }
 
     protected function canEdit(FinancingObject $financingObject): bool
     {
-        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $financingObject->getReservation());
+        $reservation = $financingObject->getReservation();
+
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $reservation)
+            && ($reservation->isInDraft() || $reservation->isFormalized())
+        ;
     }
 
     protected function canDelete(FinancingObject $financingObject): bool
     {
-        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $financingObject->getReservation());
+        $reservation = $financingObject->getReservation();
+
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $reservation);
     }
 }

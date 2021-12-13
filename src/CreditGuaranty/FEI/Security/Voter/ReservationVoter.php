@@ -60,7 +60,11 @@ class ReservationVoter extends AbstractEntityVoter
         return $staff
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_EDIT_RESERVATION)
             && $this->authorizationChecker->isGranted(ReservationRoleVoter::ROLE_MANAGER, $reservation)
-            && ($reservation->isInDraft() || $reservation->isAcceptedByManagingCompany())
+            && (
+                $reservation->isInDraft()
+                || $reservation->isAcceptedByManagingCompany()
+                || $reservation->isFormalized()
+            )
         ;
     }
 
