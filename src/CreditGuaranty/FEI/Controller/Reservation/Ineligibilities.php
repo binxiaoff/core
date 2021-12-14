@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\CreditGuaranty\FEI\Controller;
+namespace KLS\CreditGuaranty\FEI\Controller\Reservation;
 
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Service\EligibilityChecker;
@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EligibilityChecking
+class Ineligibilities
 {
     private const ALLOWED_BOOLEAN_VALUES = [
         '0', '1', 'true', 'false',

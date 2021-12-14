@@ -26,7 +26,7 @@ use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
-use KLS\CreditGuaranty\FEI\Controller\EligibilityChecking;
+use KLS\CreditGuaranty\FEI\Controller\Reservation\Ineligibilities;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -120,7 +120,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "get_ineligibilities": {
  *             "method": "GET",
  *             "path": "credit_guaranty/reservations/{publicId}/ineligibilities",
- *             "controller": EligibilityChecking::class,
+ *             "controller": Ineligibilities::class,
  *             "security": "is_granted('check_eligibility', object)",
  *             "openapi_context": {
  *                 "parameters": {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Test\CreditGuaranty\FEI\Functional\Entity;
+namespace KLS\Test\CreditGuaranty\FEI\Functional\Entity\Reservation;
 
 use KLS\Core\Entity\Staff;
 use KLS\Core\Repository\StaffRepository;
@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @internal
  */
-class ReservationIneligibilitiesTest extends AbstractApiTest
+class IneligibilitiesTest extends AbstractApiTest
 {
-    private const ENDPOINT_RESERVATION_INELIGIBILITIES = '/credit_guaranty/reservations/{publicId}/ineligibilities';
+    private const ENDPOINT = '/credit_guaranty/reservations/{publicId}/ineligibilities';
 
     protected function setUp(): void
     {
@@ -50,7 +50,7 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
         $iri = \str_replace(
             '{publicId}',
             $reservationPublicId,
-            self::ENDPOINT_RESERVATION_INELIGIBILITIES
+            self::ENDPOINT
         ) . $params;
 
         $response = $this->createAuthClient($staff)->request(Request::METHOD_GET, $iri);
@@ -207,7 +207,7 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
         $iri = \str_replace(
             '{publicId}',
             $reservationPublicId,
-            self::ENDPOINT_RESERVATION_INELIGIBILITIES
+            self::ENDPOINT
         );
 
         $response = $this->createAuthClient($staff)
@@ -263,7 +263,7 @@ class ReservationIneligibilitiesTest extends AbstractApiTest
         $iri = \str_replace(
             '{publicId}',
             $reservationPublicId,
-            self::ENDPOINT_RESERVATION_INELIGIBILITIES
+            self::ENDPOINT
         ) . $params;
 
         $response = $this->createAuthClient($staff)

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Test\CreditGuaranty\FEI\Functional\Entity;
+namespace KLS\Test\CreditGuaranty\FEI\Functional\Entity\ReportingTemplate;
 
 use KLS\Core\Entity\Staff;
 use KLS\Core\Repository\StaffRepository;
@@ -19,7 +19,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
  *
  * @internal
  */
-class ReportingTemplateReportingTest extends AbstractApiTest
+class ReportingTest extends AbstractApiTest
 {
     private const ENDPOINT = '/credit_guaranty/reporting_templates/{publicId}/reporting';
 
