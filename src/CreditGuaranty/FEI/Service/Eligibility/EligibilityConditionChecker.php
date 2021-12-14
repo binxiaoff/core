@@ -2,44 +2,45 @@
 
 declare(strict_types=1);
 
-namespace KLS\CreditGuaranty\FEI\Service;
+namespace KLS\CreditGuaranty\FEI\Service\Eligibility;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use KLS\Core\Entity\Constant\MathOperator;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
+use KLS\CreditGuaranty\FEI\Entity\Borrower;
+use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityCondition;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibilityConfiguration;
-use KLS\CreditGuaranty\FEI\Entity\Reservation;
-use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityConditionRepository;
+use KLS\CreditGuaranty\FEI\Entity\Project;
+use KLS\CreditGuaranty\FEI\Service\ReservationAccessor;
 use LogicException;
 
 class EligibilityConditionChecker
 {
-    private ProgramEligibilityConditionRepository $programEligibilityConditionRepository;
     private ReservationAccessor $reservationAccessor;
 
-    public function __construct(
-        ProgramEligibilityConditionRepository $programEligibilityConditionRepository,
-        ReservationAccessor $reservationAccessor
-    ) {
-        $this->programEligibilityConditionRepository = $programEligibilityConditionRepository;
-        $this->reservationAccessor                   = $reservationAccessor;
+    public function __construct(ReservationAccessor $reservationAccessor)
+    {
+        $this->reservationAccessor = $reservationAccessor;
     }
 
+    /**
+     * @param object|Borrower|Project|FinancingObject $object
+     */
     public function checkByConfiguration(
-        Reservation $reservation,
+        object $object,
         ProgramEligibilityConfiguration $programEligibilityConfiguration
     ): bool {
-        $programEligibilityConditions = $this->programEligibilityConditionRepository->findBy([
-            'programEligibilityConfiguration' => $programEligibilityConfiguration,
-        ]);
+        $programEligibilityConditions = $programEligibilityConfiguration->getProgramEligibilityConditions();
 
-        if (0 === \count($programEligibilityConditions)) {
+        if (0 === $programEligibilityConditions->count()) {
             return true;
         }
 
         foreach ($programEligibilityConditions as $eligibilityCondition) {
-            if (false === $this->checkCondition($reservation, $eligibilityCondition)) {
+            if (false === $this->checkCondition($object, $eligibilityCondition)) {
                 return false;
             }
         }
@@ -47,8 +48,12 @@ class EligibilityConditionChecker
         return true;
     }
 
-    private function checkCondition(Reservation $reservation, ProgramEligibilityCondition $eligibilityCondition): bool
+    /**
+     * @param object|Borrower|Project|FinancingObject $object
+     */
+    private function checkCondition(object $object, ProgramEligibilityCondition $eligibilityCondition): bool
     {
+        $reservation    = $object->getReservation();
         $valueToCompare = $eligibilityCondition->getValue() ?? $eligibilityCondition->getProgramChoiceOptions();
 
         if (ProgramEligibilityCondition::VALUE_TYPE_RATE === $eligibilityCondition->getValueType()) {
@@ -70,8 +75,13 @@ class EligibilityConditionChecker
                 throw new LogicException(\sprintf($message, $eligibilityCondition->getId()));
             }
 
+            $rightValue = $this->reservationAccessor->getValue($rightEntity, $rightOperandField);
+            if ($rightValue instanceof MoneyInterface) {
+                $rightValue = $rightValue->getAmount();
+            }
+
             $valueToCompare = \bcmul(
-                (string) $this->reservationAccessor->getValue($rightEntity, $rightOperandField),
+                (string) $rightValue,
                 $eligibilityCondition->getValue(),
                 4
             );
@@ -81,6 +91,11 @@ class EligibilityConditionChecker
         $leftEntity       = $this->reservationAccessor->getEntity($reservation, $leftOperandField);
 
         if ($leftEntity instanceof Collection) {
+            if ($object instanceof FinancingObject) {
+                // we use the object used to allow checking eligibility of the real object
+                $leftEntity = new ArrayCollection([$object]);
+            }
+
             foreach ($leftEntity as $leftEntityItem) {
                 $leftValue = $this->reservationAccessor->getValue($leftEntityItem, $leftOperandField);
 
@@ -89,7 +104,7 @@ class EligibilityConditionChecker
                 }
             }
 
-            return true;
+            return $leftEntity->count() > 0;
         }
 
         $leftValue = $this->reservationAccessor->getValue($leftEntity, $leftOperandField);
@@ -124,6 +139,13 @@ class EligibilityConditionChecker
 
     private function checkNumber(string $operator, $leftValue, $valueToCompare): bool
     {
+        if ($leftValue instanceof MoneyInterface) {
+            $leftValue = $leftValue->getAmount();
+        }
+        if ($valueToCompare instanceof MoneyInterface) {
+            $valueToCompare = $valueToCompare->getAmount();
+        }
+
         $comparison = \bccomp((string) $leftValue, (string) $valueToCompare, 4);
 
         switch ($operator) {

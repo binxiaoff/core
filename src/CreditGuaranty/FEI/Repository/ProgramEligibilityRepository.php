@@ -8,7 +8,6 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
-use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 
 /**
@@ -32,40 +31,5 @@ class ProgramEligibilityRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->persist($programEligibility);
         $this->getEntityManager()->flush();
-    }
-
-    /**
-     * @return ProgramEligibility[]|array
-     */
-    public function findByProgramAndFieldCategory(Program $program, ?string $category = null): array
-    {
-        $queryBuilder = $this->createQueryBuilder('pe')
-            ->where('pe.program = :program')
-            ->setParameter('program', $program)
-        ;
-
-        if (null !== $category) {
-            $queryBuilder
-                ->innerJoin('pe.field', 'f')
-                ->andWhere('f.category = :category')
-                ->setParameter('category', $category)
-            ;
-        }
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    public function findFieldCategoriesByProgram(Program $program): array
-    {
-        $categories = $this->createQueryBuilder('pe')
-            ->select('DISTINCT f.category')
-            ->innerJoin('pe.field', 'f')
-            ->where('pe.program = :program')
-            ->setParameter('program', $program)
-            ->getQuery()
-            ->getResult()
-        ;
-
-        return \array_column($categories, 'category');
     }
 }

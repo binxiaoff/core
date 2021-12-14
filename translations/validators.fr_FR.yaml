@@ -268,8 +268,10 @@ CreditGuaranty:
         grade:
             invalid: Le grade choisi n'est pas valable.
     Reservation:
-        category:
-            ineligibles: Les champs {{ fieldAliases }} de la catégorie {{ category }} de la réservation sont inéligibles.
+        ineligible:
+            profile: Certaines informations du bénéficiaire sont inéligibles, veuillez vérifier le résultat de l'éligibilité de la réservation.
+            project: Certaines informations du projet sont inéligibles, veuillez vérifier le résultat de l'éligibilité de la réservation.
+            loan: Certaines informations du prêt sont inéligibles, veuillez vérifier le résultat de l'éligibilité de la réservation.
         esb:
             ineligible: La réservation ne peut être envoyée, le montant de l'équivalent subvention brut doit être inférieur ou égal au montant maximum du prêt FEI.
         borrower:

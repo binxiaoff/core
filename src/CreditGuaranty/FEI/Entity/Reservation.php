@@ -122,28 +122,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "path": "credit_guaranty/reservations/{publicId}/ineligibilities",
  *             "controller": Ineligibilities::class,
  *             "security": "is_granted('check_eligibility', object)",
- *             "openapi_context": {
- *                 "parameters": {
- *                     {
- *                         "in": "query",
- *                         "name": "category",
- *                         "schema": {
- *                             "type": "string",
- *                         },
- *                         "required": false,
- *                         "description": "Name of the category"
- *                     },
- *                     {
- *                         "in": "query",
- *                         "name": "withConditions",
- *                         "schema": {
- *                             "type": "boolean",
- *                             "enum": {0, 1, false, true}
- *                         },
- *                         "required": true
- *                     },
- *                 },
- *             },
  *         },
  *     },
  *     collectionOperations={
