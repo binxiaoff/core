@@ -61,6 +61,7 @@ stages:
   - 🔎 validation
   - 🧪 test
   - 🚀 deploy
+  - 💻 e2e
 
 # Validation
 
@@ -132,6 +133,22 @@ stages:
   environment:
     name: preprod
     url: https://api.preprod.kls-platform.com
+  only:
+    refs:
+      - /^release/.*/
+      - /^hotfix/.*/
+      - /^[1-9][0-9]*\.[0-9]+\.[0-9]+$/
+
+e2e:preprod:
+  stage: 💻 e2e
+  trigger:
+    # relative path and variables don't work here
+    project: ca-lending-services/e2e
+    strategy: depend
+  variables:
+    CYPRESS_environment: preprod
+  needs:
+    - 🚀 preprod
   only:
     refs:
       - /^release/.*/
