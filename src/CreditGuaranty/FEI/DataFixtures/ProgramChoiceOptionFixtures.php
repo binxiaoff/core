@@ -19,6 +19,8 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
+    public const REFERENCE_FORMAT = 'pco:p%s:%s:%s';
+
     public const ALL = [
         FieldAlias::ACTIVITY_COUNTRY => [
             'FR' => 'FR',
@@ -179,13 +181,17 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
                 /** @var Field $field */
                 foreach ($data['fields'] as $field) {
                     // ignore pre-defined list type fields
-                    if (FieldAlias::LOAN_PERIODICITY === $field->getFieldAlias()) {
+                    if (null !== $field->getPredefinedItems()) {
                         continue;
                     }
 
-                    foreach (self::ALL[$field->getFieldAlias()] as $description) {
+                    foreach (self::ALL[$field->getFieldAlias()] as $key => $description) {
                         $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
                         $manager->persist($programChoiceOption);
+                        $this->setReference(
+                            \sprintf(self::REFERENCE_FORMAT, $program->getId(), $field->getFieldAlias(), $key),
+                            $programChoiceOption
+                        );
                     }
                 }
             }

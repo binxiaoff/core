@@ -6,7 +6,6 @@ namespace KLS\CreditGuaranty\FEI\DataFixtures;
 
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\ObjectRepository;
@@ -24,7 +23,6 @@ use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramAwareInterface;
 use KLS\CreditGuaranty\FEI\Entity\Participation;
 use KLS\CreditGuaranty\FEI\Entity\Program;
-use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
 use KLS\CreditGuaranty\FEI\Entity\ProgramGradeAllocation;
 use KLS\CreditGuaranty\FEI\Entity\Project;
@@ -104,18 +102,161 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ]),
         ]);
 
-        $programChoiceOptions      = ProgramChoiceOptionFixtures::ALL;
-        $aidIntensityOptions       = $programChoiceOptions[FieldAlias::AID_INTENSITY];
-        $investmentThematicOptions = $programChoiceOptions[FieldAlias::INVESTMENT_THEMATIC];
-        $legalFormOptions          = $programChoiceOptions[FieldAlias::LEGAL_FORM];
-        $loanTypeOptions           = $programChoiceOptions[FieldAlias::LOAN_TYPE];
-
         /** @var Participation $participation */
         foreach ($participations as $participation) {
             $program          = $participation->getProgram();
             $participant      = $participation->getParticipant();
             $staff            = $participant->getStaff()->current();
             $companyShortCode = $participant->getShortCode();
+
+            // legal form
+            $saOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LEGAL_FORM,
+                LegalForm::SA
+            );
+            $saOption = $this->hasReference($saOptionReference)
+                ? $this->getReference($saOptionReference)
+                : null;
+            $sarlOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LEGAL_FORM,
+                LegalForm::SARL
+            );
+            $sarlOption = $this->hasReference($sarlOptionReference)
+                ? $this->getReference($sarlOptionReference)
+                : null;
+            $sasOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LEGAL_FORM,
+                LegalForm::SAS
+            );
+            $sasOption = $this->hasReference($sasOptionReference)
+                ? $this->getReference($sasOptionReference)
+                : null;
+            $selasOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LEGAL_FORM,
+                LegalForm::SELAS
+            );
+            $selasOption = $this->hasReference($selasOptionReference)
+                ? $this->getReference($selasOptionReference)
+                : null;
+            // investment thematic
+            $investmentThematicOption1Reference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::INVESTMENT_THEMATIC,
+                'Renouvellement'
+            );
+            $investmentThematicOption1 = $this->hasReference($investmentThematicOption1Reference)
+                ? $this->getReference($investmentThematicOption1Reference)
+                : null;
+            $investmentThematicOption2Reference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::INVESTMENT_THEMATIC,
+                'Mieux répondre aux attentes'
+            );
+            $investmentThematicOption2 = $this->hasReference($investmentThematicOption2Reference)
+                ? $this->getReference($investmentThematicOption2Reference)
+                : null;
+            $investmentThematicOption3Reference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::INVESTMENT_THEMATIC,
+                'Transformation'
+            );
+            $investmentThematicOption3 = $this->hasReference($investmentThematicOption3Reference)
+                ? $this->getReference($investmentThematicOption3Reference)
+                : null;
+            $investmentThematicOption4Reference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::INVESTMENT_THEMATIC,
+                'Accompagner'
+            );
+            $investmentThematicOption4 = $this->hasReference($investmentThematicOption4Reference)
+                ? $this->getReference($investmentThematicOption4Reference)
+                : null;
+            $investmentThematicOption5Reference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::INVESTMENT_THEMATIC,
+                'Mettre à niveau'
+            );
+            $investmentThematicOption5 = $this->hasReference($investmentThematicOption5Reference)
+                ? $this->getReference($investmentThematicOption5Reference)
+                : null;
+            // aid intensity
+            $aidIntensity20OptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::AID_INTENSITY,
+                '0.20'
+            );
+            $aidIntensity20Option = $this->hasReference($aidIntensity20OptionReference)
+                ? $this->getReference($aidIntensity20OptionReference)
+                : null;
+            $aidIntensity40OptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::AID_INTENSITY,
+                '0.40'
+            );
+            $aidIntensity40Option = $this->hasReference($aidIntensity40OptionReference)
+                ? $this->getReference($aidIntensity40OptionReference)
+                : null;
+            $aidIntensity80OptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::AID_INTENSITY,
+                '0.80'
+            );
+            $aidIntensity80Option = $this->hasReference($aidIntensity80OptionReference)
+                ? $this->getReference($aidIntensity80OptionReference)
+                : null;
+            // loan type
+            $revolvingCreditOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LOAN_TYPE,
+                LoanType::REVOLVING_CREDIT
+            );
+            $revolvingCreditOption = $this->hasReference($revolvingCreditOptionReference)
+                ? $this->getReference($revolvingCreditOptionReference)
+                : null;
+            $shortTermOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LOAN_TYPE,
+                LoanType::SHORT_TERM
+            );
+            $shortTermOption = $this->hasReference($shortTermOptionReference)
+                ? $this->getReference($shortTermOptionReference)
+                : null;
+            $signatureCommitmentOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LOAN_TYPE,
+                LoanType::SIGNATURE_COMMITMENT
+            );
+            $signatureCommitmentOption = $this->hasReference($signatureCommitmentOptionReference)
+                ? $this->getReference($signatureCommitmentOptionReference)
+                : null;
+            $termLoanOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LOAN_TYPE,
+                LoanType::TERM_LOAN
+            );
+            $termLoanOption = $this->hasReference($termLoanOptionReference)
+                ? $this->getReference($termLoanOptionReference)
+                : null;
 
             for ($i = 1; $i <= 5; ++$i) {
                 yield [
@@ -124,7 +265,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     'borrower' => [
                         self::FORCE_DEFAULT_VALUES       => false,
                         FieldAlias::CREATION_IN_PROGRESS => true,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SARL],
+                        FieldAlias::LEGAL_FORM           => $sarlOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project'          => [],
@@ -139,17 +280,17 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         self::FORCE_DEFAULT_VALUES       => true,
                         FieldAlias::YOUNG_FARMER         => true,
                         FieldAlias::CREATION_IN_PROGRESS => false,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SA],
+                        FieldAlias::LEGAL_FORM           => $saOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project' => [
                         self::FORCE_DEFAULT_VALUES      => true,
-                        FieldAlias::INVESTMENT_THEMATIC => [
-                            $investmentThematicOptions['Mieux répondre aux attentes'],
-                            $investmentThematicOptions['Accompagner'],
-                        ],
+                        FieldAlias::INVESTMENT_THEMATIC => new ArrayCollection([
+                            $investmentThematicOption2,
+                            $investmentThematicOption4,
+                        ]),
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => $aidIntensityOptions['0.40'],
+                        FieldAlias::AID_INTENSITY         => $aidIntensity40Option,
                         FieldAlias::TANGIBLE_FEI_CREDIT   => new NullableMoney('EUR', (string) 1000),
                         FieldAlias::INTANGIBLE_FEI_CREDIT => new NullableMoney('EUR', (string) 500),
                     ],
@@ -157,13 +298,13 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::TERM_LOAN],
+                            FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 70,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::SIGNATURE_COMMITMENT],
+                            FieldAlias::LOAN_TYPE                      => $signatureCommitmentOption,
                             FieldAlias::LOAN_DURATION                  => 35,
                         ],
                     ],
@@ -177,17 +318,17 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         self::FORCE_DEFAULT_VALUES       => true,
                         FieldAlias::CREATION_IN_PROGRESS => true,
                         FieldAlias::YOUNG_FARMER         => false,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SELAS],
+                        FieldAlias::LEGAL_FORM           => $selasOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project' => [
                         self::FORCE_DEFAULT_VALUES      => true,
-                        FieldAlias::INVESTMENT_THEMATIC => [
-                            $investmentThematicOptions['Mieux répondre aux attentes'],
-                            $investmentThematicOptions['Mettre à niveau'],
-                        ],
+                        FieldAlias::INVESTMENT_THEMATIC => new ArrayCollection([
+                            $investmentThematicOption2,
+                            $investmentThematicOption5,
+                        ]),
                         FieldAlias::RECEIVING_GRANT       => false,
-                        FieldAlias::AID_INTENSITY         => $aidIntensityOptions['0.20'],
+                        FieldAlias::AID_INTENSITY         => $aidIntensity20Option,
                         FieldAlias::TANGIBLE_FEI_CREDIT   => new NullableMoney('EUR', (string) 500),
                         FieldAlias::INTANGIBLE_FEI_CREDIT => new NullableMoney('EUR', (string) 1000),
                     ],
@@ -195,13 +336,13 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => false,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::TERM_LOAN],
+                            FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 70,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::TERM_LOAN],
+                            FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 120,
                         ],
                     ],
@@ -215,18 +356,18 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         self::FORCE_DEFAULT_VALUES       => true,
                         FieldAlias::CREATION_IN_PROGRESS => false,
                         FieldAlias::YOUNG_FARMER         => true,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SARL],
+                        FieldAlias::LEGAL_FORM           => $sarlOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project' => [
                         self::FORCE_DEFAULT_VALUES      => true,
-                        FieldAlias::INVESTMENT_THEMATIC => [
-                            $investmentThematicOptions['Mieux répondre aux attentes'],
-                            $investmentThematicOptions['Transformation'],
-                            $investmentThematicOptions['Accompagner'],
-                        ],
+                        FieldAlias::INVESTMENT_THEMATIC => new ArrayCollection([
+                            $investmentThematicOption2,
+                            $investmentThematicOption3,
+                            $investmentThematicOption4,
+                        ]),
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => $aidIntensityOptions['0.80'],
+                        FieldAlias::AID_INTENSITY         => $aidIntensity80Option,
                         FieldAlias::TANGIBLE_FEI_CREDIT   => new NullableMoney('EUR', (string) 2000),
                         FieldAlias::INTANGIBLE_FEI_CREDIT => new NullableMoney('EUR', (string) 100),
                     ],
@@ -234,7 +375,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::SIGNATURE_COMMITMENT],
+                            FieldAlias::LOAN_TYPE                      => $signatureCommitmentOption,
                             FieldAlias::LOAN_DURATION                  => 24,
                         ],
                     ],
@@ -248,17 +389,17 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         self::FORCE_DEFAULT_VALUES       => true,
                         FieldAlias::CREATION_IN_PROGRESS => false,
                         FieldAlias::YOUNG_FARMER         => true,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SA],
+                        FieldAlias::LEGAL_FORM           => $saOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 100,
                     ],
                     'project' => [
                         self::FORCE_DEFAULT_VALUES      => true,
-                        FieldAlias::INVESTMENT_THEMATIC => [
-                            $investmentThematicOptions['Transformation'],
-                            $investmentThematicOptions['Mettre à niveau'],
-                        ],
+                        FieldAlias::INVESTMENT_THEMATIC => new ArrayCollection([
+                            $investmentThematicOption3,
+                            $investmentThematicOption5,
+                        ]),
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => $aidIntensityOptions['0.80'],
+                        FieldAlias::AID_INTENSITY         => $aidIntensity80Option,
                         FieldAlias::TANGIBLE_FEI_CREDIT   => new NullableMoney('EUR', (string) 2000),
                         FieldAlias::INTANGIBLE_FEI_CREDIT => new NullableMoney('EUR', (string) 100),
                     ],
@@ -266,19 +407,19 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::TERM_LOAN],
+                            FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 12,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::TERM_LOAN],
+                            FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 12,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::TERM_LOAN],
+                            FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 12,
                         ],
                     ],
@@ -292,17 +433,17 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         self::FORCE_DEFAULT_VALUES       => true,
                         FieldAlias::CREATION_IN_PROGRESS => false,
                         FieldAlias::YOUNG_FARMER         => true,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SAS],
+                        FieldAlias::LEGAL_FORM           => $sasOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 150,
                     ],
                     'project' => [
                         self::FORCE_DEFAULT_VALUES      => true,
-                        FieldAlias::INVESTMENT_THEMATIC => [
-                            $investmentThematicOptions['Renouvellement'],
-                            $investmentThematicOptions['Transformation'],
-                        ],
+                        FieldAlias::INVESTMENT_THEMATIC => new ArrayCollection([
+                            $investmentThematicOption1,
+                            $investmentThematicOption3,
+                        ]),
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => $aidIntensityOptions['0.40'],
+                        FieldAlias::AID_INTENSITY         => $aidIntensity40Option,
                         FieldAlias::TANGIBLE_FEI_CREDIT   => new NullableMoney('EUR', (string) 500),
                         FieldAlias::INTANGIBLE_FEI_CREDIT => new NullableMoney('EUR', (string) 20),
                     ],
@@ -310,13 +451,13 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::REVOLVING_CREDIT],
+                            FieldAlias::LOAN_TYPE                      => $revolvingCreditOption,
                             FieldAlias::LOAN_DURATION                  => 70,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::SHORT_TERM],
+                            FieldAlias::LOAN_TYPE                      => $shortTermOption,
                             FieldAlias::LOAN_DURATION                  => 30,
                         ],
                     ],
@@ -330,18 +471,18 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         self::FORCE_DEFAULT_VALUES       => true,
                         FieldAlias::CREATION_IN_PROGRESS => false,
                         FieldAlias::YOUNG_FARMER         => false,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SAS],
+                        FieldAlias::LEGAL_FORM           => $sasOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 30,
                     ],
                     'project' => [
                         self::FORCE_DEFAULT_VALUES      => true,
-                        FieldAlias::INVESTMENT_THEMATIC => [
-                            $investmentThematicOptions['Mieux répondre aux attentes'],
-                            $investmentThematicOptions['Transformation'],
-                            $investmentThematicOptions['Accompagner'],
-                        ],
+                        FieldAlias::INVESTMENT_THEMATIC => new ArrayCollection([
+                            $investmentThematicOption2,
+                            $investmentThematicOption3,
+                            $investmentThematicOption4,
+                        ]),
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => $aidIntensityOptions['0.80'],
+                        FieldAlias::AID_INTENSITY         => $aidIntensity80Option,
                         FieldAlias::TANGIBLE_FEI_CREDIT   => new NullableMoney('EUR', (string) 22000),
                         FieldAlias::INTANGIBLE_FEI_CREDIT => new NullableMoney('EUR', (string) 400),
                     ],
@@ -349,13 +490,13 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::REVOLVING_CREDIT],
+                            FieldAlias::LOAN_TYPE                      => $revolvingCreditOption,
                             FieldAlias::LOAN_DURATION                  => 4,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::REVOLVING_CREDIT],
+                            FieldAlias::LOAN_TYPE                      => $revolvingCreditOption,
                             FieldAlias::LOAN_DURATION                  => 4,
                         ],
                     ],
@@ -369,18 +510,18 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         self::FORCE_DEFAULT_VALUES       => true,
                         FieldAlias::CREATION_IN_PROGRESS => false,
                         FieldAlias::YOUNG_FARMER         => false,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SA],
+                        FieldAlias::LEGAL_FORM           => $saOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 450,
                     ],
                     'project' => [
                         self::FORCE_DEFAULT_VALUES      => true,
-                        FieldAlias::INVESTMENT_THEMATIC => [
-                            $investmentThematicOptions['Mieux répondre aux attentes'],
-                            $investmentThematicOptions['Transformation'],
-                            $investmentThematicOptions['Accompagner'],
-                        ],
+                        FieldAlias::INVESTMENT_THEMATIC => new ArrayCollection([
+                            $investmentThematicOption2,
+                            $investmentThematicOption3,
+                            $investmentThematicOption4,
+                        ]),
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => $aidIntensityOptions['0.80'],
+                        FieldAlias::AID_INTENSITY         => $aidIntensity80Option,
                         FieldAlias::TANGIBLE_FEI_CREDIT   => new NullableMoney('EUR', (string) 6000),
                         FieldAlias::INTANGIBLE_FEI_CREDIT => new NullableMoney('EUR', (string) 700),
                     ],
@@ -395,17 +536,17 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         self::FORCE_DEFAULT_VALUES       => true,
                         FieldAlias::CREATION_IN_PROGRESS => false,
                         FieldAlias::YOUNG_FARMER         => false,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SA],
+                        FieldAlias::LEGAL_FORM           => $saOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 200,
                     ],
                     'project' => [
                         self::FORCE_DEFAULT_VALUES      => true,
-                        FieldAlias::INVESTMENT_THEMATIC => [
-                            $investmentThematicOptions['Mieux répondre aux attentes'],
-                            $investmentThematicOptions['Accompagner'],
-                        ],
+                        FieldAlias::INVESTMENT_THEMATIC => new ArrayCollection([
+                            $investmentThematicOption2,
+                            $investmentThematicOption4,
+                        ]),
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => $aidIntensityOptions['0.80'],
+                        FieldAlias::AID_INTENSITY         => $aidIntensity80Option,
                         FieldAlias::TANGIBLE_FEI_CREDIT   => new NullableMoney('EUR', (string) 80000),
                         FieldAlias::INTANGIBLE_FEI_CREDIT => new NullableMoney('EUR', (string) 100),
                     ],
@@ -413,7 +554,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::SHORT_TERM],
+                            FieldAlias::LOAN_TYPE                      => $shortTermOption,
                             FieldAlias::LOAN_DURATION                  => 4,
                         ],
                     ],
@@ -430,18 +571,18 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         self::FORCE_DEFAULT_VALUES       => true,
                         FieldAlias::CREATION_IN_PROGRESS => false,
                         FieldAlias::YOUNG_FARMER         => true,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SA],
+                        FieldAlias::LEGAL_FORM           => $saOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 300,
                     ],
                     'project' => [
                         self::FORCE_DEFAULT_VALUES      => true,
-                        FieldAlias::INVESTMENT_THEMATIC => [
-                            $investmentThematicOptions['Mieux répondre aux attentes'],
-                            $investmentThematicOptions['Transformation'],
-                            $investmentThematicOptions['Accompagner'],
-                        ],
+                        FieldAlias::INVESTMENT_THEMATIC => new ArrayCollection([
+                            $investmentThematicOption2,
+                            $investmentThematicOption3,
+                            $investmentThematicOption4,
+                        ]),
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => $aidIntensityOptions['0.80'],
+                        FieldAlias::AID_INTENSITY         => $aidIntensity80Option,
                         FieldAlias::TANGIBLE_FEI_CREDIT   => new NullableMoney('EUR', (string) 1000),
                         FieldAlias::INTANGIBLE_FEI_CREDIT => new NullableMoney('EUR', (string) 300),
                     ],
@@ -449,31 +590,31 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::TERM_LOAN],
+                            FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 50,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::SHORT_TERM],
+                            FieldAlias::LOAN_TYPE                      => $shortTermOption,
                             FieldAlias::LOAN_DURATION                  => 30,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::REVOLVING_CREDIT],
+                            FieldAlias::LOAN_TYPE                      => $revolvingCreditOption,
                             FieldAlias::LOAN_DURATION                  => 12,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::SIGNATURE_COMMITMENT],
+                            FieldAlias::LOAN_TYPE                      => $signatureCommitmentOption,
                             FieldAlias::LOAN_DURATION                  => 48,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::TERM_LOAN],
+                            FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 70,
                         ],
                     ],
@@ -497,38 +638,123 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ]),
         ]);
 
-        $programChoiceOptions      = ProgramChoiceOptionFixtures::ALL;
-        $aidIntensityOptions       = $programChoiceOptions[FieldAlias::AID_INTENSITY];
-        $investmentThematicOptions = $programChoiceOptions[FieldAlias::INVESTMENT_THEMATIC];
-        $legalFormOptions          = $programChoiceOptions[FieldAlias::LEGAL_FORM];
-        $loanTypeOptions           = $programChoiceOptions[FieldAlias::LOAN_TYPE];
-
         /** @var Participation $participation */
         foreach ($participations as $participation) {
             $program     = $participation->getProgram();
             $participant = $participation->getParticipant();
             $staff       = $participant->getStaff()->current();
 
+            // legal form
+            $saOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LEGAL_FORM,
+                LegalForm::SA
+            );
+            $saOption = $this->hasReference($saOptionReference)
+                ? $this->getReference($saOptionReference)
+                : null;
+            // investment thematic
+            $investmentThematicOption2Reference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::INVESTMENT_THEMATIC,
+                'Mieux répondre aux attentes'
+            );
+            $investmentThematicOption2 = $this->hasReference($investmentThematicOption2Reference)
+                ? $this->getReference($investmentThematicOption2Reference)
+                : null;
+            $investmentThematicOption3Reference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::INVESTMENT_THEMATIC,
+                'Transformation'
+            );
+            $investmentThematicOption3 = $this->hasReference($investmentThematicOption3Reference)
+                ? $this->getReference($investmentThematicOption3Reference)
+                : null;
+            $investmentThematicOption4Reference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::INVESTMENT_THEMATIC,
+                'Accompagner'
+            );
+            $investmentThematicOption4 = $this->hasReference($investmentThematicOption4Reference)
+                ? $this->getReference($investmentThematicOption4Reference)
+                : null;
+            // aid intensity
+            $aidIntensity80OptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::AID_INTENSITY,
+                '0.80'
+            );
+            $aidIntensity80Option = $this->hasReference($aidIntensity80OptionReference)
+                ? $this->getReference($aidIntensity80OptionReference)
+                : null;
+            // loan type
+            $revolvingCreditOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LOAN_TYPE,
+                LoanType::REVOLVING_CREDIT
+            );
+            $revolvingCreditOption = $this->hasReference($revolvingCreditOptionReference)
+                ? $this->getReference($revolvingCreditOptionReference)
+                : null;
+            $shortTermOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LOAN_TYPE,
+                LoanType::SHORT_TERM
+            );
+            $shortTermOption = $this->hasReference($shortTermOptionReference)
+                ? $this->getReference($shortTermOptionReference)
+                : null;
+            $signatureCommitmentOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LOAN_TYPE,
+                LoanType::SIGNATURE_COMMITMENT
+            );
+            $signatureCommitmentOption = $this->hasReference($signatureCommitmentOptionReference)
+                ? $this->getReference($signatureCommitmentOptionReference)
+                : null;
+            $termLoanOptionReference = \sprintf(
+                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                $program->getId(),
+                FieldAlias::LOAN_TYPE,
+                LoanType::TERM_LOAN
+            );
+            $termLoanOption = $this->hasReference($termLoanOptionReference)
+                ? $this->getReference($termLoanOptionReference)
+                : null;
+
             foreach (\range(1, 10) as $index) {
                 yield [
-                    'name'     => \sprintf('Dossier P%s %s-CF %s', $program->getId(), $participant->getShortCode(), $index),
+                    'name' => \sprintf(
+                        'Dossier P%s %s-CF %s',
+                        $program->getId(),
+                        $participant->getShortCode(),
+                        $index
+                    ),
                     'program'  => $program,
                     'borrower' => [
                         self::FORCE_DEFAULT_VALUES       => true,
                         FieldAlias::CREATION_IN_PROGRESS => false,
                         FieldAlias::YOUNG_FARMER         => true,
-                        FieldAlias::LEGAL_FORM           => $legalFormOptions[LegalForm::SA],
+                        FieldAlias::LEGAL_FORM           => $saOption,
                         FieldAlias::EMPLOYEES_NUMBER     => 300,
                     ],
                     'project' => [
                         self::FORCE_DEFAULT_VALUES      => true,
-                        FieldAlias::INVESTMENT_THEMATIC => [
-                            $investmentThematicOptions['Mieux répondre aux attentes'],
-                            $investmentThematicOptions['Transformation'],
-                            $investmentThematicOptions['Accompagner'],
-                        ],
+                        FieldAlias::INVESTMENT_THEMATIC => new ArrayCollection([
+                            $investmentThematicOption2,
+                            $investmentThematicOption3,
+                            $investmentThematicOption4,
+                        ]),
                         FieldAlias::RECEIVING_GRANT       => true,
-                        FieldAlias::AID_INTENSITY         => $aidIntensityOptions['0.80'],
+                        FieldAlias::AID_INTENSITY         => $aidIntensity80Option,
                         FieldAlias::TANGIBLE_FEI_CREDIT   => new NullableMoney('EUR', (string) 1000),
                         FieldAlias::INTANGIBLE_FEI_CREDIT => new NullableMoney('EUR', (string) 300),
                     ],
@@ -536,31 +762,31 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::TERM_LOAN],
+                            FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 50,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::SHORT_TERM],
+                            FieldAlias::LOAN_TYPE                      => $shortTermOption,
                             FieldAlias::LOAN_DURATION                  => 30,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::REVOLVING_CREDIT],
+                            FieldAlias::LOAN_TYPE                      => $revolvingCreditOption,
                             FieldAlias::LOAN_DURATION                  => 12,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::SIGNATURE_COMMITMENT],
+                            FieldAlias::LOAN_TYPE                      => $signatureCommitmentOption,
                             FieldAlias::LOAN_DURATION                  => 48,
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => $loanTypeOptions[LoanType::TERM_LOAN],
+                            FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 70,
                         ],
                     ],
@@ -593,7 +819,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $totalAmount = 0;
 
         if (false === empty($reservationData['financingObjects'])) {
-            for ($i = 0; $i < \count($reservationData['financingObjects']); ++$i) {
+            for ($i = 0, $iMax = \count($reservationData['financingObjects']); $i < $iMax; ++$i) {
                 $financingObject = $this->createFinancingObject($reservation, $reservationData['financingObjects'][$i]);
                 $financingObject->setMainLoan(0 === $i);
                 $this->entityManager->persist($financingObject);
@@ -750,9 +976,6 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $defaultData = $this->getDefaultData($program, $field->getObjectClass());
         $fieldAlias  = $field->getFieldAlias();
 
-        if (null !== $value && Field::TYPE_LIST === $field->getType()) {
-            $value = $this->findProgramChoiceOption($program, $fieldAlias, $value);
-        }
         if (null === $value && $forceDefaultValues) {
             $value = $defaultData[$fieldAlias];
         }
@@ -762,68 +985,41 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
     }
 
-    /**
-     * @param string|array|null $description
-     *
-     * @return ProgramChoiceOption|ProgramChoiceOption[]|null
-     */
-    private function findProgramChoiceOption(
-        Program $program,
-        string $fieldAlias,
-        $description = null
-    ) {
-        /** @var Field $field */
-        $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
-
-        if (empty($description)) {
-            $programChoiceOptions = $this->programChoiceOptionRepository->findBy([
-                'program' => $program,
-                'field'   => $field,
-            ]);
-
-            if (empty($programChoiceOptions)) {
-                return null;
-            }
-
-            return $programChoiceOptions[\array_rand($programChoiceOptions)];
-        }
-
-        $programChoiceOption = (\is_array($description))
-            ? $this->programChoiceOptionRepository->findBy([
-                'program'     => $program,
-                'field'       => $field,
-                'description' => $description,
-            ])
-            : $this->programChoiceOptionRepository->findOneBy([
-                'program'     => $program,
-                'field'       => $field,
-                'description' => $description,
-            ])
-        ;
-
-        if (\is_array($programChoiceOption) && false === empty($programChoiceOption)) {
-            $programChoiceOption = new ArrayCollection($programChoiceOption);
-        }
-
-        if (
-            false === ($programChoiceOption instanceof ProgramChoiceOption)
-            && false === ($programChoiceOption instanceof Collection)
-        ) {
-            return null;
-        }
-
-        return $programChoiceOption;
-    }
-
     private function getDefaultData(Program $program, string $objectClassName): array
     {
+        $programChoiceOptions = ProgramChoiceOptionFixtures::ALL;
+
         switch ($objectClassName) {
             case Borrower::class:
+                $fieldAliases = [
+                    FieldAlias::BORROWER_TYPE,
+                    FieldAlias::LEGAL_FORM,
+                    FieldAlias::COMPANY_NAF_CODE,
+                    FieldAlias::ACTIVITY_DEPARTMENT,
+                    FieldAlias::ACTIVITY_COUNTRY,
+                    FieldAlias::EXPLOITATION_SIZE,
+                    FieldAlias::TARGET_TYPE,
+                ];
+                $this->transformProgramChoiceOptions($programChoiceOptions, $fieldAliases, $program);
+
+                $borrowerTypeOptions       = $programChoiceOptions[FieldAlias::BORROWER_TYPE];
+                $legalFormOptions          = $programChoiceOptions[FieldAlias::LEGAL_FORM];
+                $companyNafCodeOptions     = $programChoiceOptions[FieldAlias::COMPANY_NAF_CODE];
+                $activityDepartmentOptions = $programChoiceOptions[FieldAlias::ACTIVITY_DEPARTMENT];
+                $activityCountryOptions    = $programChoiceOptions[FieldAlias::ACTIVITY_COUNTRY];
+                $exploitationSizeOptions   = $programChoiceOptions[FieldAlias::EXPLOITATION_SIZE];
+                $targetTypeOptions         = $programChoiceOptions[FieldAlias::TARGET_TYPE];
+
+                $borrowerTypeOption       = $borrowerTypeOptions[\array_rand($borrowerTypeOptions)];
+                $legalFormOption          = $legalFormOptions[\array_rand($legalFormOptions)];
+                $companyNafCodeOption     = $companyNafCodeOptions[\array_rand($companyNafCodeOptions)];
+                $activityDepartmentOption = $activityDepartmentOptions[\array_rand($activityDepartmentOptions)];
+                $activityCountryOption    = $activityCountryOptions[\array_rand($activityCountryOptions)];
+                $exploitationSizeOption   = $exploitationSizeOptions[\array_rand($exploitationSizeOptions)];
+                $targetTypeOption         = $targetTypeOptions[\array_rand($targetTypeOptions)];
+
                 return [
-                    FieldAlias::BORROWER_TYPE => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::BORROWER_TYPE
-                    ),
+                    FieldAlias::BORROWER_TYPE                                     => $borrowerTypeOption,
                     FieldAlias::YOUNG_FARMER                                      => $this->faker->boolean,
                     FieldAlias::SUBSIDIARY                                        => $this->faker->boolean,
                     FieldAlias::CREATION_IN_PROGRESS                              => $this->faker->boolean,
@@ -840,31 +1036,16 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     FieldAlias::COMPANY_NAME                                      => $this->faker->company,
                     FieldAlias::ACTIVITY_START_DATE                               => new DateTimeImmutable(),
                     FieldAlias::REGISTRATION_NUMBER                               => '12 23 45 678 987',
-                    FieldAlias::LEGAL_FORM                                        => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::LEGAL_FORM
-                    ),
-                    FieldAlias::COMPANY_NAF_CODE => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::COMPANY_NAF_CODE
-                    ),
-                    FieldAlias::ACTIVITY_STREET     => $this->faker->streetAddress,
-                    FieldAlias::ACTIVITY_CITY       => $this->faker->city,
-                    FieldAlias::ACTIVITY_POST_CODE  => $this->faker->postcode,
-                    FieldAlias::ACTIVITY_DEPARTMENT => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::ACTIVITY_DEPARTMENT
-                    ),
-                    FieldAlias::ACTIVITY_COUNTRY => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::ACTIVITY_COUNTRY
-                    ),
-                    FieldAlias::EMPLOYEES_NUMBER  => $this->faker->randomNumber(3),
-                    FieldAlias::EXPLOITATION_SIZE => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::EXPLOITATION_SIZE
-                    ),
-                    FieldAlias::TURNOVER => new NullableMoney(
+                    FieldAlias::LEGAL_FORM                                        => $legalFormOption,
+                    FieldAlias::COMPANY_NAF_CODE                                  => $companyNafCodeOption,
+                    FieldAlias::ACTIVITY_STREET                                   => $this->faker->streetAddress,
+                    FieldAlias::ACTIVITY_CITY                                     => $this->faker->city,
+                    FieldAlias::ACTIVITY_POST_CODE                                => $this->faker->postcode,
+                    FieldAlias::ACTIVITY_DEPARTMENT                               => $activityDepartmentOption,
+                    FieldAlias::ACTIVITY_COUNTRY                                  => $activityCountryOption,
+                    FieldAlias::EMPLOYEES_NUMBER                                  => $this->faker->randomNumber(3),
+                    FieldAlias::EXPLOITATION_SIZE                                 => $exploitationSizeOption,
+                    FieldAlias::TURNOVER                                          => new NullableMoney(
                         'EUR',
                         (string) $this->faker->randomNumber(6)
                     ),
@@ -872,49 +1053,49 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         'EUR',
                         (string) $this->faker->randomNumber(5)
                     ),
-                    FieldAlias::TARGET_TYPE => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::TARGET_TYPE
-                    ),
+                    FieldAlias::TARGET_TYPE => $targetTypeOption,
                 ];
 
             case Project::class:
+                $fieldAliases = [
+                    FieldAlias::INVESTMENT_THEMATIC,
+                    FieldAlias::INVESTMENT_TYPE,
+                    FieldAlias::INVESTMENT_DEPARTMENT,
+                    FieldAlias::INVESTMENT_COUNTRY,
+                    FieldAlias::AID_INTENSITY,
+                    FieldAlias::ADDITIONAL_GUARANTY,
+                    FieldAlias::AGRICULTURAL_BRANCH,
+                ];
+                $this->transformProgramChoiceOptions($programChoiceOptions, $fieldAliases, $program);
+
+                $investmentThematicsOptions  = $programChoiceOptions[FieldAlias::INVESTMENT_THEMATIC];
+                $investmentTypeOptions       = $programChoiceOptions[FieldAlias::INVESTMENT_TYPE];
+                $investmentDepartmentOptions = $programChoiceOptions[FieldAlias::INVESTMENT_DEPARTMENT];
+                $investmentCountryOptions    = $programChoiceOptions[FieldAlias::INVESTMENT_COUNTRY];
+                $aidIntensityOptions         = $programChoiceOptions[FieldAlias::AID_INTENSITY];
+                $additionalGuarantyOptions   = $programChoiceOptions[FieldAlias::ADDITIONAL_GUARANTY];
+                $agriculturalBranchOptions   = $programChoiceOptions[FieldAlias::AGRICULTURAL_BRANCH];
+
+                $investmentTypeOption       = $investmentTypeOptions[\array_rand($investmentTypeOptions)];
+                $investmentDepartmentOption = $investmentDepartmentOptions[\array_rand($investmentDepartmentOptions)];
+                $investmentCountryOption    = $investmentCountryOptions[\array_rand($investmentCountryOptions)];
+                $aidIntensityOption         = $aidIntensityOptions[\array_rand($aidIntensityOptions)];
+                $additionalGuarantyOption   = $additionalGuarantyOptions[\array_rand($additionalGuarantyOptions)];
+                $agriculturalBranchOption   = $agriculturalBranchOptions[\array_rand($agriculturalBranchOptions)];
+
                 return [
-                    FieldAlias::INVESTMENT_THEMATIC => $this->programChoiceOptionRepository->findBy([
-                        'program' => $program,
-                        'field'   => $this->fieldRepository->findOneBy([
-                            'fieldAlias' => FieldAlias::INVESTMENT_THEMATIC,
-                        ]),
-                    ]),
-                    FieldAlias::INVESTMENT_TYPE => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::INVESTMENT_TYPE
-                    ),
+                    FieldAlias::INVESTMENT_THEMATIC   => $investmentThematicsOptions,
+                    FieldAlias::INVESTMENT_TYPE       => $investmentTypeOption,
                     FieldAlias::PROJECT_DETAIL        => $this->faker->sentence,
                     FieldAlias::INVESTMENT_STREET     => $this->faker->streetAddress,
                     FieldAlias::INVESTMENT_POST_CODE  => $this->faker->postcode,
                     FieldAlias::INVESTMENT_CITY       => $this->faker->city,
-                    FieldAlias::INVESTMENT_DEPARTMENT => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::INVESTMENT_DEPARTMENT
-                    ),
-                    FieldAlias::INVESTMENT_COUNTRY => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::INVESTMENT_COUNTRY
-                    ),
-                    FieldAlias::AID_INTENSITY => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::AID_INTENSITY
-                    ),
-                    FieldAlias::ADDITIONAL_GUARANTY => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::ADDITIONAL_GUARANTY
-                    ),
-                    FieldAlias::AGRICULTURAL_BRANCH => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::AGRICULTURAL_BRANCH
-                    ),
-                    FieldAlias::PROJECT_TOTAL_AMOUNT => new NullableMoney(
+                    FieldAlias::INVESTMENT_DEPARTMENT => $investmentDepartmentOption,
+                    FieldAlias::INVESTMENT_COUNTRY    => $investmentCountryOption,
+                    FieldAlias::AID_INTENSITY         => $aidIntensityOption,
+                    FieldAlias::ADDITIONAL_GUARANTY   => $additionalGuarantyOption,
+                    FieldAlias::AGRICULTURAL_BRANCH   => $agriculturalBranchOption,
+                    FieldAlias::PROJECT_TOTAL_AMOUNT  => new NullableMoney(
                         'EUR',
                         (string) $this->faker->randomNumber(4)
                     ),
@@ -953,38 +1134,75 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                 ];
 
             case FinancingObject::class:
+                $fieldAliases = [
+                    FieldAlias::FINANCING_OBJECT_TYPE,
+                    FieldAlias::LOAN_NAF_CODE,
+                    FieldAlias::LOAN_TYPE,
+                    FieldAlias::INVESTMENT_LOCATION,
+                    FieldAlias::PRODUCT_CATEGORY_CODE,
+                ];
+                $this->transformProgramChoiceOptions($programChoiceOptions, $fieldAliases, $program);
+
+                $financingObjectTypeOptions = $programChoiceOptions[FieldAlias::FINANCING_OBJECT_TYPE];
+                $loanNafCodeOptions         = $programChoiceOptions[FieldAlias::LOAN_NAF_CODE];
+                $loanTypeOptions            = $programChoiceOptions[FieldAlias::LOAN_TYPE];
+                $investmentLocationOptions  = $programChoiceOptions[FieldAlias::INVESTMENT_LOCATION];
+                $productCategoryCodeOptions = $programChoiceOptions[FieldAlias::PRODUCT_CATEGORY_CODE];
+                $loanPeriodicityOptions     = $this->programChoiceOptionRepository->findBy([
+                    'program' => $program,
+                    'field'   => $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::LOAN_PERIODICITY]),
+                ]);
+
+                $financingObjectTypeOption = $financingObjectTypeOptions[\array_rand($financingObjectTypeOptions)];
+                $loanNafCodeOption         = $loanNafCodeOptions[\array_rand($loanNafCodeOptions)];
+                $loanTypeOption            = $loanTypeOptions[\array_rand($loanTypeOptions)];
+                $investmentLocationOption  = $investmentLocationOptions[\array_rand($investmentLocationOptions)];
+                $productCategoryCodeOption = $productCategoryCodeOptions[\array_rand($productCategoryCodeOptions)];
+                $loanPeriodicityOption     = $loanPeriodicityOptions[\array_rand($loanPeriodicityOptions)];
+
                 return [
                     FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => $this->faker->boolean,
-                    FieldAlias::FINANCING_OBJECT_TYPE          => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::FINANCING_OBJECT_TYPE
+                    FieldAlias::FINANCING_OBJECT_TYPE          => $financingObjectTypeOption,
+                    FieldAlias::LOAN_NAF_CODE                  => $loanNafCodeOption,
+                    FieldAlias::LOAN_TYPE                      => $loanTypeOption,
+                    FieldAlias::LOAN_DURATION                  => $this->faker->numberBetween(1, 24),
+                    FieldAlias::LOAN_DEFERRAL                  => $this->faker->numberBetween(0, 12),
+                    FieldAlias::LOAN_PERIODICITY               => $loanPeriodicityOption,
+                    FieldAlias::BFR_VALUE                      => new NullableMoney(
+                        'EUR',
+                        (string) $this->faker->randomNumber(5)
                     ),
-                    FieldAlias::LOAN_NAF_CODE => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::LOAN_NAF_CODE
-                    ),
-                    FieldAlias::LOAN_TYPE => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::LOAN_TYPE
-                    ),
-                    FieldAlias::LOAN_DURATION    => $this->faker->numberBetween(1, 24),
-                    FieldAlias::LOAN_DEFERRAL    => $this->faker->numberBetween(0, 12),
-                    FieldAlias::LOAN_PERIODICITY => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::LOAN_PERIODICITY
-                    ),
-                    FieldAlias::BFR_VALUE           => new NullableMoney('EUR', (string) $this->faker->randomNumber(5)),
-                    FieldAlias::INVESTMENT_LOCATION => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::INVESTMENT_LOCATION
-                    ),
-                    FieldAlias::PRODUCT_CATEGORY_CODE => $this->findProgramChoiceOption(
-                        $program,
-                        FieldAlias::PRODUCT_CATEGORY_CODE
-                    ),
+                    FieldAlias::INVESTMENT_LOCATION   => $investmentLocationOption,
+                    FieldAlias::PRODUCT_CATEGORY_CODE => $productCategoryCodeOption,
                 ];
         }
 
         return [];
+    }
+
+    private function transformProgramChoiceOptions(
+        array &$programChoiceOptions,
+        array $fieldAliases,
+        Program $program
+    ): void {
+        foreach ($programChoiceOptions as $fieldAlias => $descriptions) {
+            if (false === \in_array($fieldAlias, $fieldAliases, true)) {
+                continue;
+            }
+
+            foreach ($descriptions as $key => $description) {
+                $reference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    $fieldAlias,
+                    $key
+                );
+
+                $programChoiceOptions[$fieldAlias][$key] = $this->hasReference($reference)
+                    ? $this->getReference($reference)
+                    : null
+                ;
+            }
+        }
     }
 }

@@ -11,6 +11,7 @@ use Exception;
 use KLS\Core\DataFixtures\AbstractFixtures;
 use KLS\Core\DataFixtures\CompanyGroupFixtures;
 use KLS\Core\DataFixtures\StaffFixtures;
+use KLS\Core\Entity\CompanyGroupTag;
 use KLS\Core\Entity\Constant\CARatingType;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
@@ -19,14 +20,14 @@ use KLS\CreditGuaranty\FEI\Entity\ProgramStatus;
 
 class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    public const PROGRAM_AGRICULTURE_DRAFT          = 'program:ad';
-    public const PROGRAM_AGRICULTURE_COMMERCIALIZED = 'program:ac';
-    public const PROGRAM_AGRICULTURE_PAUSED         = 'program:ap';
-    public const PROGRAM_AGRICULTURE_ARCHIVED       = 'program:aa';
-    public const PROGRAM_CORPORATE_DRAFT            = 'program:cd';
-    public const PROGRAM_CORPORATE_COMMERCIALIZED   = 'program:cc';
-    public const PROGRAM_CORPORATE_PAUSED           = 'program:cp';
-    public const PROGRAM_CORPORATE_ARCHIVED         = 'program:ca';
+    public const PROGRAM_AGRICULTURE_DRAFT          = 'program:agriculture-draft';
+    public const PROGRAM_AGRICULTURE_COMMERCIALIZED = 'program:agriculture-commercialized';
+    public const PROGRAM_AGRICULTURE_PAUSED         = 'program:agriculture-paused';
+    public const PROGRAM_AGRICULTURE_ARCHIVED       = 'program:agriculture-archived';
+    public const PROGRAM_CORPORATE_DRAFT            = 'program:corporate-draft';
+    public const PROGRAM_CORPORATE_COMMERCIALIZED   = 'program:corporate-commercialized';
+    public const PROGRAM_CORPORATE_PAUSED           = 'program:corporate-paused';
+    public const PROGRAM_CORPORATE_ARCHIVED         = 'program:corporate-archived';
 
     public const ALL_PROGRAMS = [
         self::PROGRAM_AGRICULTURE_DRAFT,
@@ -77,37 +78,34 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     private function loadData(): iterable
     {
+        $staff = $this->getReference(StaffFixtures::CASA);
+
         // we create a cancelled program for only this two companyGroupTags because these are valid
         // (cf Program::isCompanyGroupTagValid)
-        $companyGroupTagReferences = [CompanyGroupFixtures::AGRICULTURE, CompanyGroupFixtures::CORPORATE];
+        $companyGroupTags = $this->getReferences([
+            CompanyGroupFixtures::AGRICULTURE,
+            CompanyGroupFixtures::CORPORATE,
+        ]);
 
-        foreach ($companyGroupTagReferences as $companyGroupTagReference) {
-            $companyGroupTagName = \mb_substr(
-                $companyGroupTagReference,
-                \mb_strrpos($companyGroupTagReference, '_') + 1
-            );
+        /** @var CompanyGroupTag $companyGroupTag */
+        foreach ($companyGroupTags as $companyGroupTag) {
+            $companyGroupTagCode = $companyGroupTag->getCode();
 
-            yield \sprintf('program:%sd', \mb_substr($companyGroupTagName, 0, 1)) => [
-                'name' => \sprintf(
-                    'Programme %sD',
-                    \mb_strtoupper(\mb_substr($companyGroupTagName, 0, 1))
-                ),
+            yield \sprintf('program:%s-draft', $companyGroupTagCode) => [
+                'name'                 => \sprintf('Programme %sD', \mb_strtoupper($companyGroupTagCode)),
                 'description'          => $this->faker->sentence,
-                'addedBy'              => $this->getReference(StaffFixtures::CASA),
-                'companyGroupTag'      => $this->getReference($companyGroupTagReference),
+                'addedBy'              => $staff,
+                'companyGroupTag'      => $companyGroupTag,
                 'cappedAt'             => \random_int(10, 40) / 100,
                 'funds'                => new Money('EUR', (string) 100000000),
                 'distributionDeadline' => new DateTimeImmutable(),
                 'currentStatus'        => ProgramStatus::STATUS_DRAFT,
             ];
-            yield \sprintf('program:%sc', \mb_substr($companyGroupTagName, 0, 1)) => [
-                'name' => \sprintf(
-                    'Programme %sC',
-                    \mb_strtoupper(\mb_substr($companyGroupTagName, 0, 1))
-                ),
+            yield \sprintf('program:%s-commercialized', $companyGroupTagCode) => [
+                'name'                 => \sprintf('Programme %sC', \mb_strtoupper($companyGroupTagCode)),
                 'description'          => $this->faker->sentence,
-                'addedBy'              => $this->getReference(StaffFixtures::CASA),
-                'companyGroupTag'      => $this->getReference($companyGroupTagReference),
+                'addedBy'              => $staff,
+                'companyGroupTag'      => $companyGroupTag,
                 'cappedAt'             => \random_int(10, 40) / 100,
                 'funds'                => new Money('EUR', (string) 300000000),
                 'distributionDeadline' => new DateTimeImmutable(),
@@ -128,14 +126,11 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'loanReleasedOnInvoice'   => $this->faker->boolean,
                 'currentStatus'           => ProgramStatus::STATUS_DISTRIBUTED,
             ];
-            yield \sprintf('program:%sp', \mb_substr($companyGroupTagName, 0, 1)) => [
-                'name' => \sprintf(
-                    'Programme %sP',
-                    \mb_strtoupper(\mb_substr($companyGroupTagName, 0, 1))
-                ),
+            yield \sprintf('program:%s-paused', $companyGroupTagCode) => [
+                'name'                 => \sprintf('Programme %sP', \mb_strtoupper($companyGroupTagCode)),
                 'description'          => $this->faker->sentence,
-                'addedBy'              => $this->getReference(StaffFixtures::CASA),
-                'companyGroupTag'      => $this->getReference($companyGroupTagReference),
+                'addedBy'              => $staff,
+                'companyGroupTag'      => $companyGroupTag,
                 'cappedAt'             => \random_int(10, 40) / 100,
                 'funds'                => new Money('EUR', (string) 400000000),
                 'distributionDeadline' => new DateTimeImmutable(),
@@ -156,14 +151,11 @@ class ProgramFixtures extends AbstractFixtures implements DependentFixtureInterf
                 'loanReleasedOnInvoice'   => $this->faker->boolean,
                 'currentStatus'           => ProgramStatus::STATUS_PAUSED,
             ];
-            yield \sprintf('program:%sa', \mb_substr($companyGroupTagName, 0, 1)) => [
-                'name' => \sprintf(
-                    'Programme %sA',
-                    \mb_strtoupper(\mb_substr($companyGroupTagName, 0, 1))
-                ),
+            yield \sprintf('program:%s-archived', $companyGroupTagCode) => [
+                'name'            => \sprintf('Programme %sA', \mb_strtoupper($companyGroupTagCode)),
                 'description'     => $this->faker->sentence,
-                'addedBy'         => $this->getReference(StaffFixtures::CASA),
-                'companyGroupTag' => $this->getReference($companyGroupTagReference),
+                'addedBy'         => $staff,
+                'companyGroupTag' => $companyGroupTag,
                 'cappedAt'        => \random_int(10, 40) / 100,
                 'funds'           => new Money('EUR', (string) 200000000),
                 'currentStatus'   => ProgramStatus::STATUS_ARCHIVED,
