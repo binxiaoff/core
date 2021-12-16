@@ -7,7 +7,6 @@ namespace KLS\Test\Syndication\Agency\Unit\Traits;
 use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
 use KLS\Core\Entity\Constant\LegalForm;
-use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Syndication\Agency\Entity\Agent;
 use KLS\Syndication\Agency\Entity\AgentMember;
 use KLS\Syndication\Agency\Entity\Borrower;
@@ -56,7 +55,6 @@ trait ProjectMemberSetTrait
                 $this->createAgencyProject($staff),
                 'Borrower Name',
                 LegalForm::SA,
-                new NullableMoney(),
                 'Head office',
                 '042424242'
             ),
@@ -107,7 +105,6 @@ trait ProjectMemberSetTrait
             $project,
             'Borrower Name',
             LegalForm::SA,
-            new NullableMoney(),
             'Head office',
             '042424242'
         ));

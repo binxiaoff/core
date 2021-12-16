@@ -11,7 +11,6 @@ use KLS\Core\Entity\Constant\LegalForm;
 use KLS\Core\Entity\Constant\LoanType;
 use KLS\Core\Entity\Embeddable\LendingRate;
 use KLS\Core\Entity\Embeddable\Money;
-use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Syndication\Agency\Entity\Borrower;
 use KLS\Syndication\Agency\Entity\Covenant;
 use KLS\Syndication\Agency\Entity\Participation;
@@ -28,7 +27,6 @@ abstract class AbstractProjectFixtures extends AbstractFixtures implements Depen
             $project,
             'Michelin',
             LegalForm::SARL,
-            new NullableMoney('eur', '40000000'),
             '50, rue de la Boetie 75008 Paris',
             '514919844'
         );

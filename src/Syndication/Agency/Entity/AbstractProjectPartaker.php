@@ -89,27 +89,20 @@ abstract class AbstractProjectPartaker
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
-    protected ?bool $variableCapital;
+    protected ?bool $variableCapital = null;
 
     /**
      * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
     private NullableMoney $capital;
 
-    public function __construct(
-        string $matriculationNumber,
-        ?NullableMoney $capital = null
-    ) {
-        $this->capital             = (null !== $capital && $capital->isValid()) ? $capital : new NullableMoney();
+    public function __construct(string $matriculationNumber)
+    {
+        $this->capital             = new NullableMoney();
         $this->matriculationNumber = $matriculationNumber;
-        $this->variableCapital     = !$this->capital->isValid();
         $this->rcs                 = null;
         $this->added               = new DateTimeImmutable();
         $this->setPublicId();
