@@ -68,7 +68,6 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:participation:write",
- *                     "agency:projectPartaker:write",
  *                     "nullableMoney:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write",
@@ -287,15 +286,9 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
      */
     private ?DateTimeImmutable $archivingDate;
 
-    public function __construct(
-        ParticipationPool $pool,
-        Company $participant,
-        ?NullableMoney $capital = null
-    ) {
-        parent::__construct(
-            $participant->getSiren() ?? '',
-            $capital ?? new NullableMoney($pool->getProject()->getCurrency(), '0')
-        );
+    public function __construct(ParticipationPool $pool, Company $participant)
+    {
+        parent::__construct($participant->getSiren() ?? '');
         $this->pool                     = $pool;
         $this->participant              = $participant;
         $this->prorata                  = false;
@@ -742,7 +735,7 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
      */
     public function hasVariableCapital(): ?bool
     {
-        return $this->variableCapital;
+        return parent::hasVariableCapital();
     }
 
     /**
@@ -750,8 +743,6 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
      */
     public function setVariableCapital(?bool $variableCapital): AbstractProjectPartaker
     {
-        $this->variableCapital = $variableCapital;
-
-        return $this;
+        return parent::setVariableCapital($variableCapital);
     }
 }

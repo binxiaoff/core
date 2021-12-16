@@ -425,7 +425,7 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
      */
     public function hasVariableCapital(): ?bool
     {
-        return $this->variableCapital;
+        return parent::hasVariableCapital();
     }
 
     /**
@@ -433,8 +433,6 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
      */
     public function setVariableCapital(?bool $variableCapital): AbstractProjectPartaker
     {
-        $this->variableCapital = $variableCapital;
-
-        return $this;
+        return parent::setVariableCapital($variableCapital);
     }
 }
