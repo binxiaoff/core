@@ -48,6 +48,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:financingObject:update",
+ *                     "money:write",
+ *                     "nullableMoney:write",
+ *                 },
+ *                 "openapi_definition_name": "item-patch-update",
+ *             },
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)",
@@ -118,7 +126,7 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @Assert\NotBlank(allowNull=true)
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:update:formalized"})
      */
     private ?string $loanNumber = null;
 
@@ -127,7 +135,7 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @Assert\NotBlank(allowNull=true)
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:update:formalized"})
      */
     private ?string $operationNumber = null;
 
@@ -190,7 +198,7 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @Assert\GreaterThanOrEqual(1)
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:update:formalized"})
      */
     private ?int $newMaturity = null;
 
@@ -206,7 +214,7 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     /**
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:update:formalized"})
      */
     private NullableMoney $loanMoneyAfterContractualisation;
 
@@ -222,7 +230,7 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @ORM\Embedded(class="KLS\Core\Entity\Embeddable\NullableMoney")
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:update:formalized"})
      */
     private NullableMoney $remainingCapital;
 
@@ -249,28 +257,28 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:update:formalized"})
      */
     private ?DateTimeImmutable $firstReleaseDate = null;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:update:formalized"})
      */
     private ?DateTimeImmutable $reportingFirstDate = null;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:update:formalized"})
      */
     private ?DateTimeImmutable $reportingLastDate = null;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
+     * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:update:formalized"})
      */
     private ?DateTimeImmutable $reportingValidationDate = null;
 

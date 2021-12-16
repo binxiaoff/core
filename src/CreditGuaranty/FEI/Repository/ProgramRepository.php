@@ -59,13 +59,13 @@ class ProgramRepository extends ServiceEntityRepository
     public function sumProjectsAmounts(Program $program, array $reservationStatus): NullableMoney
     {
         $queryBuilder = $this->createQueryBuilder('program')
-            ->select('SUM(project.fundingMoney.amount) AS amount, project.fundingMoney.currency AS currency')
+            ->select('SUM(project.totalFeiCredit.amount) AS amount, project.totalFeiCredit.currency AS currency')
             ->innerJoin('program.reservations', 'r')
             ->innerJoin('r.project', 'project')
             ->innerJoin('r.currentStatus', 'cs')
             ->where('program = :program')
             ->andWhere('cs.status in (:status)')
-            ->groupBy('project.fundingMoney.currency')
+            ->groupBy('project.totalFeiCredit.currency')
             ->setParameter('program', $program)
             ->setParameter('status', $reservationStatus)
         ;

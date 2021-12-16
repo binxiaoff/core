@@ -29,16 +29,27 @@ class FieldAlias extends AbstractEnum
     public const LOAN_NAF_CODE         = 'loan_naf_code';
     public const LOAN_TYPE             = 'loan_type';
     public const PRODUCT_CATEGORY_CODE = 'product_category_code';
+    public const TARGET_TYPE           = 'target_type';
 
     // Pre-defined list
     public const LOAN_PERIODICITY = 'loan_periodicity';
 
     // Boolean
-    public const CREATION_IN_PROGRESS           = 'creation_in_progress';
-    public const RECEIVING_GRANT                = 'receiving_grant';
-    public const SUBSIDIARY                     = 'subsidiary';
-    public const SUPPORTING_GENERATIONS_RENEWAL = 'supporting_generations_renewal';
-    public const YOUNG_FARMER                   = 'young_farmer';
+    public const BENEFITING_PROFIT_TRANSFER                        = 'benefiting_profit_transfer';
+    public const CREATION_IN_PROGRESS                              = 'creation_in_progress';
+    public const ECONOMICALLY_VIABLE                               = 'economically_viable';
+    public const IN_NON_COOPERATIVE_JURISDICTION                   = 'in_non_cooperative_jurisdiction';
+    public const LISTED_ON_STOCK_MARKET                            = 'listed_on_stock_market';
+    public const LOAN_ALLOWED_REFINANCE_RESTRUCTURE                = 'loan_allowed_refinance_restructure';
+    public const LOAN_SUPPORTING_DOCUMENTS_DATES_AFTER_APPLICATION = 'loan_supporting_documents_dates_after_application';
+    public const PROJECT_RECEIVED_FEAGA_OCM_FUNDING                = 'project_received_feaga_ocm_funding';
+    public const RECEIVING_GRANT                                   = 'receiving_grant';
+    public const SUBJECT_OF_RESTRUCTURING_PLAN                     = 'subject_of_restructuring_plan';
+    public const SUBJECT_OF_UNPERFORMED_RECOVERY_ORDER             = 'subject_of_unperformed_recovery_order';
+    public const SUBSIDIARY                                        = 'subsidiary';
+    public const SUPPORTING_GENERATIONS_RENEWAL                    = 'supporting_generations_renewal';
+    public const TRANSACTION_AFFECTED                              = 'transaction_affected';
+    public const YOUNG_FARMER                                      = 'young_farmer';
 
     // Other
     public const ACTIVITY_CITY         = 'activity_city';
@@ -51,8 +62,7 @@ class FieldAlias extends AbstractEnum
     public const INVESTMENT_DEPARTMENT = 'investment_department';
     public const INVESTMENT_POST_CODE  = 'investment_post_code';
     public const INVESTMENT_STREET     = 'investment_street';
-    public const SIRET                 = 'siret';
-    public const TAX_NUMBER            = 'tax_number';
+    public const REGISTRATION_NUMBER   = 'registration_number';
     // number
     public const BFR_VALUE             = 'bfr_value';
     public const CREDIT_EXCLUDING_FEI  = 'credit_excluding_fei';
@@ -91,11 +101,26 @@ class FieldAlias extends AbstractEnum
         self::LOAN_NAF_CODE,
         self::LOAN_PERIODICITY,
         self::LOAN_TYPE,
+        self::PRODUCT_CATEGORY_CODE,
+        self::TARGET_TYPE,
     ];
 
     public const NAF_NACE_FIELDS = [
         self::COMPANY_NAF_CODE => 'company_nace_code',
         self::LOAN_NAF_CODE    => 'loan_nace_code',
+    ];
+
+    public const ESB_RELATED_FIELDS = [
+        self::AID_INTENSITY,
+        self::LOAN_DURATION,
+        self::LOAN_MONEY,
+        self::PROJECT_GRANT,
+        self::TOTAL_FEI_CREDIT,
+    ];
+
+    public const CREATION_IN_PROGRESS_RELATED_FIELDS = [
+        self::ACTIVITY_START_DATE,
+        self::REGISTRATION_NUMBER,
     ];
 
     //

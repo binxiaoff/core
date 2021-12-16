@@ -106,6 +106,7 @@ class Covenant
 
     public const RECURRENCE_1M  = 'P1M';
     public const RECURRENCE_3M  = 'P3M';
+    public const RECURRENCE_4M  = 'P4M';
     public const RECURRENCE_6M  = 'P6M';
     public const RECURRENCE_12M = 'P12M';
 
@@ -200,7 +201,10 @@ class Covenant
     /**
      * @var CovenantRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=CovenantRule::class, mappedBy="covenant", indexBy="year", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToMany(
+     *     targetEntity=CovenantRule::class,
+     *     mappedBy="covenant",
+     * indexBy="year", cascade={"persist", "remove"}, orphanRemoval=true)
      * @ORM\OrderBy({"year": "ASC"})
      *
      * @Assert\Valid
@@ -248,7 +252,8 @@ class Covenant
     /**
      * @var MarginRule[]|Collection
      *
-     * @ORM\OneToMany(targetEntity=MarginRule::class, mappedBy="covenant", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToMany(
+     * targetEntity=MarginRule::class, mappedBy="covenant", cascade={"persist", "remove"}, orphanRemoval=true)
      *
      * @Assert\Valid
      * @Assert\AtLeastOneOf({
@@ -266,8 +271,14 @@ class Covenant
     /**
      * @throws Exception
      */
-    public function __construct(Project $project, string $name, string $nature, DateTimeImmutable $startDate, int $delay, DateTimeImmutable $endDate)
-    {
+    public function __construct(
+        Project $project,
+        string $name,
+        string $nature,
+        DateTimeImmutable $startDate,
+        int $delay,
+        DateTimeImmutable $endDate
+    ) {
         $this->project         = $project;
         $this->name            = $name;
         $this->nature          = $nature;
@@ -419,7 +430,8 @@ class Covenant
 
     public function addCovenantRule(CovenantRule $covenantRule): Covenant
     {
-        $this->covenantRules[$covenantRule->getYear()] = $this->covenantRules[$covenantRule->getYear()] ?? $covenantRule;
+        $this->covenantRules[$covenantRule->getYear()] = $this->covenantRules[$covenantRule->getYear()]
+            ?? $covenantRule;
 
         $this->covenantRules[$covenantRule->getYear()]->setInequality($covenantRule->getInequality());
 
@@ -554,7 +566,10 @@ class Covenant
         $datePeriod = new DatePeriod($this->startDate, new DateInterval($this->recurrence), $this->endDate);
 
         foreach ($datePeriod as $termStart) {
-            $termEnd       = DateTimeImmutable::createFromFormat('U', (string) \strtotime('+' . $this->delay . ' days', $termStart->getTimestamp()));
+            $termEnd = DateTimeImmutable::createFromFormat(
+                'U',
+                (string) \strtotime('+' . $this->delay . ' days', $termStart->getTimestamp())
+            );
             $this->terms[] = new Term($this, $termStart, $termEnd);
         }
 

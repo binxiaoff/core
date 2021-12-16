@@ -52,7 +52,14 @@ trait ProjectMemberSetTrait
         $staff = $this->createStaff();
 
         $borrowerMember = new BorrowerMember(
-            new Borrower($this->createAgencyProject($staff), 'Borrower Name', LegalForm::SA, new NullableMoney(), 'Head office', '042424242'),
+            new Borrower(
+                $this->createAgencyProject($staff),
+                'Borrower Name',
+                LegalForm::SA,
+                new NullableMoney(),
+                'Head office',
+                '042424242'
+            ),
             $staff->getUser()
         );
         $this->forcePropertyValue($borrowerMember, 'id', 2);
@@ -96,7 +103,14 @@ trait ProjectMemberSetTrait
 
         // init borrowers
         $borrowersCollection = new ArrayCollection();
-        $borrowersCollection->add(new Borrower($project, 'Borrower Name', LegalForm::SA, new NullableMoney(), 'Head office', '042424242'));
+        $borrowersCollection->add(new Borrower(
+            $project,
+            'Borrower Name',
+            LegalForm::SA,
+            new NullableMoney(),
+            'Head office',
+            '042424242'
+        ));
         $this->forcePropertyValue($project, 'borrowers', $borrowersCollection);
 
         // init participationPools primary

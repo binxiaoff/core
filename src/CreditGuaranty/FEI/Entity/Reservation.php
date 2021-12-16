@@ -120,7 +120,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "method": "GET",
  *             "path": "credit_guaranty/reservations/{publicId}/ineligibilities",
  *             "controller": EligibilityChecking::class,
- *             "security": "is_granted('edit', object)",
+ *             "security": "is_granted('check_eligibility', object)",
  *             "openapi_context": {
  *                 "parameters": {
  *                     {
@@ -148,6 +148,12 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
+ *             "denormalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:reservation:create"
+ *                 },
+ *                 "openapi_definition_name": "item-post-create",
+ *             },
  *         },
  *         "get",
  *         "api_credit_guaranty_programs_reservations_get_subresource": {
@@ -174,14 +180,18 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Program", inversedBy="reservations")
      * @ORM\JoinColumn(name="id_program", nullable=false)
      *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:create"})
      */
     private Program $program;
 
     /**
      * @ORM\Column(type="string", nullable=true)
      *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     * @Groups({
+     *     "creditGuaranty:reservation:read",
+     *     "creditGuaranty:reservation:create",
+     *     "creditGuaranty:reservation:update:draft"
+     * })
      */
     private ?string $name;
 
@@ -276,7 +286,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     /**
      * @ORM\Column(type="date_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:write"})
+     * @Groups({"creditGuaranty:reservation:read", "creditGuaranty:reservation:update:accepted"})
      */
     private ?DateTimeImmutable $signingDate = null;
 

@@ -11,16 +11,28 @@ class FinancingObjectReleaseVoter extends AbstractEntityVoter
 {
     protected function canCreate(FinancingObjectRelease $financingObjectRelease): bool
     {
-        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $financingObjectRelease->getReservation());
+        $reservation = $financingObjectRelease->getReservation();
+
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $reservation)
+            && $reservation->isFormalized()
+        ;
     }
 
     protected function canView(FinancingObjectRelease $financingObjectRelease): bool
     {
-        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_VIEW, $financingObjectRelease->getReservation());
+        $reservation = $financingObjectRelease->getReservation();
+
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_VIEW, $reservation)
+            && $reservation->isFormalized()
+        ;
     }
 
     protected function canEdit(FinancingObjectRelease $financingObjectRelease): bool
     {
-        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $financingObjectRelease->getReservation());
+        $reservation = $financingObjectRelease->getReservation();
+
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $reservation)
+            && $reservation->isFormalized()
+        ;
     }
 }

@@ -33,8 +33,10 @@ use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
 use KLS\Core\Validator\Constraints\PreviousValue;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Download;
+use KLS\CreditGuaranty\FEI\Controller\Reporting\FinancingObject\BulkUpdate;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Update;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\DeepCloneInterface;
+use KLS\CreditGuaranty\FEI\Validator\Constraints\IsGrossSubsidyEquivalentConfigured;
 use LogicException;
 use RuntimeException;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -136,6 +138,89 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "input_formats": { "xlsx" },
  *             "deserialize": false,
  *         },
+ *         "bulk_update_financing_objects": {
+ *             "method": "PATCH",
+ *             "controller": BulkUpdate::class,
+ *             "path": "/credit_guaranty/programs/{publicId}/financing_objects",
+ *             "security": "is_granted('reporting', object)",
+ *             "output": false,
+ *             "openapi_context": {
+ *                 "parameters": {
+ *                     {
+ *                         "in": "query",
+ *                         "name": "id",
+ *                         "type": "integer",
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "id[]",
+ *                         "schema": {
+ *                             "type": "array",
+ *                             "items": {"type": "integer"},
+ *                             "collectionFormat": "multi",
+ *                         },
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "itemsPerPage",
+ *                         "type": "integer",
+ *                         "description": "The items number per page (100 by default)",
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "page",
+ *                         "type": "integer",
+ *                         "description": "The page number (1 by default)",
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "search",
+ *                         "type": "string",
+ *                         "description": "The search filter on text values of reporting",
+ *                         "required": false,
+ *                     },
+ *                     {
+ *                         "in": "query",
+ *                         "name": "order",
+ *                         "schema": {
+ *                             "type": "object",
+ *                         },
+ *                         "style": "deepObject",
+ *                         "explode": true,
+ *                         "description": "The order filter (i.e. order[field_alias]=direction)",
+ *                         "required": false,
+ *                     },
+ *                 },
+ *                 "requestBody": {
+ *                     "content": {
+ *                         "application/x-www-form-urlencoded": {
+ *                             "schema": {
+ *                                 "type": "object",
+ *                                 "properties": {
+ *                                     "reportingFirstDate": {"type": "date"},
+ *                                     "reportingLastDate": {"type": "date"},
+ *                                     "reportingValidationDate": {"type": "date"},
+ *                                 },
+ *                             },
+ *                         },
+ *                     },
+ *                 },
+ *                 "responses": {
+ *                     "200": {
+ *                         "description": "OK",
+ *                         "content": {
+ *                             "application/json": {
+ *                                 "schema": {"type": "object"},
+ *                             },
+ *                         },
+ *                     },
+ *                 },
+ *             },
+ *         },
  *     },
  *     collectionOperations={
  *         "post": {
@@ -228,11 +313,11 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     private CompanyGroupTag $companyGroupTag;
 
     /**
-     * @ORM\Column(type="decimal", precision=3, scale=2, nullable=true)
+     * @ORM\Column(type="decimal", precision=5, scale=4, nullable=true)
      *
      * @Assert\Type("numeric")
      * @Assert\PositiveOrZero
-     * @Assert\Range(min="0", max="0.99")
+     * @Assert\Range(min="0", max="0.9999")
      * @Assert\AtLeastOneOf({
      *     @Assert\Expression("this.isInDraft()", message="CreditGuaranty.Program.cappedAt.draft"),
      *     @Assert\Sequentially({
@@ -347,6 +432,8 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @IsGrossSubsidyEquivalentConfigured
      *
      * @Groups({"creditGuaranty:program:read", "creditGuaranty:program:write"})
      */

@@ -72,7 +72,10 @@ class FinancingObjectRelease implements ProgramAwareInterface
      *     @Assert\Expression("null === this.getProgram().isLoanReleasedOnInvoice()"),
      *     @Assert\Expression("false === this.getProgram().isLoanReleasedOnInvoice()"),
      *     @Assert\Expression("true === this.getProgram().isLoanReleasedOnInvoice() && false === value.isNull()")
-     * }, message="CreditGuaranty.Reservation.financingObjectRelease.invoiceMoney.requiredForLoanReleasedOnInvoice", includeInternalMessages=false)
+     * },
+     * message="CreditGuaranty.Reservation.financingObjectRelease.invoiceMoney.requiredForLoanReleasedOnInvoice",
+     * includeInternalMessages=false
+     * )
      *
      * @Groups({"creditGuaranty:financingObjectRelease:read", "creditGuaranty:financingObjectRelease:write"})
      */
@@ -85,7 +88,10 @@ class FinancingObjectRelease implements ProgramAwareInterface
      *     @Assert\Expression("null === this.getProgram().isLoanReleasedOnInvoice()"),
      *     @Assert\Expression("false === this.getProgram().isLoanReleasedOnInvoice()"),
      *     @Assert\Expression("true === this.getProgram().isLoanReleasedOnInvoice() && false === value.isNull()")
-     * }, message="CreditGuaranty.Reservation.financingObjectRelease.achievementMoney.requiredForLoanReleasedOnInvoice", includeInternalMessages=false)
+     * },
+     * message="CreditGuaranty.Reservation.financingObjectRelease.achievementMoney.requiredForLoanReleasedOnInvoice",
+     * includeInternalMessages=false
+     * )
      *
      * @Groups({"creditGuaranty:financingObjectRelease:read", "creditGuaranty:financingObjectRelease:write"})
      */

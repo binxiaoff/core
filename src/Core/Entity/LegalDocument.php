@@ -51,7 +51,7 @@ class LegalDocument
     public const TYPE_SERVICE_TERMS = 1;
 
     // TODO CALS-4049 Should not use id here
-    public const CURRENT_SERVICE_TERMS_ID = 3;
+    public const CURRENT_SERVICE_TERMS_ID = 4;
 
     /**
      * @ORM\Column(type="smallint")

@@ -458,6 +458,42 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             $participantShortCode = \mb_strtolower(\array_pop($participationParts));
             $referenceSuffix      = \sprintf('%s_%s', $program->getId(), $participantShortCode);
 
+            $initFinancingObjects = [
+                [
+                    FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                    FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                    FieldAlias::LOAN_DURATION                  => 50,
+                ],
+                [
+                    FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                    FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
+                    FieldAlias::LOAN_DURATION                  => 30,
+                ],
+                [
+                    FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                    FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
+                    FieldAlias::LOAN_DURATION                  => 12,
+                ],
+                [
+                    FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                    FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
+                    FieldAlias::LOAN_DURATION                  => 48,
+                ],
+                [
+                    FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
+                    FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
+                    FieldAlias::LOAN_DURATION                  => 70,
+                ],
+            ];
+
+            $financingObjects = [];
+
+            foreach (\range(1, 20) as $index) {
+                foreach ($initFinancingObjects as $financingObject) {
+                    $financingObjects[] = $financingObject;
+                }
+            }
+
             foreach (\range(1, 10) as $index) {
                 yield \sprintf('%s_%s_%s', self::RESERVATION_CONTRACT_FORMALIZED, $referenceSuffix, $index) => [
                     'name'     => \sprintf('Reservation contractualisée %s (%s)', $index, $participantShortCode),
@@ -479,35 +515,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                         FieldAlias::TANGIBLE_FEI_CREDIT   => 1000,
                         FieldAlias::INTANGIBLE_FEI_CREDIT => 300,
                     ],
-                    'financingObjects' => [
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                            FieldAlias::LOAN_DURATION                  => 50,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::SHORT_TERM,
-                            FieldAlias::LOAN_DURATION                  => 30,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::REVOLVING_CREDIT,
-                            FieldAlias::LOAN_DURATION                  => 12,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::SIGNATURE_COMMITMENT,
-                            FieldAlias::LOAN_DURATION                  => 48,
-                        ],
-                        [
-                            FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
-                            FieldAlias::LOAN_TYPE                      => LoanType::TERM_LOAN,
-                            FieldAlias::LOAN_DURATION                  => 70,
-                        ],
-                    ],
-                    'addedBy'       => $staff,
-                    'currentStatus' => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
+                    'financingObjects' => $financingObjects,
+                    'addedBy'          => $staff,
+                    'currentStatus'    => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
                 ];
             }
         }
@@ -554,9 +564,10 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
     private function withBorrower(Reservation $reservation, array $data): void
     {
         $program = $reservation->getProgram();
-        $grades  = $program->getProgramGradeAllocations()->map(
-            fn (ProgramGradeAllocation $item) => $item->getGrade()
-        )->toArray();
+        $grades  = $program->getProgramGradeAllocations()
+            ->map(fn (ProgramGradeAllocation $item) => $item->getGrade())
+            ->toArray()
+        ;
 
         $reservation->getBorrower()
             ->setBeneficiaryName($this->faker->name)
@@ -564,10 +575,19 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setYoungFarmer($data[FieldAlias::YOUNG_FARMER])
             ->setCreationInProgress($data[FieldAlias::CREATION_IN_PROGRESS])
             ->setSubsidiary($this->faker->boolean)
+            ->setEconomicallyViable($this->faker->boolean)
+            ->setListedOnStockMarket($this->faker->boolean)
+            ->setBenefitingProfitTransfer($this->faker->boolean)
+            ->setInNonCooperativeJurisdiction($this->faker->boolean)
+            ->setSubjectOfUnperformedRecoveryOrder($this->faker->boolean)
+            ->setSubjectOfRestructuringPlan($this->faker->boolean)
+            ->setProjectReceivedFeagaOcmFunding($this->faker->boolean)
+            ->setLoanSupportingDocumentsDatesAfterApplication($this->faker->boolean)
+            ->setLoanAllowedRefinanceRestructure($this->faker->boolean)
+            ->setTransactionAffected($this->faker->boolean)
             ->setCompanyName($this->faker->company)
             ->setActivityStartDate(new DateTimeImmutable())
-            ->setSiret((string) $this->faker->numberBetween(10000, 99999))
-            ->setTaxNumber('12 23 45 678 987')
+            ->setRegistrationNumber('12 23 45 678 987')
             ->setLegalForm(
                 $this->findProgramChoiceOption($program, FieldAlias::LEGAL_FORM, $data[FieldAlias::LEGAL_FORM])
             )
@@ -581,6 +601,7 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setExploitationSize($this->findProgramChoiceOption($program, FieldAlias::EXPLOITATION_SIZE))
             ->setTurnover(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
             ->setTotalAssets(new NullableMoney('EUR', (string) $this->faker->randomNumber()))
+            ->setTargetType($this->findProgramChoiceOption($program, FieldAlias::TARGET_TYPE))
             ->setGrade($grades[\array_rand($grades)])
         ;
     }

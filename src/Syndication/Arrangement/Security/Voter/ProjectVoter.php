@@ -19,6 +19,7 @@ class ProjectVoter extends AbstractEntityVoter
     public const ATTRIBUTE_VIEW_NDA   = 'view_nda';
     public const ATTRIBUTE_ADMIN_VIEW = 'admin_view';
     public const ATTRIBUTE_COMMENT    = 'comment';
+    public const ATTRIBUTE_EXPORT     = 'export';
 
     private ProjectParticipationRepository $projectParticipationRepository;
     private ProjectManager $projectManager;
@@ -75,7 +76,10 @@ class ProjectVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_VIEW, $project->getArrangerProjectParticipation())
+            && $this->authorizationChecker->isGranted(
+                ProjectParticipationVoter::ATTRIBUTE_VIEW,
+                $project->getArrangerProjectParticipation()
+            )
             && $project->getArranger() === $staff->getCompany();
     }
 
@@ -106,7 +110,10 @@ class ProjectVoter extends AbstractEntityVoter
         $staff = $user->getCurrentStaff();
 
         return $staff
-            && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $project->getArrangerProjectParticipation())
+            && $this->authorizationChecker->isGranted(
+                ProjectParticipationVoter::ATTRIBUTE_EDIT,
+                $project->getArrangerProjectParticipation()
+            )
             && ProjectStatus::STATUS_SYNDICATION_CANCELLED !== $project->getCurrentStatus()->getStatus();
     }
 
@@ -122,8 +129,30 @@ class ProjectVoter extends AbstractEntityVoter
         // (That is the normal case : we cannot in any case delete arranger participation)
         // We need a little be more flexibility on this case
         return $staff
-            && $this->authorizationChecker->isGranted(ProjectParticipationVoter::ATTRIBUTE_EDIT, $project->getArrangerProjectParticipation())
+            && $this->authorizationChecker->isGranted(
+                ProjectParticipationVoter::ATTRIBUTE_EDIT,
+                $project->getArrangerProjectParticipation()
+            )
             && ProjectStatus::STATUS_DRAFT === $project->getCurrentStatus()->getStatus();
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return bool
+     */
+    protected function canExport(Project $project, User $user)
+    {
+        $agent = $project->getAgent();
+
+        $staff = $user->getCurrentStaff();
+
+        $company = $staff ? $staff->getCompany() : null;
+
+        return $this->authorizationChecker->isGranted(static::ATTRIBUTE_VIEW, $project)
+            && $project->isFinished()
+            && $company
+            && ($project->getArranger() === $company || ($agent && $agent->getCompany() === $company));
     }
 
     /**

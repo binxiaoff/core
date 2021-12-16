@@ -15,6 +15,10 @@ services:
     tags:
       - { name: doctrine.event_listener, event: onFlush }
 
+  KLS\CreditGuaranty\FEI\Listener\Doctrine\ProgramEligibilityDeleteListener:
+    tags:
+      - { name: doctrine.event_listener, event: onFlush }
+
   KLS\CreditGuaranty\FEI\Listener\Doctrine\ReservationDeleteListener:
     tags:
       - { name: doctrine.event_listener, event: onFlush }

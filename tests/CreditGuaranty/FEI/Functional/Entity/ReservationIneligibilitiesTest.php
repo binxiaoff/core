@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @internal
  */
-class ReservationCheckInegibilitiesTest extends AbstractApiTest
+class ReservationIneligibilitiesTest extends AbstractApiTest
 {
     private const ENDPOINT_RESERVATION_INELIGIBILITIES = '/credit_guaranty/reservations/{publicId}/ineligibilities';
 
@@ -30,7 +30,7 @@ class ReservationCheckInegibilitiesTest extends AbstractApiTest
     }
 
     /**
-     * @dataProvider successfullProvider
+     * @dataProvider reservationsProvider
      */
     public function testGetReservationIneligibilities(
         string $staffPublicId,
@@ -59,154 +59,136 @@ class ReservationCheckInegibilitiesTest extends AbstractApiTest
         self::assertJsonContains(['ineligibles' => $ineligibles]);
     }
 
-    public function successfullProvider(): iterable
+    public function reservationsProvider(): iterable
     {
-        yield 'user-1 - reservation draft 2 - checking profile without conditions : ineligible' => [
+        yield 'user-1 - reservation 1 - checking without conditions : ineligible' => [
             'staff_company:basic_user-1',
-            ReservationFixtures::RESERVATION_DRAFT_2,
+            ReservationFixtures::RESERVATION_1,
             false,
             [
                 'profile' => [
                     'young_farmer',
                     'subsidiary',
                 ],
+                'project' => [
+                    'investment_street',
+                    'investment_post_code',
+                    'investment_city',
+                    'investment_department',
+                    'investment_country',
+                    'investment_thematic',
+                    'investment_type',
+                    'aid_intensity',
+                    'additional_guaranty',
+                    'agricultural_branch',
+                    'project_contribution',
+                    'eligible_fei_credit',
+                    'total_fei_credit',
+                    'tangible_fei_credit',
+                    'intangible_fei_credit',
+                    'credit_excluding_fei',
+                    'project_grant',
+                    'land_value',
+                ],
+                'loan' => [],
             ],
-            'profile',
+            null,
         ];
-        yield 'user-2 - reservation sent 1 - checking profile without conditions : eligible' => [
-            'staff_company:basic_user-2',
-            ReservationFixtures::RESERVATION_SENT_1,
-            false,
-            [],
-            'profile',
-        ];
-        yield 'user-2 - reservation sent 1 - checking profile with conditions : eligible' => [
-            'staff_company:basic_user-2',
-            ReservationFixtures::RESERVATION_SENT_1,
-            true,
-            [],
-            'profile',
-        ];
-        yield 'user-3 - reservation sent 1 - checking project without conditions : eligible' => [
-            'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_SENT_1,
-            false,
-            [],
-            'project',
-        ];
-        yield 'user-3 - reservation sent 1 - checking project with conditions : ineligible' => [
-            'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_SENT_1,
+        yield 'user-1 - reservation 1 - checking with conditions : ineligible' => [
+            'staff_company:basic_user-1',
+            ReservationFixtures::RESERVATION_1,
             true,
             [
-                'project' => [
-                    'investment_thematic',
-                    'total_fei_credit',
+                'profile' => [
+                    'young_farmer',
+                    'subsidiary',
+                    'turnover',
                 ],
+                'project' => [
+                    'investment_street',
+                    'investment_post_code',
+                    'investment_city',
+                    'investment_department',
+                    'investment_country',
+                    'investment_thematic',
+                    'investment_type',
+                    'aid_intensity',
+                    'additional_guaranty',
+                    'agricultural_branch',
+                    'project_contribution',
+                    'eligible_fei_credit',
+                    'total_fei_credit',
+                    'tangible_fei_credit',
+                    'intangible_fei_credit',
+                    'credit_excluding_fei',
+                    'project_grant',
+                    'land_value',
+                ],
+                'loan' => [],
             ],
+            null,
+        ];
+        yield 'user-2 - reservation 2 - checking profile without conditions : eligible' => [
+            'staff_company:basic_user-2',
+            ReservationFixtures::RESERVATION_2,
+            false,
+            [],
+            'profile',
+        ];
+        yield 'user-2 - reservation 2 - checking profile with conditions : eligible' => [
+            'staff_company:basic_user-2',
+            ReservationFixtures::RESERVATION_2,
+            true,
+            [],
+            'profile',
+        ];
+        yield 'user-3 - reservation 2 - checking project without conditions : eligible' => [
+            'staff_company:basic_user-3',
+            ReservationFixtures::RESERVATION_2,
+            false,
+            [],
             'project',
         ];
-        yield 'user-5 - reservation sent 1 - checking loan without conditions : eligible' => [
-            'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_SENT_1,
+        yield 'user-3 - reservation 2 - checking project with conditions : ineligible' => [
+            'staff_company:basic_user-3',
+            ReservationFixtures::RESERVATION_2,
+            true,
+            ['project' => ['total_fei_credit']],
+            'project',
+        ];
+        yield 'user-4 - reservation 2 - checking loan without conditions : eligible' => [
+            'staff_company:basic_user-4',
+            ReservationFixtures::RESERVATION_2,
             false,
             [],
             'loan',
         ];
-        yield 'user-5 - reservation sent 1 - checking loan with conditions : eligible' => [
-            'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_SENT_1,
+        yield 'user-4 - reservation 2 - checking loan with conditions : eligible' => [
+            'staff_company:basic_user-4',
+            ReservationFixtures::RESERVATION_2,
             true,
             [],
             'loan',
         ];
-        yield 'user-11 - reservation sent 1 - checking conditions : ineligible' => [
-            'staff_company:basic_user-11',
-            ReservationFixtures::RESERVATION_SENT_1,
-            true,
+        yield 'user-5 - reservation 2 - checking without conditions : eligible' => [
+            'staff_company:basic_user-5',
+            ReservationFixtures::RESERVATION_2,
+            false,
             [],
             null,
         ];
-        yield 'user-3 - reservation sent 2 - checking profile without conditions : ineligible' => [
-            'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_SENT_2,
-            false,
-            [
-                'profile' => [
-                    'young_farmer',
-                    'creation_in_progress',
-                ],
-            ],
-            'profile',
-        ];
-        yield 'user-3 - reservation sent 2 - checking profile with conditions : ineligible' => [
-            'staff_company:basic_user-3',
-            ReservationFixtures::RESERVATION_SENT_2,
-            true,
-            [
-                'profile' => [
-                    'young_farmer',
-                    'creation_in_progress',
-                ],
-            ],
-            'profile',
-        ];
-        yield 'user-4 - reservation sent 2 - checking project without conditions : ineligible' => [
-            'staff_company:basic_user-4',
-            ReservationFixtures::RESERVATION_SENT_2,
-            false,
-            [
-                'project' => [
-                    'investment_thematic',
-                    'project_grant',
-                ],
-            ],
-            'project',
-        ];
-        yield 'user-4 - reservation sent 2 - checking project with conditions : ineligible' => [
-            'staff_company:basic_user-4',
-            ReservationFixtures::RESERVATION_SENT_2,
-            true,
-            [
-                'project' => [
-                    'investment_thematic',
-                    'project_grant',
-                ],
-            ],
-            'project',
-        ];
-        yield 'user-5 - reservation sent 2 - checking loan without conditions : eligible' => [
+        yield 'user-5 - reservation 2 - checking with conditions : ineligible' => [
             'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_SENT_2,
-            false,
-            [],
-            'loan',
-        ];
-        yield 'user-5 - reservation sent 2 - checking loan with conditions : ineligible' => [
-            'staff_company:basic_user-5',
-            ReservationFixtures::RESERVATION_SENT_2,
+            ReservationFixtures::RESERVATION_2,
             true,
-            [
-                'loan' => [
-                    'loan_duration',
-                ],
-            ],
-            'loan',
+            ['project' => ['total_fei_credit']],
+            null,
         ];
-        yield 'user-11 - reservation sent 2 - checking conditions : ineligible' => [
+        yield 'user-11 - reservation 3 - checking with conditions : eligible' => [
             'staff_company:basic_user-11',
-            ReservationFixtures::RESERVATION_SENT_2,
+            ReservationFixtures::RESERVATION_3,
             true,
-            [
-                'profile' => [
-                    'young_farmer',
-                    'creation_in_progress',
-                ],
-                'project' => [
-                    'investment_thematic',
-                    'project_grant',
-                ],
-            ],
+            [],
             null,
         ];
     }
@@ -237,18 +219,23 @@ class ReservationCheckInegibilitiesTest extends AbstractApiTest
 
     public function notAllowedProvider(): iterable
     {
-        foreach ([ReservationFixtures::RESERVATION_DRAFT_1, ReservationFixtures::RESERVATION_DRAFT_2] as $reservation) {
-            yield 'user-1 - ' . $reservation => [
+        foreach (ReservationFixtures::ALL_PROGRAM_COMMERCIALIZED_RESERVATIONS as $reservation) {
+            yield 'user-1 - POST - ' . $reservation => [
                 'staff_company:basic_user-1',
                 $reservation,
                 Request::METHOD_POST,
             ];
-            yield 'user-2 - ' . $reservation => [
+            yield 'user-2 - PATCH - ' . $reservation => [
                 'staff_company:basic_user-2',
                 $reservation,
                 Request::METHOD_PATCH,
             ];
-            yield 'user-3 - ' . $reservation => [
+            yield 'user-2 - PUT - ' . $reservation => [
+                'staff_company:basic_user-2',
+                $reservation,
+                Request::METHOD_PUT,
+            ];
+            yield 'user-3 - DELETE - ' . $reservation => [
                 'staff_company:basic_user-3',
                 $reservation,
                 Request::METHOD_DELETE,
@@ -288,7 +275,7 @@ class ReservationCheckInegibilitiesTest extends AbstractApiTest
 
     public function forbiddenProvider(): iterable
     {
-        foreach ([ReservationFixtures::RESERVATION_DRAFT_1, ReservationFixtures::RESERVATION_DRAFT_2] as $reservation) {
+        foreach (ReservationFixtures::ALL_PROGRAM_COMMERCIALIZED_RESERVATIONS as $reservation) {
             yield 'user-a - ' . $reservation => [
                 'staff_company:foo_user-a',
                 $reservation,

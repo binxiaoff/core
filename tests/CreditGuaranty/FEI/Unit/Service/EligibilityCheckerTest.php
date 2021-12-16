@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace KLS\Test\CreditGuaranty\FEI\Unit\Service;
 
+use DateTimeImmutable;
 use Doctrine\Common\Collections\Collection;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
@@ -553,6 +555,286 @@ class EligibilityCheckerTest extends TestCase
         yield 'loan - list type' => [
             $this->createFinancingObjectTypeField(),
             null,
+        ];
+    }
+
+    /**
+     * @covers ::check
+     *
+     * @dataProvider creationInProgressRelatedFieldsProvider
+     */
+    public function testCheckWithCreationInProgressRelatedField(
+        array $data,
+        array $expected
+    ): void {
+        $category       = 'profile';
+        $withConditions = false;
+        $program        = $this->reservation->getProgram();
+        $entity         = $this->reservation->getBorrower();
+
+        $creationInProgressData = $data[FieldAlias::CREATION_IN_PROGRESS];
+        $activityStartDateData  = $data[FieldAlias::ACTIVITY_START_DATE];
+        $registrationNumberData = $data[FieldAlias::REGISTRATION_NUMBER];
+
+        $this->withBorrower($this->reservation);
+        $this->reservation->getBorrower()
+            ->setCreationInProgress($creationInProgressData['value'])
+            ->setActivityStartDate($activityStartDateData['value'])
+            ->setRegistrationNumber($registrationNumberData['value'])
+        ;
+
+        $field1 = $this->createCreationInProgressField();
+        $field2 = $this->createActivityStartDateField();
+        $field3 = $this->createRegistrationNumberField();
+
+        $programEligibility1  = new ProgramEligibility($program, $field1);
+        $programEligibility2  = new ProgramEligibility($program, $field2);
+        $programEligibility3  = new ProgramEligibility($program, $field3);
+        $programEligibilities = [$programEligibility1, $programEligibility2, $programEligibility3];
+
+        $programEligibilityConfiguration1 = [
+            false => new ProgramEligibilityConfiguration($programEligibility1, null, '0', true),
+            true  => new ProgramEligibilityConfiguration($programEligibility1, null, '1', true),
+        ];
+        $programEligibilityConfiguration2 = new ProgramEligibilityConfiguration(
+            $programEligibility2,
+            null,
+            '0',
+            true
+        );
+        $programEligibilityConfiguration3 = new ProgramEligibilityConfiguration(
+            $programEligibility3,
+            null,
+            null,
+            true
+        );
+
+        $this->programEligibilityRepository->findByProgramAndFieldCategory($program, $category)
+            ->shouldBeCalledOnce()
+            ->willReturn($programEligibilities)
+        ;
+
+        // configuration 1 - bool
+        $this->reservationAccessor->getEntity($this->reservation, $field1)
+            ->shouldBeCalledOnce()
+            ->willReturn($entity)
+        ;
+        $this->reservationAccessor->getValue($entity, $field1)
+            ->shouldBeCalledOnce()
+            ->willReturn($creationInProgressData['value'])
+        ;
+        if ($creationInProgressData['isValueValid']) {
+            $this->programEligibilityConfigurationRepository->findOneBy([
+                'programEligibility' => $programEligibility1,
+                'value'              => $creationInProgressData['value'],
+            ])
+                ->shouldBeCalledOnce()
+                ->willReturn($programEligibilityConfiguration1[$creationInProgressData['value']])
+            ;
+        } else {
+            $this->programEligibilityConfigurationRepository->findOneBy([
+                'programEligibility' => $programEligibility1,
+                'value'              => $creationInProgressData['value'],
+            ])
+                ->shouldNotBeCalled()
+            ;
+        }
+        $this->eligibilityConditionChecker->checkByConfiguration(
+            $this->reservation,
+            $programEligibilityConfiguration1[$creationInProgressData['value']]
+        )
+            ->shouldNotBeCalled()
+        ;
+
+        // configuration 2 - other
+        $this->reservationAccessor->getEntity($this->reservation, $field2)
+            ->shouldBeCalledOnce()
+            ->willReturn($entity)
+        ;
+        $this->reservationAccessor->getValue($entity, $field2)
+            ->shouldBeCalledOnce()
+            ->willReturn($activityStartDateData['value'])
+        ;
+        if ($activityStartDateData['isValueValid']) {
+            $this->programEligibilityConfigurationRepository->findOneBy(['programEligibility' => $programEligibility2])
+                ->shouldBeCalledOnce()
+                ->willReturn($programEligibilityConfiguration2)
+            ;
+        } else {
+            $this->programEligibilityConfigurationRepository->findOneBy(['programEligibility' => $programEligibility2])
+                ->shouldNotBeCalled()
+            ;
+        }
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration2)
+            ->shouldNotBeCalled()
+        ;
+
+        // configuration 3 - other
+        $this->reservationAccessor->getEntity($this->reservation, $field3)
+            ->shouldBeCalledOnce()
+            ->willReturn($entity)
+        ;
+        $this->reservationAccessor->getValue($entity, $field3)
+            ->shouldBeCalledOnce()
+            ->willReturn($registrationNumberData['value'])
+        ;
+        if ($registrationNumberData['isValueValid']) {
+            $this->programEligibilityConfigurationRepository->findOneBy(['programEligibility' => $programEligibility3])
+                ->shouldBeCalledOnce()
+                ->willReturn($programEligibilityConfiguration3)
+            ;
+        } else {
+            $this->programEligibilityConfigurationRepository->findOneBy(['programEligibility' => $programEligibility3])
+                ->shouldNotBeCalled()
+            ;
+        }
+        $this->eligibilityConditionChecker->checkByConfiguration($this->reservation, $programEligibilityConfiguration3)
+            ->shouldNotBeCalled()
+        ;
+
+        $eligibilityChecker = $this->createTestObject();
+        $result             = $eligibilityChecker->check($this->reservation, $withConditions, $category);
+
+        static::assertSame($expected, $result);
+    }
+
+    public function creationInProgressRelatedFieldsProvider(): iterable
+    {
+        yield 'creationInProgress true - activityStartDate not null - registrationNumber not null' => [
+            [
+                FieldAlias::CREATION_IN_PROGRESS => [
+                    'value'        => true,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::ACTIVITY_START_DATE => [
+                    'value'        => new DateTimeImmutable(),
+                    'isValueValid' => true,
+                ],
+                FieldAlias::REGISTRATION_NUMBER => [
+                    'value'        => '42424242424242',
+                    'isValueValid' => true,
+                ],
+            ],
+            [],
+        ];
+        yield 'creationInProgress true - activityStartDate not null - registrationNumber null' => [
+            [
+                FieldAlias::CREATION_IN_PROGRESS => [
+                    'value'        => true,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::ACTIVITY_START_DATE => [
+                    'value'        => new DateTimeImmutable(),
+                    'isValueValid' => true,
+                ],
+                FieldAlias::REGISTRATION_NUMBER => [
+                    'value'        => null,
+                    'isValueValid' => true,
+                ],
+            ],
+            [],
+        ];
+        yield 'creationInProgress true - activityStartDate null - registrationNumber not null' => [
+            [
+                FieldAlias::CREATION_IN_PROGRESS => [
+                    'value'        => true,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::ACTIVITY_START_DATE => [
+                    'value'        => null,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::REGISTRATION_NUMBER => [
+                    'value'        => '42424242424242',
+                    'isValueValid' => true,
+                ],
+            ],
+            [],
+        ];
+        yield 'creationInProgress true - activityStartDate null - registrationNumber null' => [
+            [
+                FieldAlias::CREATION_IN_PROGRESS => [
+                    'value'        => true,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::ACTIVITY_START_DATE => [
+                    'value'        => null,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::REGISTRATION_NUMBER => [
+                    'value'        => null,
+                    'isValueValid' => true,
+                ],
+            ],
+            [],
+        ];
+        yield 'creationInProgress false - activityStartDate not null - registrationNumber not null' => [
+            [
+                FieldAlias::CREATION_IN_PROGRESS => [
+                    'value'        => false,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::ACTIVITY_START_DATE => [
+                    'value'        => new DateTimeImmutable(),
+                    'isValueValid' => true,
+                ],
+                FieldAlias::REGISTRATION_NUMBER => [
+                    'value'        => '42424242424242',
+                    'isValueValid' => true,
+                ],
+            ],
+            [],
+        ];
+        yield 'creationInProgress false - activityStartDate not null - registrationNumber null' => [
+            [
+                FieldAlias::CREATION_IN_PROGRESS => [
+                    'value'        => false,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::ACTIVITY_START_DATE => [
+                    'value'        => new DateTimeImmutable(),
+                    'isValueValid' => true,
+                ],
+                FieldAlias::REGISTRATION_NUMBER => [
+                    'value'        => null,
+                    'isValueValid' => false,
+                ],
+            ],
+            ['profile' => [FieldAlias::REGISTRATION_NUMBER]],
+        ];
+        yield 'creationInProgress false - activityStartDate null - registrationNumber not null' => [
+            [
+                FieldAlias::CREATION_IN_PROGRESS => [
+                    'value'        => false,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::ACTIVITY_START_DATE => [
+                    'value'        => null,
+                    'isValueValid' => false,
+                ],
+                FieldAlias::REGISTRATION_NUMBER => [
+                    'value'        => '42424242424242',
+                    'isValueValid' => true,
+                ],
+            ],
+            ['profile' => [FieldAlias::ACTIVITY_START_DATE]],
+        ];
+        yield 'creationInProgress false - activityStartDate null - registrationNumber null' => [
+            [
+                FieldAlias::CREATION_IN_PROGRESS => [
+                    'value'        => false,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::ACTIVITY_START_DATE => [
+                    'value'        => null,
+                    'isValueValid' => false,
+                ],
+                FieldAlias::REGISTRATION_NUMBER => [
+                    'value'        => null,
+                    'isValueValid' => false,
+                ],
+            ],
+            ['profile' => [FieldAlias::ACTIVITY_START_DATE, FieldAlias::REGISTRATION_NUMBER]],
         ];
     }
 

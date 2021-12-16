@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace KLS\Syndication\Agency\Listener\Doctrine\MessageDispatcher;
 
-use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\MessageDispatcherTrait;
+use KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\PostFlushListener;
 use KLS\Syndication\Agency\Entity\AbstractProjectMember;
 use KLS\Syndication\Agency\Message\ProjectMemberCreated;
 
 class ProjectMemberCreatedListener
 {
-    use MessageDispatcherTrait;
+    private PostFlushListener $postFlushListener;
 
-    public function postPersist(AbstractProjectMember $projectMember)
+    public function __construct(PostFlushListener $postFlushListener)
     {
-        $this->messageBus->dispatch(new ProjectMemberCreated($projectMember));
+        $this->postFlushListener = $postFlushListener;
+    }
+
+    public function postPersist(AbstractProjectMember $projectMember): void
+    {
+        $this->postFlushListener->addMessage(new ProjectMemberCreated($projectMember));
     }
 }

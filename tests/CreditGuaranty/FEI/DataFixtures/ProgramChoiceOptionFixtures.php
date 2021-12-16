@@ -7,6 +7,7 @@ namespace KLS\Test\CreditGuaranty\FEI\DataFixtures;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
@@ -14,63 +15,6 @@ use KLS\Test\Core\DataFixtures\AbstractFixtures;
 
 class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    // user-defined list type fields
-    private const FIELDS = [
-        'field-activity_department' => [
-            'department',
-        ],
-        'field-activity_country' => [
-            'FR',
-        ],
-        'field-aid_intensity' => [
-            '0.20', '0.40', '0.60', '0.80',
-        ],
-        'field-borrower_type' => [
-            'Installé',
-            'En reconversion',
-            'Agriculture',
-            'Apiculteur',
-        ],
-        'field-company_naf_code' => [
-            '0001A',
-        ],
-        'field-exploitation_size' => [
-            '42',
-        ],
-        'field-investment_country' => [
-            'FR',
-        ],
-        'field-investment_department' => [
-            'department',
-        ],
-        'field-investment_location' => [
-            'Paris',
-        ],
-        'field-investment_thematic' => [
-            'Renouvellement et installation',
-            'Mieux répondre / renforcer',
-            'Transformation',
-            'Accompagner',
-            'Mettre à niveau',
-        ],
-        'field-legal_form' => [
-            'SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS',
-        ],
-        'field-loan_naf_code' => [
-            '0001A',
-        ],
-        'field-loan_type' => [
-            'term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment',
-        ],
-        'field-product_category_code' => [
-            '1 - ANIMAUX',
-            '6 - PLANTES',
-            '7 - LÉGUMES',
-            '8 - FRUITS',
-            '10 - CÉRÉALES',
-        ],
-    ];
-
     /**
      * @return string[]
      */
@@ -87,19 +31,89 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
      */
     public function load(ObjectManager $manager): void
     {
+        $programs = [
+            $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED),
+            $this->getReference(ProgramFixtures::REFERENCE_PAUSED),
+        ];
+
         /** @var Program $program */
-        $program = $this->getReference(ProgramFixtures::REFERENCE_COMMERCIALIZED);
+        foreach ($programs as $program) {
+            foreach ($this->loadData() as $fieldReference => $descriptions) {
+                /** @var Field $field */
+                $field = $this->getReference($fieldReference);
 
-        foreach (self::FIELDS as $fieldReference => $descriptions) {
-            /** @var Field $field */
-            $field = $this->getReference($fieldReference);
-
-            foreach ($descriptions as $description) {
-                $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
-                $manager->persist($programChoiceOption);
+                foreach ($descriptions as $description) {
+                    $programChoiceOption = new ProgramChoiceOption($program, $description, $field);
+                    $manager->persist($programChoiceOption);
+                }
             }
-        }
 
-        $manager->flush();
+            $manager->flush();
+        }
+    }
+
+    private function loadData(): array
+    {
+        return [
+            FieldAlias::ACTIVITY_DEPARTMENT => [
+                '75',
+            ],
+            FieldAlias::ACTIVITY_COUNTRY => [
+                'FR',
+            ],
+            FieldAlias::AID_INTENSITY => [
+                '0.20', '0.40', '0.60', '0.80',
+            ],
+            FieldAlias::BORROWER_TYPE => [
+                'Installé',
+                'En reconversion',
+                'Agriculture',
+                'Apiculteur',
+            ],
+            FieldAlias::COMPANY_NAF_CODE => [
+                '0001A',
+            ],
+            FieldAlias::EXPLOITATION_SIZE => [
+                '42',
+            ],
+            FieldAlias::INVESTMENT_COUNTRY => [
+                'FR',
+            ],
+            FieldAlias::INVESTMENT_DEPARTMENT => [
+                '75',
+            ],
+            FieldAlias::INVESTMENT_LOCATION => [
+                'Paris',
+                'Seine-et-Marne',
+                'Val-de-Marne',
+            ],
+            FieldAlias::INVESTMENT_THEMATIC => [
+                'Renouvellement et installation',
+                'Mieux répondre / renforcer',
+                'Transformation',
+                'Accompagner',
+                'Mettre à niveau',
+            ],
+            FieldAlias::LEGAL_FORM => [
+                'SARL', 'SAS', 'SASU', 'EURL', 'SA', 'SELAS',
+            ],
+            FieldAlias::LOAN_NAF_CODE => [
+                '0001A',
+            ],
+            FieldAlias::LOAN_TYPE => [
+                'term_loan', 'short_term', 'revolving_credit', 'stand_by', 'signature_commitment',
+            ],
+            FieldAlias::PRODUCT_CATEGORY_CODE => [
+                '1 - ANIMAUX',
+                '6 - PLANTES',
+                '7 - LÉGUMES',
+                '8 - FRUITS',
+                '10 - CÉRÉALES',
+            ],
+            FieldAlias::TARGET_TYPE => [
+                'Cible A',
+                'Cible B',
+            ],
+        ];
     }
 }

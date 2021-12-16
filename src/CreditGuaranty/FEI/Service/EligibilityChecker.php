@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS\CreditGuaranty\FEI\Service;
 
 use Doctrine\Common\Collections\Collection;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
@@ -108,7 +109,7 @@ class EligibilityChecker
         bool $withConditions,
         $value
     ): bool {
-        if (null === $value) {
+        if (false === $this->isValueValid($reservation, $programEligibility, $value)) {
             return false;
         }
 
@@ -133,6 +134,22 @@ class EligibilityChecker
         }
 
         return true;
+    }
+
+    private function isValueValid(Reservation $reservation, ProgramEligibility $programEligibility, $value): bool
+    {
+        $field = $programEligibility->getField();
+
+        // we do not check value
+        // if field is a creation_in_progress related field and if borrower is in creation in progress
+        if (
+            \in_array($field->getFieldAlias(), FieldAlias::CREATION_IN_PROGRESS_RELATED_FIELDS, true)
+            && $reservation->getBorrower()->isCreationInProgress()
+        ) {
+            return true;
+        }
+
+        return null !== $value;
     }
 
     private function getConfigurationByTypeAndValue(

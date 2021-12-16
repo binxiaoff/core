@@ -18,7 +18,6 @@ use KLS\Syndication\Arrangement\Entity\Project as ArrangementProject;
 use KLS\Syndication\Arrangement\Repository\ProjectRepository as ArrangementProjectRepository;
 use KLS\Syndication\Arrangement\Security\Voter\ProjectVoter;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
@@ -75,12 +74,8 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
             return $context;
         }
 
-        if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_VIEW, $arrangementProject)) {
+        if (false === $this->security->isGranted(ProjectVoter::ATTRIBUTE_EXPORT, $arrangementProject)) {
             throw new AccessDeniedException();
-        }
-
-        if (false === $arrangementProject->isFinished()) {
-            throw new BadRequestHttpException();
         }
 
         // Do not hesitate to move the following code (minus the context lines)
@@ -146,7 +141,7 @@ class ProjectContextBuilder implements SerializerContextBuilderInterface
 
             $agencyParticipation = new Participation(
                 $agencyProject->getPrimaryParticipationPool(),
-                $arrangementParticipation->getParticipant()
+                $arrangementParticipation->getParticipant(),
             );
             //addParticipation will check if the participant has already been added.
             $agencyProject->addParticipation($agencyParticipation);

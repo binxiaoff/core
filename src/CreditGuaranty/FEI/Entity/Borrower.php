@@ -32,11 +32,11 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  *     denormalizationContext={
  *         "groups": {
- *             "creditGuaranty:borrower:write",
+ *             "creditGuaranty:borrower:update",
  *             "creditGuaranty:programChoiceOption:write",
  *             "nullableMoney:write",
  *         },
- *         "openapi_definition_name": "write",
+ *         "openapi_definition_name": "update",
  *     },
  *     itemOperations={
  *         "get": {
@@ -66,7 +66,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read"})
      */
     private Reservation $reservation;
 
@@ -75,7 +75,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\NotBlank(allowNull=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?string $beneficiaryName = null;
 
@@ -85,62 +85,145 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     private ?ProgramChoiceOption $borrowerType = null;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?bool $youngFarmer = null;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?bool $creationInProgress = null;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?bool $subsidiary = null;
 
     /**
+     * L’emprunteur est-il considéré comme étant économiquement viable ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $economicallyViable = null;
+
+    /**
+     * L’emprunteur bénéficie-t-il du transfert de bénéfice,
+     * à savoir d’une réduction du taux et une limitation des garanties ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $benefitingProfitTransfer = null;
+
+    /**
+     * L’emprunteur est-il côté sur un marché boursier ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $listedOnStockMarket = null;
+
+    /**
+     * L’emprunteur est-il établi dans une juridiction Non coopérative ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $inNonCooperativeJurisdiction = null;
+
+    /**
+     * L’emprunteur fait-il l’objet d’une injonction de récupération non exécutée ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $subjectOfUnperformedRecoveryOrder = null;
+
+    /**
+     * L’emprunteur fait-il l’objet d’un plan de restructuration (aide au sauvetage, aide à la restructuration) ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $subjectOfRestructuringPlan = null;
+
+    /**
+     * Le projet a-t-il bénéficié d’un financement du FEAGA/OCM pour le même objet ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $projectReceivedFeagaOcmFunding = null;
+
+    /**
+     * Les dates des justificatifs de l’objet du prêt sont postérieurs à celle de la demande du prêt ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $loanSupportingDocumentsDatesAfterApplication = null;
+
+    /**
+     * Le prêt permet-il de refinancer ou restructurer un prêt existant ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $loanAllowedRefinanceRestructure = null;
+
+    /**
+     * La transaction est-elle affectée par une irrégularité ou une fraude ?
+     *
+     * @ORM\Column(type="boolean", nullable=true)
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?bool $transactionAffected = null;
+
+    /**
      * @ORM\Column(length=100, nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update"})
      */
     private ?string $companyName = null;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update"})
      */
     private ?DateTimeImmutable $activityStartDate = null;
 
     /**
-     * @ORM\Column(type="string", length=14, nullable=true)
+     * @ORM\Column(type="string", length=200, nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
+     * @Assert\Length(max=200)
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update"})
      */
-    private ?string $siret = null;
-
-    /**
-     * @ORM\Column(type="string", length=20, nullable=true)
-     *
-     * @Assert\NotBlank(allowNull=true)
-     *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
-     */
-    private ?string $taxNumber = null;
+    private ?string $registrationNumber = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
@@ -148,7 +231,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     private ?ProgramChoiceOption $legalForm = null;
 
@@ -158,7 +241,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     private ?ProgramChoiceOption $companyNafCode = null;
 
@@ -167,7 +250,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Positive
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?int $employeesNumber = null;
 
@@ -177,7 +260,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
      *
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     private ?ProgramChoiceOption $exploitationSize = null;
 
@@ -186,7 +269,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Valid
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private NullableMoney $turnover;
 
@@ -195,9 +278,19 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *
      * @Assert\Valid
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private NullableMoney $totalAssets;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption")
+     * @ORM\JoinColumn(name="id_target_type")
+     *
+     * @Assert\Expression("value === null || value.getProgram() === this.getProgram()")
+     *
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
+     */
+    private ?ProgramChoiceOption $targetType = null;
 
     /**
      * @ORM\Column(length=10, nullable=true)
@@ -207,7 +300,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
      *     message="CreditGuaranty.Borrower.grade.invalid"
      * )
      *
-     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:read", "creditGuaranty:borrower:update:draft"})
      */
     private ?string $grade = null;
 
@@ -303,6 +396,126 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         return $this;
     }
 
+    public function isEconomicallyViable(): ?bool
+    {
+        return $this->economicallyViable;
+    }
+
+    public function setEconomicallyViable(?bool $economicallyViable): Borrower
+    {
+        $this->economicallyViable = $economicallyViable;
+
+        return $this;
+    }
+
+    public function isBenefitingProfitTransfer(): ?bool
+    {
+        return $this->benefitingProfitTransfer;
+    }
+
+    public function setBenefitingProfitTransfer(?bool $benefitingProfitTransfer): Borrower
+    {
+        $this->benefitingProfitTransfer = $benefitingProfitTransfer;
+
+        return $this;
+    }
+
+    public function isListedOnStockMarket(): ?bool
+    {
+        return $this->listedOnStockMarket;
+    }
+
+    public function setListedOnStockMarket(?bool $listedOnStockMarket): Borrower
+    {
+        $this->listedOnStockMarket = $listedOnStockMarket;
+
+        return $this;
+    }
+
+    public function isInNonCooperativeJurisdiction(): ?bool
+    {
+        return $this->inNonCooperativeJurisdiction;
+    }
+
+    public function setInNonCooperativeJurisdiction(?bool $inNonCooperativeJurisdiction): Borrower
+    {
+        $this->inNonCooperativeJurisdiction = $inNonCooperativeJurisdiction;
+
+        return $this;
+    }
+
+    public function isSubjectOfUnperformedRecoveryOrder(): ?bool
+    {
+        return $this->subjectOfUnperformedRecoveryOrder;
+    }
+
+    public function setSubjectOfUnperformedRecoveryOrder(?bool $subjectOfUnperformedRecoveryOrder): Borrower
+    {
+        $this->subjectOfUnperformedRecoveryOrder = $subjectOfUnperformedRecoveryOrder;
+
+        return $this;
+    }
+
+    public function isSubjectOfRestructuringPlan(): ?bool
+    {
+        return $this->subjectOfRestructuringPlan;
+    }
+
+    public function setSubjectOfRestructuringPlan(?bool $subjectOfRestructuringPlan): Borrower
+    {
+        $this->subjectOfRestructuringPlan = $subjectOfRestructuringPlan;
+
+        return $this;
+    }
+
+    public function isProjectReceivedFeagaOcmFunding(): ?bool
+    {
+        return $this->projectReceivedFeagaOcmFunding;
+    }
+
+    public function setProjectReceivedFeagaOcmFunding(?bool $projectReceivedFeagaOcmFunding): Borrower
+    {
+        $this->projectReceivedFeagaOcmFunding = $projectReceivedFeagaOcmFunding;
+
+        return $this;
+    }
+
+    public function isLoanSupportingDocumentsDatesAfterApplication(): ?bool
+    {
+        return $this->loanSupportingDocumentsDatesAfterApplication;
+    }
+
+    public function setLoanSupportingDocumentsDatesAfterApplication(?bool $value): Borrower
+    {
+        $this->loanSupportingDocumentsDatesAfterApplication = $value;
+
+        return $this;
+    }
+
+    public function isLoanAllowedRefinanceRestructure(): ?bool
+    {
+        return $this->loanAllowedRefinanceRestructure;
+    }
+
+    public function setLoanAllowedRefinanceRestructure(?bool $loanAllowedRefinanceRestructure): Borrower
+    {
+        $this->loanAllowedRefinanceRestructure = $loanAllowedRefinanceRestructure;
+
+        return $this;
+    }
+
+    public function isTransactionAffected(): ?bool
+    {
+        return $this->transactionAffected;
+    }
+
+    public function setTransactionAffected(?bool $transactionAffected): Borrower
+    {
+        $this->transactionAffected = $transactionAffected;
+
+        return $this;
+    }
+
     public function getCompanyName(): ?string
     {
         return $this->companyName;
@@ -324,7 +537,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     public function setAddressStreet(?string $street): Borrower
     {
@@ -342,7 +555,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     public function setAddressPostCode(?string $postCode): Borrower
     {
@@ -360,7 +573,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     public function setAddressCity(?string $city): Borrower
     {
@@ -384,7 +597,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     public function setAddressDepartment(?ProgramChoiceOption $department): Borrower
     {
@@ -408,7 +621,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     }
 
     /**
-     * @Groups({"creditGuaranty:borrower:write"})
+     * @Groups({"creditGuaranty:borrower:update:draft"})
      */
     public function setAddressCountry(?ProgramChoiceOption $country): Borrower
     {
@@ -429,26 +642,14 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         return $this;
     }
 
-    public function getSiret(): ?string
+    public function getRegistrationNumber(): ?string
     {
-        return $this->siret;
+        return $this->registrationNumber;
     }
 
-    public function setSiret(?string $siret): Borrower
+    public function setRegistrationNumber(?string $registrationNumber): Borrower
     {
-        $this->siret = $siret;
-
-        return $this;
-    }
-
-    public function getTaxNumber(): ?string
-    {
-        return $this->taxNumber;
-    }
-
-    public function setTaxNumber(?string $taxNumber): Borrower
-    {
-        $this->taxNumber = $taxNumber;
+        $this->registrationNumber = $registrationNumber;
 
         return $this;
     }
@@ -565,6 +766,32 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
         $this->totalAssets = $totalAssets;
 
         return $this;
+    }
+
+    public function getTargetType(): ?ProgramChoiceOption
+    {
+        return $this->targetType;
+    }
+
+    public function setTargetType(?ProgramChoiceOption $targetType): Borrower
+    {
+        $this->targetType = $targetType;
+
+        return $this;
+    }
+
+    /**
+     * @SerializedName("targetType")
+     *
+     * @Groups({"creditGuaranty:borrower:read"})
+     */
+    public function getTargetTypeDescription(): ?string
+    {
+        if ($this->targetType) {
+            return $this->targetType->getDescription();
+        }
+
+        return null;
     }
 
     public function getGrade(): ?string

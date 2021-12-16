@@ -37,9 +37,9 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'FR',
         ],
         FieldAlias::ACTIVITY_DEPARTMENT => [
-            'Paris',
-            'Seine-et-Marne',
-            'Val-de-Marne',
+            '75',
+            '77',
+            '94',
         ],
         FieldAlias::AID_INTENSITY => [
             '0.20', '0.40', '0.60', '0.80',
@@ -62,9 +62,9 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             'FR',
         ],
         FieldAlias::INVESTMENT_DEPARTMENT => [
-            'Paris',
-            'Seine-et-Marne',
-            'Val-de-Marne',
+            '75',
+            '77',
+            '94',
         ],
         FieldAlias::INVESTMENT_LOCATION => [
             'Paris', 'Nantes', 'Lyon', 'Marseille', 'Nice',
@@ -88,6 +88,11 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             '401 - Lait et crème de lait, non concentrés ni additionnés de sucre ou d’autres édulcorants',
             '406 - Fromages et caillebotte',
             '8105000 - Kiwis, frais',
+        ],
+        FieldAlias::TARGET_TYPE => [
+            'Cible A',
+            'Cible B',
+            'Cible C',
         ],
     ];
 

@@ -4,6 +4,9 @@ Agency:
             referent: Un membre référent ne peut pas être archivé
             signatory: Un membre signataire ne peut pas être archivé
             draft: Vous ne pouvez pas archiver un membre en draft
+    Agent:
+        notValidCapital: 'Le format du capital est incorrect. Il peut être soit variable (montant = null), soit 
+        défini avec un montant'
     AgentMember:
         user:
             missingStaff: L'utilisateur {{ email }} ne peut pas être membre de l'équipe de l'agent sans avoir été habilité pour {{ company }}
@@ -120,7 +123,7 @@ Core:
             unique: Cet utilisateur dispose déjà d'un compte KLS
             emailDomain: L'email fourni n'a pas pour domaine celui d'un de nos users
         password:
-            password: Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et au moins 8 caractères.
+            password: Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et au moins 12 caractères.
 
 Syndication:
     Project:
@@ -192,6 +195,9 @@ CreditGuaranty:
             invalid: Le marché choisi n'est pas valable.
         distributionProcess:
             textMax: Les textes de chaque étape ne peuvent excéder une longeur de %limit%.
+        esbCalculationActivated:
+            missingProgramEligibilityForEsb: Le programme ne peut être validé, le champ %fieldAlias% doit avoir un ProgramEligibility et au moins un ProgramEligibilityConfiguration pour permettre le calcul de l'ESB.
+            missingProgramEligibilityConfigurationForEsb: Le programme ne peut être validé, le champ %fieldAlias% doit avoir au moins un ProgramEligibilityConfiguration pour permettre le calcul de l'ESB.
         funds:
             greater: Vous ne pouvez pas réduire le montant total sur un programme en cours.
             draft: Vous ne pouvez que réduire le montant total sur un programme en brouillon.
@@ -199,6 +205,10 @@ CreditGuaranty:
             notChangeable: Vous ne pouvez pas modifier le CAP sur un programme en cours.
             greater: Vous ne pouvez pas réduire le montant du CAP sur un programme en cours.
             draft: Vous ne pouvez que modifier le CAP ou réduire son montant sur un programme en brouillon.
+        programEligibilities:
+            empty: Vous devez configurer au moins un champ d'éligibilité pour pouvoir publier le programme.
+            missingEligibilityForCategory: Une catégorie (Bénéficiaire/Projet/Objet de financement) ne contient aucune information d'éligibilité, vous ne pouvez donc pas publier le programme.
+            missingOptionForListTypeField: Un champ de type liste a été configuré sans aucune option, vous devez configurer au moins une option pour pouvoir publier votre programme.
         reportingTemplate:
             name:
                 unique: Le nom d'un template de reporting doit être unique.
