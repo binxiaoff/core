@@ -4,14 +4,28 @@ declare(strict_types=1);
 
 namespace KLS\CreditGuaranty\FEI\Validator\Constraints;
 
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramStatus;
+use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
+use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityRepository;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 class ProgramDistributedValidator extends ConstraintValidator
 {
+    private FieldRepository $fieldRepository;
+    private ProgramEligibilityRepository $programEligibilityRepository;
+
+    public function __construct(
+        FieldRepository $fieldRepository,
+        ProgramEligibilityRepository $programEligibilityRepository
+    ) {
+        $this->fieldRepository              = $fieldRepository;
+        $this->programEligibilityRepository = $programEligibilityRepository;
+    }
+
     /**
      * @param ProgramStatus      $value
      * @param ProgramDistributed $constraint
@@ -29,6 +43,7 @@ class ProgramDistributedValidator extends ConstraintValidator
     {
         $programEligibilities = $program->getProgramEligibilities();
 
+        // check programEligibilities empty
         if ($programEligibilities->isEmpty()) {
             $this->context->buildViolation('CreditGuaranty.Program.programEligibilities.empty')
                 ->atPath('programEligibilities')
@@ -38,6 +53,7 @@ class ProgramDistributedValidator extends ConstraintValidator
             return;
         }
 
+        // check programEligibilities empty by category
         $countFieldsByCategory = [
             'profile' => 0,
             'project' => 0,
@@ -73,6 +89,21 @@ class ProgramDistributedValidator extends ConstraintValidator
                 ->atPath('programEligibilities')
                 ->addViolation()
             ;
+        }
+
+        // check programEligibilities related to ESB
+        if ($program->isEsbCalculationActivated()) {
+            $programEligibilities = $this->programEligibilityRepository->findBy([
+                'program' => $program,
+                'field'   => $this->fieldRepository->findBy(['fieldAlias' => FieldAlias::ESB_RELATED_FIELDS]),
+            ]);
+
+            if (\count($programEligibilities) !== \count(FieldAlias::ESB_RELATED_FIELDS)) {
+                $this->context->buildViolation('CreditGuaranty.Program.programEligibilities.missingEligibilityForEsb')
+                    ->atPath('programEligibilities')
+                    ->addViolation()
+                ;
+            }
         }
     }
 }
