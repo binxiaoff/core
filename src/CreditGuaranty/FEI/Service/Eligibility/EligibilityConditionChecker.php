@@ -28,21 +28,43 @@ class EligibilityConditionChecker
 
     /**
      * @param object|Borrower|Project|FinancingObject $object
+     *
+     * @return bool|array
      */
     public function checkByConfiguration(
         object $object,
-        ProgramEligibilityConfiguration $programEligibilityConfiguration
-    ): bool {
+        ProgramEligibilityConfiguration $programEligibilityConfiguration,
+        bool $returnIds = false
+    ) {
         $programEligibilityConditions = $programEligibilityConfiguration->getProgramEligibilityConditions();
 
         if (0 === $programEligibilityConditions->count()) {
+            if ($returnIds) {
+                return [];
+            }
+
             return true;
         }
 
+        $ids = [];
+
+        /** @var ProgramEligibilityCondition $eligibilityCondition */
         foreach ($programEligibilityConditions as $eligibilityCondition) {
-            if (false === $this->checkCondition($object, $eligibilityCondition)) {
-                return false;
+            if ($this->checkCondition($object, $eligibilityCondition)) {
+                continue;
             }
+
+            if ($returnIds) {
+                $ids[] = $eligibilityCondition->getId();
+
+                continue;
+            }
+
+            return false;
+        }
+
+        if ($returnIds) {
+            return $ids;
         }
 
         return true;
