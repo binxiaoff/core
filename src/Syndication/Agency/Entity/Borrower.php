@@ -33,7 +33,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "groups": {
  *                     "agency:borrower:create",
  *                     "agency:borrower:write",
- *                     "agency:projectPartaker:write",
  *                     "nullableMoney:write",
  *                     "agency:borrowerMember:create",
  *                     "agency:borrowerMember:write",
@@ -126,11 +125,10 @@ class Borrower extends AbstractProjectPartaker
         Project $project,
         string $corporateName,
         string $legalForm,
-        NullableMoney $capital,
         string $headOffice,
         string $matriculationNumber
     ) {
-        parent::__construct($matriculationNumber, $capital);
+        parent::__construct($matriculationNumber);
         $this->project       = $project;
         $this->corporateName = $corporateName;
         $this->legalForm     = $legalForm;
@@ -356,7 +354,7 @@ class Borrower extends AbstractProjectPartaker
      */
     public function hasVariableCapital(): ?bool
     {
-        return $this->variableCapital;
+        return parent::hasVariableCapital();
     }
 
     /**
@@ -364,8 +362,6 @@ class Borrower extends AbstractProjectPartaker
      */
     public function setVariableCapital(?bool $variableCapital): AbstractProjectPartaker
     {
-        $this->variableCapital = $variableCapital;
-
-        return $this;
+        return parent::setVariableCapital($variableCapital);
     }
 }

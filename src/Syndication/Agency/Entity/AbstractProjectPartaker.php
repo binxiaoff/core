@@ -89,17 +89,13 @@ abstract class AbstractProjectPartaker
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
-    protected ?bool $variableCapital;
+    protected ?bool $variableCapital = null;
 
     /**
      * @ORM\Embedded(class=NullableMoney::class)
      *
      * @Assert\Valid
-     *
-     * @Groups({"agency:projectPartaker:read", "agency:projectPartaker:write"})
      */
     private NullableMoney $capital;
 
