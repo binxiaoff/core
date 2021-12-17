@@ -9,7 +9,6 @@ use Doctrine\Persistence\ObjectManager;
 use KLS\Core\DataFixtures\AbstractFixtures;
 use KLS\Core\DataFixtures\CompanyFixtures;
 use KLS\Core\Entity\Company;
-use KLS\Core\Entity\Constant\CARegionalBank;
 use KLS\Core\Traits\ConstantsAwareTrait;
 use KLS\CreditGuaranty\FEI\Entity\Participation;
 use KLS\CreditGuaranty\FEI\Entity\Program;
@@ -18,42 +17,60 @@ class ParticipationFixtures extends AbstractFixtures implements DependentFixture
 {
     use ConstantsAwareTrait;
 
-    public const PARTICIPANT_TOUL = 'CG_PARTICIPANT_TOUL';
-    public const PARTICIPANT_SAVO = 'CG_PARTICIPANT_SAVO';
-
     /**
      * @return string[]
      */
     public function getDependencies(): array
     {
-        return [ProgramFixtures::class];
+        return [
+            ProgramFixtures::class,
+        ];
     }
 
     public function load(ObjectManager $manager): void
     {
-        /** @var Program $program */
-        foreach ($this->getReferences(ProgramFixtures::ALL_PROGRAMS) as $program) {
-            $CARegionalBanks = CARegionalBank::REGIONAL_BANKS;
-            \shuffle($CARegionalBanks);
-
-            foreach ($this->getParticipantReferences() as $participantReference) {
+        foreach ($this->loadData() as $data) {
+            /** @var Program $program */
+            foreach ($data['programs'] as $program) {
                 /** @var Company $company */
-                $company       = $this->getReference(CompanyFixtures::REFERENCE_PREFIX . \str_replace('CG_PARTICIPANT_', '', $participantReference));
-                $participation = new Participation(
-                    $program,
-                    $company,
-                    (string) $this->faker->randomFloat(2, 0, 1)
-                );
+                foreach ($data['companies'] as $company) {
+                    $participation = new Participation($program, $company, (string) $this->faker->randomFloat(2, 0, 1));
+                    $manager->persist($participation);
+                }
 
-                $manager->persist($participation);
-                $this->setReference($participantReference, $participation);
+                $manager->flush();
             }
         }
-        $manager->flush();
     }
 
-    private function getParticipantReferences(): array
+    private function loadData(): iterable
     {
-        return self::getConstants('PARTICIPANT_');
+        $companies = CompanyFixtures::CA_SHORTCODE;
+        \array_walk(
+            $companies,
+            fn (&$shortCode) => $shortCode = $this->getReference(CompanyFixtures::REFERENCE_PREFIX . $shortCode)
+        );
+
+        yield 'programs with all regional banks' => [
+            'programs' => $this->getReferences([
+                ProgramFixtures::PROGRAM_AGRICULTURE_DRAFT,
+                ProgramFixtures::PROGRAM_AGRICULTURE_COMMERCIALIZED,
+                ProgramFixtures::PROGRAM_CORPORATE_PAUSED,
+                ProgramFixtures::PROGRAM_CORPORATE_ARCHIVED,
+            ]),
+            'companies' => $companies,
+        ];
+        yield 'programs with some regional banks' => [
+            'programs' => $this->getReferences([
+                ProgramFixtures::PROGRAM_AGRICULTURE_PAUSED,
+                ProgramFixtures::PROGRAM_AGRICULTURE_ARCHIVED,
+                ProgramFixtures::PROGRAM_CORPORATE_DRAFT,
+                ProgramFixtures::PROGRAM_CORPORATE_COMMERCIALIZED,
+            ]),
+            'companies' => $this->getReferences([
+                CompanyFixtures::REFERENCE_PREFIX . CompanyFixtures::CA_SHORTCODE['CA des Savoie'],
+                CompanyFixtures::REFERENCE_PREFIX . CompanyFixtures::CA_SHORTCODE['CA Toulouse 31'],
+            ]),
+        ];
     }
 }

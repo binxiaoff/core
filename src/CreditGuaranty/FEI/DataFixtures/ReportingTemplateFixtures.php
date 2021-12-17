@@ -9,7 +9,7 @@ use Doctrine\Persistence\ObjectManager;
 use KLS\Core\DataFixtures\AbstractFixtures;
 use KLS\Core\DataFixtures\StaffFixtures;
 use KLS\Core\Entity\Staff;
-use KLS\CreditGuaranty\FEI\Entity\Program;
+use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplateField;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
@@ -38,32 +38,123 @@ class ReportingTemplateFixtures extends AbstractFixtures implements DependentFix
 
     public function load(ObjectManager $manager): void
     {
-        /** @var Program $program */
-        $program = $this->getReference(ProgramFixtures::REFERENCE_PAUSED);
         /** @var Staff $staff */
         $staff = $this->getReference(StaffFixtures::CASA);
 
-        foreach (\range(1, 3) as $i) {
-            $reportingTemplate = new ReportingTemplate($program, \sprintf('Reporting template P%s #%s', $program->getId(), $i), $staff);
+        foreach ($this->loadData() as $reference => $data) {
+            $reportingTemplate = new ReportingTemplate($data['program'], $data['name'], $staff);
             $manager->persist($reportingTemplate);
-            $this->addReference(\sprintf('reporting_template_p%s_%s', $program->getId(), $i), $reportingTemplate);
+            $this->addReference($reference, $reportingTemplate);
         }
 
         $manager->flush();
 
-        $fields = $this->fieldRepository->findAll();
-
-        foreach (\range(1, 2) as $i) {
+        foreach ($this->loadData() as $reference => $data) {
             /** @var ReportingTemplate $reportingTemplate */
-            $reportingTemplate = $this->getReference(\sprintf('reporting_template_p%s_%s', $program->getId(), $i));
+            $reportingTemplate = $this->getReference($reference);
 
-            \shuffle($fields);
-            foreach ($fields as $field) {
+            \shuffle($data['fields']);
+
+            foreach ($data['fields'] as $field) {
                 $reportingTemplateField = new ReportingTemplateField($reportingTemplate, $field);
                 $manager->persist($reportingTemplateField);
             }
         }
 
         $manager->flush();
+    }
+
+    private function loadData(): iterable
+    {
+        $programs = $this->getReferences([
+            ProgramFixtures::PROGRAM_AGRICULTURE_PAUSED,
+            ProgramFixtures::PROGRAM_CORPORATE_PAUSED,
+        ]);
+
+        $allFields  = $this->fieldRepository->findAll();
+        $someFields = $this->fieldRepository->findBy([
+            'fieldAlias' => [
+                FieldAlias::PROGRAM_DURATION,
+                FieldAlias::RESERVATION_CREATION_DATE,
+                FieldAlias::RESERVATION_STATUS,
+                FieldAlias::ACTIVITY_START_DATE,
+                FieldAlias::BENEFICIARY_NAME,
+                FieldAlias::BORROWER_TYPE,
+                FieldAlias::BORROWER_TYPE_GRADE,
+                FieldAlias::COMPANY_NAF_CODE,
+                FieldAlias::CREATION_IN_PROGRESS,
+                FieldAlias::TOTAL_ASSETS,
+                FieldAlias::AGRICULTURAL_BRANCH,
+                FieldAlias::ELIGIBLE_FEI_CREDIT,
+                FieldAlias::INVESTMENT_DEPARTMENT,
+                FieldAlias::INVESTMENT_THEMATIC,
+                FieldAlias::INVESTMENT_TYPE,
+                FieldAlias::PROJECT_DETAIL,
+                FieldAlias::PROJECT_GRANT,
+                FieldAlias::TOTAL_GROSS_SUBSIDY_EQUIVALENT,
+                FieldAlias::FINANCING_OBJECT_TYPE,
+                FieldAlias::FIRST_RELEASE_DATE,
+                FieldAlias::LOAN_MONEY,
+                FieldAlias::LOAN_NEW_MATURITY,
+                FieldAlias::LOAN_NUMBER,
+                FieldAlias::LOAN_OPERATION_NUMBER,
+                FieldAlias::LOAN_REMAINING_CAPITAL,
+            ],
+        ]);
+        $someProfileFields = $this->fieldRepository->findBy([
+            'fieldAlias' => [
+                FieldAlias::ACTIVITY_START_DATE,
+                FieldAlias::BORROWER_TYPE_GRADE,
+                FieldAlias::COMPANY_NAF_CODE,
+                FieldAlias::ECONOMICALLY_VIABLE,
+                FieldAlias::LOAN_ALLOWED_REFINANCE_RESTRUCTURE,
+            ],
+        ]);
+        $someProjectFields = $this->fieldRepository->findBy([
+            'fieldAlias' => [
+                FieldAlias::CREDIT_EXCLUDING_FEI,
+                FieldAlias::INVESTMENT_DEPARTMENT,
+                FieldAlias::PROJECT_DETAIL,
+                FieldAlias::PROJECT_TOTAL_AMOUNT,
+                FieldAlias::TOTAL_GROSS_SUBSIDY_EQUIVALENT,
+            ],
+        ]);
+        $someLoanFields = $this->fieldRepository->findBy([
+            'fieldAlias' => [
+                FieldAlias::FINANCING_OBJECT_NAME,
+                FieldAlias::FINANCING_OBJECT_TYPE,
+                FieldAlias::INVESTMENT_LOCATION,
+                FieldAlias::LOAN_NEW_MATURITY,
+                FieldAlias::LOAN_REMAINING_CAPITAL,
+            ],
+        ]);
+
+        foreach ($programs as $program) {
+            yield \sprintf('reporting-template:p%s:all', $program->getId()) => [
+                'program' => $program,
+                'name'    => \sprintf('Table PG%sA - Tout', $program->getId()),
+                'fields'  => $allFields,
+            ];
+            yield \sprintf('reporting-template:p%s:some', $program->getId()) => [
+                'program' => $program,
+                'name'    => \sprintf('Table PG%sB - Patout', $program->getId()),
+                'fields'  => $someFields,
+            ];
+            yield \sprintf('reporting-template:p%s:profile', $program->getId()) => [
+                'program' => $program,
+                'name'    => \sprintf('Table PG%sC - Bénéficiaire', $program->getId()),
+                'fields'  => $someProfileFields,
+            ];
+            yield \sprintf('reporting-template:p%s:project', $program->getId()) => [
+                'program' => $program,
+                'name'    => \sprintf('Table PG%sD - Projet', $program->getId()),
+                'fields'  => $someProjectFields,
+            ];
+            yield \sprintf('reporting-template:p%s:loan', $program->getId()) => [
+                'program' => $program,
+                'name'    => \sprintf('Table PG%sE - Prêt', $program->getId()),
+                'fields'  => $someLoanFields,
+            ];
+        }
     }
 }
