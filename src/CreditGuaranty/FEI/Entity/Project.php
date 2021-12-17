@@ -612,11 +612,14 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         }
 
         $publicAidLimit = MoneyCalculator::multiply(
-            $this->getTotalFeiCredit(),
+            $this->getTotalFeiCredit()->isNull() ? 0 : $this->getTotalFeiCredit(),
             (float) $this->getAidIntensity()->getDescription()
         );
-        $remainingGrantLimit = MoneyCalculator::subtract($publicAidLimit, $this->getGrant());
-        $maxFeiCredit        = MoneyCalculator::multiply(
+        $remainingGrantLimit = MoneyCalculator::subtract(
+            $publicAidLimit,
+            $this->getGrant()->isNull() ? 0 : $this->getGrant()
+        );
+        $maxFeiCredit = MoneyCalculator::multiply(
             $remainingGrantLimit,
             (float) $this->getProgram()->getGuarantyCoverage()
         );
