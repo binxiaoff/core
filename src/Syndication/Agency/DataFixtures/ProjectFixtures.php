@@ -572,10 +572,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $project,
             $this->faker->company,
             'SARL',
-            new NullableMoney(
-                $project->getCurrency(),
-                (string) $this->faker->randomFloat(0, 100000)
-            ),
             $this->faker->address,
             $this->faker->siren(false), // Works because Faker is set to Fr_fr.
         );
