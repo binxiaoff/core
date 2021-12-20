@@ -208,6 +208,7 @@ CreditGuaranty:
         programEligibilities:
             empty: Vous devez configurer au moins un champ d'éligibilité pour pouvoir publier le programme.
             missingEligibilityForCategory: Une catégorie (Bénéficiaire/Projet/Objet de financement) ne contient aucune information d'éligibilité, vous ne pouvez donc pas publier le programme.
+            missingEligibilityForEsb: Vous avez activé le calcul d'ESB mais tous les champs nécessaires à ce calcul ne sont pas configurés dans le programme.
             missingOptionForListTypeField: Un champ de type liste a été configuré sans aucune option, vous devez configurer au moins une option pour pouvoir publier votre programme.
         reportingTemplate:
             name:
