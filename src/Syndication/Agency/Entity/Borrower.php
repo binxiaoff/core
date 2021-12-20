@@ -16,9 +16,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "validation_groups": {Borrower::class, "getCurrentValidationGroups"},
- *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:borrower:read",
@@ -28,6 +25,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  *     collectionOperations={
  *         "post": {
+ *             "validation_groups": {Borrower::class, "getCurrentValidationGroups"},
  *             "security_post_denormalize": "is_granted('create', object)",
  *             "denormalization_context": {
  *                 "groups": {
@@ -51,6 +49,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('delete', object)",
  *         },
  *         "patch": {
+ *             "validation_groups": {Borrower::class, "getCurrentValidationGroups"},
  *             "security_post_denormalize": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {
