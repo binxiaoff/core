@@ -1120,28 +1120,35 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
             ->setParticipations($duplicatedProgram->cloneCollection($this->participations))
         ;
 
-        // Replace the ProgramChoiceOption (if not null)
-        // in the ProgramEligibilityConfiguration and ProgramBorrowerTypeAllocation
-        // (which are not remplace in the previous process) by the newly created one.
-        // The new one was created with setProgramChoiceOptions() in the duplicated program.
-        foreach ($this->getProgramEligibilities() as $programEligibility) {
-            foreach ($programEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
-                $originalProgramChoiceOption = $programEligibilityConfiguration->getProgramChoiceOption();
-                if ($originalProgramChoiceOption) {
-                    $duplicatedProgramChoiceOption = $duplicatedProgram
-                        ->findProgramChoiceOption($originalProgramChoiceOption)
-                    ;
-                    $programEligibilityConfiguration->setProgramChoiceOption($duplicatedProgramChoiceOption);
-                }
-            }
+        // We have to replace all ProgramChoiceOptions set in the duplicated program
+        // because the clone do not replace with the new ones...
+        foreach ($duplicatedProgram->getProgramBorrowerTypeAllocations() as $programBorrowerTypeAllocation) {
+            $programBorrowerTypeAllocation->setProgramChoiceOption(
+                $this->findProgramChoiceOption(
+                    $duplicatedProgram,
+                    $programBorrowerTypeAllocation->getProgramChoiceOption()
+                )
+            );
         }
-        foreach ($this->getProgramBorrowerTypeAllocations() as $programBorrowerTypeAllocation) {
-            $originalProgramChoiceOption = $programBorrowerTypeAllocation->getProgramChoiceOption();
-            if ($originalProgramChoiceOption) {
-                $duplicatedProgramChoiceOption = $duplicatedProgram
-                    ->findProgramChoiceOption($originalProgramChoiceOption)
-                ;
-                $programBorrowerTypeAllocation->setProgramChoiceOption($duplicatedProgramChoiceOption);
+        foreach ($duplicatedProgram->getProgramEligibilities() as $programEligibility) {
+            foreach ($programEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
+                $programChoiceOption = $programEligibilityConfiguration->getProgramChoiceOption();
+                if ($programChoiceOption instanceof ProgramChoiceOption) {
+                    $programEligibilityConfiguration->setProgramChoiceOption(
+                        $this->findProgramChoiceOption($duplicatedProgram, $programChoiceOption)
+                    );
+                }
+
+                foreach (
+                    $programEligibilityConfiguration->getProgramEligibilityConditions() as $programEligibilityCondition
+                ) {
+                    foreach ($programEligibilityCondition->getProgramChoiceOptions() as $conditionProgramChoiceOption) {
+                        $programEligibilityCondition->addProgramChoiceOption(
+                            $this->findProgramChoiceOption($duplicatedProgram, $conditionProgramChoiceOption)
+                        );
+                        $programEligibilityCondition->removeProgramChoiceOption($conditionProgramChoiceOption);
+                    }
+                }
             }
         }
 
@@ -1211,25 +1218,27 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     /**
      * Find the choice option in the duplicated program which has the same attribut as the original one.
      */
-    private function findProgramChoiceOption(ProgramChoiceOption $originalProgramChoiceOption): ProgramChoiceOption
-    {
-        $clonedProgramChoiceOption = $this->getProgramChoiceOptions()
+    private function findProgramChoiceOption(
+        Program $program,
+        ProgramChoiceOption $programChoiceOptionToFind
+    ): ProgramChoiceOption {
+        $programChoiceOption = $program->getProgramChoiceOptions()
             ->filter(
-                fn (ProgramChoiceOption $item) => $item->getField() === $originalProgramChoiceOption->getField()
-                    && $item->getDescription() === $originalProgramChoiceOption->getDescription()
+                fn (ProgramChoiceOption $item) => $item->getField() === $programChoiceOptionToFind->getField()
+                && $item->getDescription() === $programChoiceOptionToFind->getDescription()
             )
             ->first()
         ;
-        if (false === $clonedProgramChoiceOption instanceof ProgramChoiceOption) {
+        if (false === $programChoiceOption instanceof ProgramChoiceOption) {
             throw new LogicException(\sprintf(
                 'The new program choice option cannot be found on program %s with field %s and description %s',
                 $this->getName(),
-                $originalProgramChoiceOption->getField()->getId(),
-                $originalProgramChoiceOption->getDescription()
+                $programChoiceOptionToFind->getField()->getId(),
+                $programChoiceOptionToFind->getDescription()
             ));
         }
 
-        return $clonedProgramChoiceOption;
+        return $programChoiceOption;
     }
 
     /**

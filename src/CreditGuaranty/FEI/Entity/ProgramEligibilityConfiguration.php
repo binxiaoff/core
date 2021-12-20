@@ -188,11 +188,19 @@ class ProgramEligibilityConfiguration implements DeepCloneInterface
     }
 
     /**
+     * @return Collection|ProgramEligibilityCondition[}
+     */
+    public function getProgramEligibilityConditions(): Collection
+    {
+        return $this->programEligibilityConditions;
+    }
+
+    /**
      * @Groups({"creditGuaranty:programEligibilityConfiguration:read"})
      */
     public function getProgramEligibilityConditionsCount(): int
     {
-        return $this->programEligibilityConditions->count();
+        return $this->getProgramEligibilityConditions()->count();
     }
 
     /**
