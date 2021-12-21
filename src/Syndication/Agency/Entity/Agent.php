@@ -22,9 +22,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ApiResource(
- *     attributes={
- *         "validation_groups": {Agent::class, "getCurrentValidationGroups"},
- *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:agent:read",
@@ -40,6 +37,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
+ *             "validation_groups": {Agent::class, "getCurrentValidationGroups"},
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
  *                 "groups": {
