@@ -175,7 +175,8 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      *
      * @ORM\Column(type="smallint", nullable=true)
      *
-     * @Assert\GreaterThanOrEqual(1)
+     * @Assert\NotBlank(allowNull=true)
+     * @Assert\PositiveOrZero
      *
      * @Groups({"creditGuaranty:financingObject:read", "creditGuaranty:financingObject:write"})
      */
