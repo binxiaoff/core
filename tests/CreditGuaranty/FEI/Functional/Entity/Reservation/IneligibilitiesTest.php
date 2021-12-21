@@ -60,6 +60,7 @@ class IneligibilitiesTest extends AbstractApiTest
                     'turnover',
                 ],
                 'project' => [
+                    'receiving_grant',
                     'investment_street',
                     'investment_post_code',
                     'investment_city',
@@ -76,7 +77,6 @@ class IneligibilitiesTest extends AbstractApiTest
                     'tangible_fei_credit',
                     'intangible_fei_credit',
                     'credit_excluding_fei',
-                    'project_grant',
                     'land_value',
                 ],
                 'loan' => [],

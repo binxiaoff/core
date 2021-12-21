@@ -7,6 +7,7 @@ namespace KLS\Test\CreditGuaranty\FEI\Unit\Service\Eligibility;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
+use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramEligibility;
@@ -518,6 +519,162 @@ class EligibilityCheckerTest extends TestCase
                 ],
             ],
             ['profile' => [FieldAlias::ACTIVITY_START_DATE, FieldAlias::REGISTRATION_NUMBER]],
+        ];
+    }
+
+    /**
+     * @covers ::check
+     *
+     * @dataProvider receivingGrantRelatedFieldsProvider
+     */
+    public function testCheckWithReceivingGrantRelatedField(array $data, array $expected): void
+    {
+        $program = $this->reservation->getProgram();
+
+        $this->withProject($this->reservation);
+
+        $field1 = $this->createReceivingGrantField();
+        $field2 = $this->createProjectGrantField();
+
+        $programEligibility1 = new ProgramEligibility($program, $field1);
+        $programEligibility2 = new ProgramEligibility($program, $field2);
+
+        $this->forcePropertyValue($program, 'programEligibilities', new ArrayCollection([
+            $programEligibility1,
+            $programEligibility2,
+        ]));
+
+        $programEligibilityConfiguration1 = [
+            false => new ProgramEligibilityConfiguration($programEligibility1, null, '0', true),
+            true  => new ProgramEligibilityConfiguration($programEligibility1, null, '1', true),
+        ];
+        $programEligibilityConfiguration2 = new ProgramEligibilityConfiguration(
+            $programEligibility2,
+            null,
+            null,
+            true
+        );
+
+        $project = $this->reservation->getProject();
+        $this->reservationAccessor->getEntity($this->reservation, $field1)
+            ->shouldBeCalledOnce()
+            ->willReturn($project)
+        ;
+        // receiving grant field
+        $this->reservationAccessor->getValue($project, $field1)
+            ->shouldBeCalledOnce()
+            ->willReturn($project->isReceivingGrant())
+        ;
+        if ($data[FieldAlias::RECEIVING_GRANT]['isValueValid']) {
+            $this->programEligibilityConfigurationRepository->findOneBy([
+                'programEligibility' => $programEligibility1,
+                'value'              => $project->isReceivingGrant(),
+            ])
+                ->shouldBeCalledOnce()
+                ->willReturn($programEligibilityConfiguration1[$project->isReceivingGrant()])
+            ;
+            $this->eligibilityConditionChecker->checkByConfiguration(
+                $project,
+                $programEligibilityConfiguration1[$project->isReceivingGrant()]
+            )
+                ->shouldBeCalled()
+                ->willReturn(true)
+            ;
+        } else {
+            $this->programEligibilityConfigurationRepository->findOneBy([
+                'programEligibility' => $programEligibility1,
+                'value'              => $project->isReceivingGrant(),
+            ])
+                ->shouldNotBeCalled()
+            ;
+        }
+        // project grant field
+        $this->reservationAccessor->getValue($project, $field2)
+            ->shouldBeCalledOnce()
+            ->willReturn($project->getGrant())
+        ;
+        if ($data[FieldAlias::PROJECT_GRANT]['isValueValid']) {
+            $this->programEligibilityConfigurationRepository->findOneBy([
+                'programEligibility' => $programEligibility2,
+            ])
+                ->shouldBeCalledOnce()
+                ->willReturn($programEligibilityConfiguration2)
+            ;
+            $this->eligibilityConditionChecker->checkByConfiguration(
+                $project,
+                $programEligibilityConfiguration2
+            )
+                ->shouldBeCalled()
+                ->willReturn(true)
+            ;
+        } else {
+            $this->programEligibilityConfigurationRepository->findOneBy([
+                'programEligibility' => $programEligibility2,
+            ])
+                ->shouldNotBeCalled()
+            ;
+        }
+        $this->iriConverter->getIriFromItem(Argument::any())->shouldNotBeCalled();
+
+        $eligibilityChecker = $this->createTestObject();
+        $result             = $eligibilityChecker->check($this->reservation);
+
+        static::assertSame($expected, $result);
+    }
+
+    public function receivingGrantRelatedFieldsProvider(): iterable
+    {
+        yield 'receivingGrant true - projectGrant not null => valid' => [
+            [
+                FieldAlias::RECEIVING_GRANT => [
+                    'value'        => true,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::PROJECT_GRANT => [
+                    'value'        => new NullableMoney('EUR', '1000'),
+                    'isValueValid' => true,
+                ],
+            ],
+            [],
+        ];
+        yield 'receivingGrant false - projectGrant null => valid' => [
+            [
+                FieldAlias::RECEIVING_GRANT => [
+                    'value'        => false,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::PROJECT_GRANT => [
+                    'value'        => new NullableMoney(),
+                    'isValueValid' => true,
+                ],
+            ],
+            [],
+        ];
+        yield 'receivingGrant false - projectGrant not null => valid' => [
+            [
+                FieldAlias::RECEIVING_GRANT => [
+                    'value'        => false,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::PROJECT_GRANT => [
+                    'value'        => new NullableMoney('EUR', '1000'),
+                    'isValueValid' => true,
+                ],
+            ],
+            [],
+        ];
+        yield 'receivingGrant true - projectGrant null => invalid' => [
+            [
+                FieldAlias::RECEIVING_GRANT => [
+                    'value'        => true,
+                    'isValueValid' => true,
+                ],
+                FieldAlias::PROJECT_GRANT => [
+                    'value'        => new NullableMoney(),
+                    'isValueValid' => true,
+                ],
+            ],
+            [],
         ];
     }
 

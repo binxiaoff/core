@@ -177,11 +177,20 @@ class EligibilityChecker
 
     private function isValueValid(Reservation $reservation, Field $field, $value): bool
     {
-        // we do not check value
-        // if field is a creation_in_progress related field and if borrower is in creation in progress
+        $fieldAlias = $field->getFieldAlias();
+
+        // we do not check value if borrower is in creation in progress
         if (
-            \in_array($field->getFieldAlias(), FieldAlias::CREATION_IN_PROGRESS_RELATED_FIELDS, true)
+            \in_array($fieldAlias, FieldAlias::CREATION_IN_PROGRESS_RELATED_FIELDS, true)
             && $reservation->getBorrower()->isCreationInProgress()
+        ) {
+            return true;
+        }
+
+        // we do not check value if project is not receiving grant
+        if (
+            \in_array($fieldAlias, FieldAlias::RECEIVING_GRANT_RELATED_FIELDS, true)
+            && false === $reservation->getProject()->isReceivingGrant()
         ) {
             return true;
         }
