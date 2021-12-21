@@ -15,6 +15,6 @@ class ProgramContactVoter extends AbstractEntityVoter
      */
     protected function isGrantedAll($subject, User $user): bool
     {
-        return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_EDIT, $subject->getProgram());
+        return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_CREATE, $subject->getProgram());
     }
 }
