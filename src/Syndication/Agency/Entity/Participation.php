@@ -32,9 +32,6 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  * "money:read" is needed for allocation.
  *
  * @ApiResource(
- *     attributes={
- *         "validation_groups": {Participation::class, "getCurrentValidationGroups"},
- *     },
  *     normalizationContext={
  *         "groups": {
  *             "agency:participation:read",
@@ -47,6 +44,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *     collectionOperations={
  *         "get",
  *         "post": {
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"},
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:participation:create",
@@ -65,6 +63,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "security": "is_granted('view', object)",
  *         },
  *         "patch": {
+ *             "validation_groups": {Participation::class, "getCurrentValidationGroups"},
  *             "denormalization_context": {
  *                 "groups": {
  *                     "agency:participation:write",
