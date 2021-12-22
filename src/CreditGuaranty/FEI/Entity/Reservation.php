@@ -9,6 +9,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -163,6 +164,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  * )
  *
+ * @ApiFilter(SearchFilter::class, properties={"name": "partial"})
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(OrderFilter::class, properties={"added"})
  * @ApiFilter("KLS\CreditGuaranty\FEI\Filter\ReservationSentDateOrderFilter")
