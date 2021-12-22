@@ -54,7 +54,8 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
             $data instanceof Paginator
             && !isset($context[static::ALREADY_CALLED])
             && ReportingTemplate::class === $context['resource_class']
-            && 'reporting'              === $context['item_operation_name']
+            && isset($context['item_operation_name'])
+            && 'reporting' === $context['item_operation_name']
         ;
     }
 
