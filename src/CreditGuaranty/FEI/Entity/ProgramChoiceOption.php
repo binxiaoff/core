@@ -10,6 +10,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Closure;
 use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\ArchivableTrait;
 use KLS\Core\Entity\Traits\CloneableTrait;
@@ -103,6 +104,13 @@ class ProgramChoiceOption implements EquivalenceCheckerInterface
     private string $description;
 
     /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     *
+     * @Groups({"creditGuaranty:programChoiceOption:read", "creditGuaranty:programChoiceOption:write"})
+     */
+    private ?string $transcode = null;
+
+    /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Field")
      * @ORM\JoinColumn(name="id_field", nullable=false)
      */
@@ -113,7 +121,7 @@ class ProgramChoiceOption implements EquivalenceCheckerInterface
         $this->program     = $program;
         $this->description = $description;
         $this->field       = $field;
-        $this->added       = new \DateTimeImmutable();
+        $this->added       = new DateTimeImmutable();
     }
 
     public function getProgram(): Program
@@ -140,9 +148,29 @@ class ProgramChoiceOption implements EquivalenceCheckerInterface
         return $this;
     }
 
+    public function getTranscode(): ?string
+    {
+        return $this->transcode;
+    }
+
+    public function setTranscode(?string $transcode): ProgramChoiceOption
+    {
+        $this->transcode = $transcode;
+
+        return $this;
+    }
+
     public function getField(): Field
     {
         return $this->field;
+    }
+
+    /**
+     * @Groups({"creditGuaranty:programChoiceOption:read"})
+     */
+    public function getFieldAlias(): string
+    {
+        return $this->field->getFieldAlias();
     }
 
     /**
@@ -175,14 +203,6 @@ class ProgramChoiceOption implements EquivalenceCheckerInterface
         $this->setArchived(new DateTime());
 
         return $this;
-    }
-
-    /**
-     * @Groups({"creditGuaranty:programChoiceOption:read"})
-     */
-    public function getFieldAlias(): string
-    {
-        return $this->field->getFieldAlias();
     }
 
     public function getEquivalenceChecker(): Closure
