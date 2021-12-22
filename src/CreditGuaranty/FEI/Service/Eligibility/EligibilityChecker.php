@@ -80,19 +80,23 @@ class EligibilityChecker
                 }
 
                 foreach ($object as $objectItem) {
-                    $ineligibilities = \array_merge_recursive(
-                        $ineligibilities,
-                        $this->checkByObject($objectItem, $programEligibilities)
-                    );
+                    $categoryIneligibles = $this->checkByObject($objectItem, $programEligibilities);
+
+                    if (false === empty($categoryIneligibles)) {
+                        $iri = $this->iriConverter->getIriFromItem($objectItem);
+
+                        $ineligibilities[$category][$iri] = $categoryIneligibles;
+                    }
                 }
 
                 continue;
             }
 
-            $ineligibilities = \array_merge_recursive(
-                $ineligibilities,
-                $this->checkByObject($object, $programEligibilities)
-            );
+            $categoryIneligibles = $this->checkByObject($object, $programEligibilities);
+
+            if (false === empty($categoryIneligibles)) {
+                $ineligibilities[$category] = $categoryIneligibles;
+            }
         }
 
         return $ineligibilities;
@@ -108,20 +112,11 @@ class EligibilityChecker
 
         /** @var ProgramEligibility $programEligibility */
         foreach ($programEligibilities as $programEligibility) {
-            $field         = $programEligibility->getField();
-            $fieldCategory = $field->getCategory();
-
-            if (false === $this->isEligible($object, $programEligibility)) {
-                if ($object instanceof FinancingObject) {
-                    $iri = $this->iriConverter->getIriFromItem($object);
-
-                    $ineligibles[$fieldCategory][$iri][] = $field->getFieldAlias();
-
-                    continue;
-                }
-
-                $ineligibles[$fieldCategory][] = $field->getFieldAlias();
+            if ($this->isEligible($object, $programEligibility)) {
+                continue;
             }
+
+            $ineligibles[] = $programEligibility->getField()->getFieldAlias();
         }
 
         return $ineligibles;
