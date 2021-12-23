@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS\Syndication\Arrangement\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Closure;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
@@ -18,6 +19,7 @@ use KLS\Core\Entity\Traits\PermissionTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use KLS\Core\Model\Bitmask;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\EquivalenceCheckerInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -77,7 +79,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @UniqueEntity({"staff", "projectParticipation"})
  */
-class ProjectParticipationMember
+class ProjectParticipationMember implements EquivalenceCheckerInterface
 {
     use TimestampableAddedOnlyTrait;
     use BlamableAddedTrait;
@@ -90,7 +92,10 @@ class ProjectParticipationMember
     public const PERMISSION_WRITE = 1 << 0;
 
     /**
-     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Arrangement\Entity\ProjectParticipation", inversedBy="projectParticipationMembers")
+     * @ORM\ManyToOne(
+     *     targetEntity="KLS\Syndication\Arrangement\Entity\ProjectParticipation",
+     *     inversedBy="projectParticipationMembers"
+     * )
      * @ORM\JoinColumn(name="id_project_participation", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"projectParticipationMember:create"})
@@ -234,12 +239,25 @@ class ProjectParticipationMember
         return $this->staff->getCompanyGroupTags();
     }
 
+    public function getEquivalenceChecker(): Closure
+    {
+        $self = $this;
+
+        return static function (int $key, ProjectParticipationMember $ppm) use ($self): bool {
+            return $ppm->getProjectParticipation() === $self->getProjectParticipation()
+                && $ppm->getStaff()                === $self->getStaff();
+        };
+    }
+
     /**
      * @Assert\Callback
      */
     public function validateArchived(ExecutionContextInterface $context): void
     {
-        if ($this->isArchived() && $this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() < 1) {
+        if (
+            $this->isArchived()
+            && $this->getProjectParticipation()->getActiveProjectParticipationMembers()->count() < 1
+        ) {
             $context->buildViolation('ProjectParticipationMember.archived.lastActiveMember')
                 ->atPath('archived')
                 ->addViolation()

@@ -7,9 +7,11 @@ namespace KLS\Syndication\Agency\Entity;
 use ApiPlatform\Core\Action\NotFoundAction;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Closure;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\EquivalenceCheckerInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -44,12 +46,15 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @Assert\Expression("this.getBorrower().getProject() === this.getTranche().getProject()")
  */
-class BorrowerTrancheShare
+class BorrowerTrancheShare implements EquivalenceCheckerInterface
 {
     use PublicizeIdentityTrait;
 
     /**
-     * @ORM\ManyToOne(targetEntity="KLS\Syndication\Agency\Entity\Borrower", cascade={"persist"}, inversedBy="trancheShares")
+     * @ORM\ManyToOne(
+     *     targetEntity="KLS\Syndication\Agency\Entity\Borrower",
+     *     cascade={"persist"}, inversedBy="trancheShares"
+     * )
      * @ORM\JoinColumn(name="id_borrower", nullable=false, onDelete="CASCADE")
      *
      * @Groups({"agency:borrowerTrancheShare:read", "agency:borrowerTrancheShare:write"})
@@ -134,5 +139,15 @@ class BorrowerTrancheShare
         $this->share = $share;
 
         return $this;
+    }
+
+    public function getEquivalenceChecker(): Closure
+    {
+        $self = $this;
+
+        return static function (int $key, BorrowerTrancheShare $bts) use ($self): bool {
+            return $bts->getBorrower() === $self->getBorrower()
+                && $bts->getTranche()  === $self->getTranche();
+        };
     }
 }

@@ -18,7 +18,6 @@ use KLS\Core\Controller\Dataroom\Get;
 use KLS\Core\Controller\Dataroom\Post;
 use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Drive;
-use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
 use KLS\Core\Entity\Interfaces\MoneyInterface;
@@ -416,9 +415,9 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
     public function getFinalAllocation(): MoneyInterface
     {
         $result = MoneyCalculator::sum(
-            $this->allocations->map(
-                fn (ParticipationTrancheAllocation $allocation) => $allocation->getAllocation()
-            )->toArray()
+            $this->allocations
+                ->map(fn (ParticipationTrancheAllocation $allocation) => $allocation->getAllocation())
+                ->toArray()
         );
 
         if (null === $result->getCurrency()) {
@@ -625,12 +624,7 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
 
     public function addAllocation(ParticipationTrancheAllocation $participationTrancheAllocation): Participation
     {
-        if (
-            false === $this->allocations->exists(
-                fn ($key, ParticipationTrancheAllocation $item) => $item->getTranche()
-                    === $participationTrancheAllocation->getTranche()
-            )
-        ) {
+        if (false === $this->allocations->exists($participationTrancheAllocation->getEquivalenceChecker())) {
             $this->allocations->add($participationTrancheAllocation);
             $participationTrancheAllocation->getTranche()->addAllocation($participationTrancheAllocation);
         }
