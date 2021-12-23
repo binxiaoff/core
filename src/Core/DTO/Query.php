@@ -73,4 +73,14 @@ class Query
             $this->orders[$key] = $value;
         }
     }
+
+    public function isEmpty(): bool
+    {
+        return
+            empty($this->getSelects())
+            && empty($this->getJoins())
+            && empty($this->getClauses())
+            && empty($this->getOrders())
+        ;
+    }
 }

@@ -72,18 +72,23 @@ class ReportingQueryGeneratorTest extends TestCase
             ;
             $this->fieldRepository->findAll()->shouldNotBeCalled();
 
-            // selects
-            foreach ($fields as $field) {
-                $mapping = $fieldMappings[$field->getFieldAlias()];
+            if ($expected->isEmpty()) {
+                $this->reportingQueryHelper->getPropertyPath(Argument::cetera())->shouldNotBeCalled();
+                $this->reportingQueryHelper->generateJoinByField(Argument::any())->shouldNotBeCalled();
+            } else {
+                // selects
+                foreach ($fields as $field) {
+                    $mapping = $fieldMappings[$field->getFieldAlias()];
 
-                $this->reportingQueryHelper->getPropertyPath($field, true)
-                    ->shouldBeCalledOnce()
-                    ->willReturn($mapping['propertyPathFormatted'])
-                ;
-                $this->reportingQueryHelper->generateJoinByField($field)
-                    ->shouldBeCalled()
-                    ->willReturn($mapping['joins'])
-                ;
+                    $this->reportingQueryHelper->getPropertyPath($field, true)
+                        ->shouldBeCalledOnce()
+                        ->willReturn($mapping['propertyPathFormatted'])
+                    ;
+                    $this->reportingQueryHelper->generateJoinByField($field)
+                        ->shouldBeCalled()
+                        ->willReturn($mapping['joins'])
+                    ;
+                }
             }
         } else {
             /** @var Field[]|array $fields */
@@ -146,6 +151,7 @@ class ReportingQueryGeneratorTest extends TestCase
         $reportingTemplate = $this->createReportingTemplate('Test');
         $fields            = $this->createFieldsForReportingTemplate();
         $this->withMultipleReportingTemplateFields($reportingTemplate, $fields);
+        $reportingTemplate2 = $this->createReportingTemplate('Test 2');
 
         yield 'reportingTemplate and valid filters' => [
             [
@@ -205,7 +211,6 @@ class ReportingQueryGeneratorTest extends TestCase
             ),
             $reportingTemplate,
         ];
-
         yield 'reportingTemplate and invalid filters' => [
             [
                 'searchh' => [
@@ -250,7 +255,11 @@ class ReportingQueryGeneratorTest extends TestCase
             $this->createQuery($fields, [], [], true),
             $reportingTemplate,
         ];
-
+        yield 'reportingTemplate without reportingTemplateFields' => [
+            [],
+            new Query(),
+            $reportingTemplate2,
+        ];
         yield 'no reportingTemplate and no filters' => [
             [],
             $this->createQuery($fields, [], []),
@@ -265,13 +274,13 @@ class ReportingQueryGeneratorTest extends TestCase
         array $fields,
         array $clauses = [],
         array $orders = [],
-        bool $haReportingTemplate = false
+        bool $hasReportingTemplate = false
     ): Query {
         $fieldMappings = $this->getFieldAliasQueryMapping();
 
         $query = new Query();
 
-        if ($haReportingTemplate) {
+        if ($hasReportingTemplate) {
             $initSelects = [
                 FieldAlias::REPORTING_FIRST_DATE      => 'financingObjects.reportingFirstDate',
                 FieldAlias::REPORTING_LAST_DATE       => 'financingObjects.reportingLastDate',

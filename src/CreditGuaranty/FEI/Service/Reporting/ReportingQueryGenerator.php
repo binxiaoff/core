@@ -37,6 +37,10 @@ class ReportingQueryGenerator
         $query = new Query();
 
         if ($reportingTemplate instanceof ReportingTemplate) {
+            if (0 === $reportingTemplate->getReportingTemplateFields()->count()) {
+                return $query;
+            }
+
             foreach (FieldAlias::MAPPING_REPORTING_DATES as $fieldAlias => $property) {
                 $query->addSelect(
                     \sprintf('DATE_FORMAT(financingObjects.%s, %s) AS %s', $property, '\'%Y-%m-%d\'', $fieldAlias)
@@ -97,7 +101,7 @@ class ReportingQueryGenerator
                 if (false === empty($searchExpressions)) {
                     $query->addClause([
                         'expression' => \implode(' OR ', $searchExpressions),
-                        'parameter'  => ['search', '%' . $filters['search'] . '%'], // @todo be careful of special chars
+                        'parameter'  => ['search', '%' . $filters['search'] . '%'],
                     ]);
                 }
 
