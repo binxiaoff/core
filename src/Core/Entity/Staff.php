@@ -6,6 +6,7 @@ namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Closure;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -16,6 +17,7 @@ use KLS\Core\Entity\Interfaces\StatusInterface;
 use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\EquivalenceCheckerInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -84,7 +86,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @UniqueEntity(fields={"team", "user"}, message="Core.Staff.user.unique")
  */
-class Staff implements TraceableStatusAwareInterface
+class Staff implements TraceableStatusAwareInterface, EquivalenceCheckerInterface
 {
     use TimestampableTrait;
     use PublicizeIdentityTrait;
@@ -143,7 +145,10 @@ class Staff implements TraceableStatusAwareInterface
      *
      * @Assert\Valid
      *
-     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\StaffStatus", mappedBy="staff", orphanRemoval=true, cascade={"persist"}, fetch="EAGER")
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Core\Entity\StaffStatus", mappedBy="staff",
+     *     orphanRemoval=true, cascade={"persist"}, fetch="EAGER"
+     * )
      */
     private Collection $statuses;
 
@@ -200,11 +205,6 @@ class Staff implements TraceableStatusAwareInterface
         return $this->team->getCompany();
     }
 
-    public function getTeam(): Team
-    {
-        return $this->team;
-    }
-
     public function getUser(): User
     {
         return $this->user;
@@ -213,6 +213,18 @@ class Staff implements TraceableStatusAwareInterface
     public function setUser(User $user): Staff
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getTeam(): Team
+    {
+        return $this->team;
+    }
+
+    public function setTeam(Team $team): Staff
+    {
+        $this->team = $team;
 
         return $this;
     }
@@ -229,9 +241,9 @@ class Staff implements TraceableStatusAwareInterface
         return $this->manager;
     }
 
-    public function isActive(): bool
+    public function getCurrentStatus(): StaffStatus
     {
-        return $this->getCurrentStatus() && StaffStatus::STATUS_ACTIVE === $this->getCurrentStatus()->getStatus();
+        return $this->currentStatus;
     }
 
     /**
@@ -242,6 +254,11 @@ class Staff implements TraceableStatusAwareInterface
         $this->currentStatus = $currentStatus;
 
         return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->getCurrentStatus() && StaffStatus::STATUS_ACTIVE === $this->getCurrentStatus()->getStatus();
     }
 
     public function isArchived(): bool
@@ -257,17 +274,28 @@ class Staff implements TraceableStatusAwareInterface
         return $this->statuses;
     }
 
-    public function getCurrentStatus(): StaffStatus
+    public function hasArrangementProjectCreationPermission(): bool
     {
-        return $this->currentStatus;
+        return $this->arrangementProjectCreationPermission;
     }
 
-    /**
-     * @Groups({Staff::SERIALIZER_GROUP_OWNER_READ})
-     */
-    public function getActivatedModules(): array
+    public function setArrangementProjectCreationPermission(bool $arrangementProjectCreationPermission): Staff
     {
-        return $this->getCompany()->getActivatedModules();
+        $this->arrangementProjectCreationPermission = $arrangementProjectCreationPermission;
+
+        return $this;
+    }
+
+    public function hasAgencyProjectCreationPermission(): bool
+    {
+        return $this->agencyProjectCreationPermission;
+    }
+
+    public function setAgencyProjectCreationPermission(bool $agencyProjectCreationPermission): Staff
+    {
+        $this->agencyProjectCreationPermission = $agencyProjectCreationPermission;
+
+        return $this;
     }
 
     /**
@@ -276,14 +304,6 @@ class Staff implements TraceableStatusAwareInterface
     public function getCompanyGroupTags(): array
     {
         return $this->companyGroupTags->toArray();
-    }
-
-    /**
-     * @return CompanyGroupTag[]|array
-     */
-    public function getAvailableCompanyGroupTags(): array
-    {
-        return $this->getCompany()->getCompanyGroupTags();
     }
 
     public function addCompanyGroupTag(CompanyGroupTag $tag): Staff
@@ -298,11 +318,7 @@ class Staff implements TraceableStatusAwareInterface
             return $this;
         }
 
-        $callback = function (int $key, CompanyGroupTag $cgt) use ($tag): bool {
-            return $tag->getCompanyGroup() === $cgt->getCompanyGroup() && $tag->getCode() === $cgt->getCode();
-        };
-
-        if (false === $this->companyGroupTags->exists($callback)) {
+        if (false === $this->companyGroupTags->exists($tag->getEquivalenceChecker())) {
             $this->companyGroupTags[] = $tag;
         }
 
@@ -316,35 +332,20 @@ class Staff implements TraceableStatusAwareInterface
         return $this;
     }
 
-    public function setTeam(Team $team): Staff
+    /**
+     * @return CompanyGroupTag[]|array
+     */
+    public function getAvailableCompanyGroupTags(): array
     {
-        $this->team = $team;
-
-        return $this;
+        return $this->getCompany()->getCompanyGroupTags();
     }
 
-    public function hasArrangementProjectCreationPermission(): bool
+    /**
+     * @Groups({Staff::SERIALIZER_GROUP_OWNER_READ})
+     */
+    public function getActivatedModules(): array
     {
-        return $this->arrangementProjectCreationPermission;
-    }
-
-    public function hasAgencyProjectCreationPermission(): bool
-    {
-        return $this->agencyProjectCreationPermission;
-    }
-
-    public function setArrangementProjectCreationPermission(bool $arrangementProjectCreationPermission): Staff
-    {
-        $this->arrangementProjectCreationPermission = $arrangementProjectCreationPermission;
-
-        return $this;
-    }
-
-    public function setAgencyProjectCreationPermission(bool $agencyProjectCreationPermission): Staff
-    {
-        $this->agencyProjectCreationPermission = $agencyProjectCreationPermission;
-
-        return $this;
+        return $this->getCompany()->getActivatedModules();
     }
 
     /**
@@ -373,7 +374,8 @@ class Staff implements TraceableStatusAwareInterface
             return;
         }
 
-        // Manager get self in collection (he is present in his team) and other people (manager or not) in his team and its descendents
+        // Manager get self in collection (he is present in his team)
+        // and other people (manager or not) in his team and its descendents
         /** @var Team $team */
         foreach ([$this->team, ...$this->team->getDescendents()] as $team) {
             yield from $team->getStaff();
@@ -390,12 +392,22 @@ class Staff implements TraceableStatusAwareInterface
         }
     }
 
+    public function getEquivalenceChecker(): Closure
+    {
+        $self = $this;
+
+        return static function (int $key, Staff $s) use ($self): bool {
+            return $s->getUser() === $self->getUser()
+                && $s->getTeam() === $self->getTeam();
+        };
+    }
+
     /**
      * Assert there is only one staff for each company for a given user.
      *
      * @Assert\Callback
      */
-    public function validateCompanyUnicity(ExecutionContextInterface $context)
+    public function validateCompanyUniqueness(ExecutionContextInterface $context)
     {
         foreach ($this->user->getStaff() as $staff) {
             if ($this->id !== $staff->getId() && $staff->getTeam()->getCompany() === $this->team->getCompany()) {

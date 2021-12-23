@@ -8,5 +8,8 @@ use Closure;
 
 interface EquivalenceCheckerInterface
 {
+    /**
+     * The callable must respect unique constrains of entity.
+     */
     public function getEquivalenceChecker(): Closure;
 }

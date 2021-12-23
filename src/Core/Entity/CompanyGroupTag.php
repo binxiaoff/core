@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace KLS\Core\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Closure;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\EquivalenceCheckerInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
@@ -38,7 +40,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  *     collectionOperations={},
  * )
  */
-class CompanyGroupTag
+class CompanyGroupTag implements EquivalenceCheckerInterface
 {
     use PublicizeIdentityTrait;
 
@@ -74,5 +76,15 @@ class CompanyGroupTag
     public function getCompanyGroup(): CompanyGroup
     {
         return $this->companyGroup;
+    }
+
+    public function getEquivalenceChecker(): Closure
+    {
+        $self = $this;
+
+        return static function (int $key, CompanyGroupTag $cgt) use ($self): bool {
+            return $cgt->getCompanyGroup() === $self->getCompanyGroup()
+                && $cgt->getCode()         === $self->getCode();
+        };
     }
 }
