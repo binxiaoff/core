@@ -9,7 +9,6 @@ use Exception;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Repository\FinancingObjectRepository;
-use KLS\CreditGuaranty\FEI\Repository\ReservationRepository;
 use KLS\CreditGuaranty\FEI\Service\Reporting\ReportingQueryGenerator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,19 +25,18 @@ class BulkUpdate
         Program $data,
         Request $request,
         ValidatorInterface $validator,
-        ReservationRepository $reservationRepository,
         FinancingObjectRepository $financingObjectRepository,
         ReportingQueryGenerator $reportingQueryGenerator
     ): JsonResponse {
-        $query = $reportingQueryGenerator->generate($request->query->all());
-        $ids   = \array_column(
-            $reservationRepository->findByReportingFilters($data, $query),
-            'id_financing_object'
-        );
-
         $dataToUpdate = \json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         $this->validate($validator, $dataToUpdate);
+
+        $query = $reportingQueryGenerator->generate($request->query->all());
+        $ids   = \array_column(
+            $financingObjectRepository->findByReportingFilters($data, $query),
+            'id_financing_object'
+        );
 
         try {
             $financingObjectRepository->bulkUpdate($ids, $dataToUpdate);
