@@ -944,15 +944,11 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
     public function addProgramBorrowerTypeAllocation(
         ProgramBorrowerTypeAllocation $programBorrowerTypeAllocation
     ): Program {
-        $callback = static function (
-            int $key,
-            ProgramBorrowerTypeAllocation $pbta
-        ) use ($programBorrowerTypeAllocation): bool {
-            return $pbta->getProgramChoiceOption() === $programBorrowerTypeAllocation->getProgramChoiceOption();
-        };
         if (
             $programBorrowerTypeAllocation->getProgram() === $this
-            && false === $this->programBorrowerTypeAllocations->exists($callback)
+            && false === $this->programBorrowerTypeAllocations->exists(
+                $programBorrowerTypeAllocation->getEquivalenceChecker()
+            )
         ) {
             $this->programBorrowerTypeAllocations->add($programBorrowerTypeAllocation);
         }
@@ -1010,12 +1006,7 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
 
     public function addProgramEligibility(ProgramEligibility $programEligibility): Program
     {
-        $callback = fn (int $key, ProgramEligibility $pe): bool => $pe->getField() === $programEligibility->getField();
-
-        if (
-            $programEligibility->getProgram() === $this
-            && false === $this->programEligibilities->exists($callback)
-        ) {
+        if (false === $this->programEligibilities->exists($programEligibility->getEquivalenceChecker())) {
             $this->programEligibilities->add($programEligibility);
         }
 

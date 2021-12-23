@@ -6,12 +6,14 @@ namespace KLS\CreditGuaranty\FEI\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Closure;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\CloneableTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\CreditGuaranty\FEI\DTO\ProgramBorrowerTypeAllocationInput;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\EquivalenceCheckerInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -60,7 +62,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @UniqueEntity({"program", "programChoiceOption"})
  */
-class ProgramBorrowerTypeAllocation
+class ProgramBorrowerTypeAllocation implements EquivalenceCheckerInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
@@ -125,6 +127,14 @@ class ProgramBorrowerTypeAllocation
         return $this;
     }
 
+    /**
+     * @Groups({"creditGuaranty:programBorrowerTypeAllocation:read"})
+     */
+    public function getBorrowerType(): string
+    {
+        return $this->getProgramChoiceOption()->getDescription();
+    }
+
     public function getMaxAllocationRate(): string
     {
         return $this->maxAllocationRate;
@@ -137,11 +147,13 @@ class ProgramBorrowerTypeAllocation
         return $this;
     }
 
-    /**
-     * @Groups({"creditGuaranty:programBorrowerTypeAllocation:read"})
-     */
-    public function getBorrowerType(): string
+    public function getEquivalenceChecker(): Closure
     {
-        return $this->getProgramChoiceOption()->getDescription();
+        $self = $this;
+
+        return static function (int $key, ProgramBorrowerTypeAllocation $pbta) use ($self): bool {
+            return $pbta->getProgram()             === $self->getProgram()
+                && $pbta->getProgramChoiceOption() === $self->getProgramChoiceOption();
+        };
     }
 }
