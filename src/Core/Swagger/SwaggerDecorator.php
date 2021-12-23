@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace KLS\Core\Swagger;
 
+use KLS\CreditGuaranty\FEI\Entity\Constant\ReportingFilter;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -38,11 +39,13 @@ class SwaggerDecorator implements NormalizerInterface
         $docs = $this->decorated->normalize($object, $format, $context);
 
         // Paths
+        $this->hydrateReportingRoutesParameters($docs['paths']);
+        \ksort($docs['paths']);
+        // put authentication paths at top of the list
         $authenticationPaths = [
             $this->router->generate('authentication_token')       => $this->generateAuthenticationTokenPath(),
             $this->router->generate('gesdinet_jwt_refresh_token') => $this->generateRefreshTokenPath(),
         ];
-        // put authentication paths at top of the list
         $docs['paths'] = \array_merge($authenticationPaths, $docs['paths']);
 
         // Schemas
@@ -164,5 +167,48 @@ class SwaggerDecorator implements NormalizerInterface
                 ],
             ],
         ];
+    }
+
+    private function hydrateReportingRoutesParameters(array &$routes): void
+    {
+        $reportingRoutes = [
+            [
+                'route'  => '/credit_guaranty/reporting_templates/{publicId}/reporting',
+                'method' => 'get',
+            ],
+            [
+                'route'  => '/credit_guaranty/programs/{publicId}/financing_objects',
+                'method' => 'patch',
+            ],
+        ];
+
+        foreach ($reportingRoutes as $reportingRoute) {
+            foreach (ReportingFilter::FIELD_ALIAS_FILTER_KEYS as $fieldAliasFilter) {
+                $routes[$reportingRoute['route']][$reportingRoute['method']]['parameters'][] = [
+                    'name'            => $fieldAliasFilter,
+                    'in'              => 'query',
+                    'description'     => '',
+                    'required'        => false,
+                    'deprecated'      => false,
+                    'allowEmptyValue' => false,
+                    'schema'          => [],
+                    'style'           => 'form',
+                    'explode'         => false,
+                    'allowReserved'   => false,
+                ];
+                $routes[$reportingRoute['route']][$reportingRoute['method']]['parameters'][] = [
+                    'name'            => $fieldAliasFilter . '[]',
+                    'in'              => 'query',
+                    'description'     => '',
+                    'required'        => false,
+                    'deprecated'      => false,
+                    'allowEmptyValue' => false,
+                    'schema'          => ['type' => 'object'],
+                    'style'           => 'deepObject',
+                    'explode'         => true,
+                    'allowReserved'   => false,
+                ];
+            }
+        }
     }
 }
