@@ -99,12 +99,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiFilter(OrderFilter::class, properties={"name"})
  *
  * @ORM\Entity
- * @ORM\Table(
- *     name="credit_guaranty_reporting_template",
- *     uniqueConstraints={
- *         @ORM\UniqueConstraint(name="uniq_program_reportingTemplate_name", columns={"id_program", "name"})
- *     }
- * )
+ * @ORM\Table(name="credit_guaranty_reporting_template")
  *
  * @UniqueEntity(fields={"name", "program"}, message="CreditGuaranty.Program.reportingTemplate.name.unique")
  *
