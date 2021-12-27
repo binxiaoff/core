@@ -25,8 +25,12 @@ class DriveTest extends TestCase
      *
      * @dataProvider providerGetFolders
      */
-    public function testGetFolders(Drive $drive, int $expectedCount, ?int $depth = null, ?string $exceptionClass = null): void
-    {
+    public function testGetFolders(
+        Drive $drive,
+        int $expectedCount,
+        ?int $depth = null,
+        ?string $exceptionClass = null
+    ): void {
         if ($exceptionClass) {
             $this->expectException($exceptionClass);
         }
@@ -55,8 +59,18 @@ class DriveTest extends TestCase
             'It return the correct number of folders with a depth of 1'              => [$drive, 4, 1],
             'It return the correct number of folders with a depth of 2'              => [$drive, 7, 2],
             'It return the correct number of folders with a depth of 3'              => [$drive, 9, 3],
-            'It throws an exception when 0 is given as a depth'                      => [new Drive(), 0, 0, InvalidArgumentException::class],
-            'It throws an exception when a negative number is given as a depth'      => [new Drive(), 0, -1, InvalidArgumentException::class],
+            'It throws an exception when 0 is given as a depth'                      => [
+                new Drive(),
+                0,
+                0,
+                InvalidArgumentException::class,
+            ],
+            'It throws an exception when a negative number is given as a depth' => [
+                new Drive(),
+                0,
+                -1,
+                InvalidArgumentException::class,
+            ],
         ];
     }
 
@@ -84,26 +98,52 @@ class DriveTest extends TestCase
         $drive->createFolder('/existingFolder');
         $drive->createFolder('/one');
 
-        $folders = [
-            'It ignores attempt to create /'                                         => '/',
-            'It can create a folder directly when given path has leading /'          => \implode('/', ['onelevel']),
-            'It can create all folders recursively when given path has leading /'    => \implode('/', ['several', 'level', 'depth']),
-            'It can create a folder directly when given path has suffixed /'         => \implode('/', ['onelevel']) . '/',
-            'It can create all folders recursively when given path has suffixed /'   => \implode('/', ['several', 'level', 'depth']) . '/',
-            'It can create a folder directly when given path has no affixed /'       => 'onelevelwithoutleadingslash',
-            'It can create all folders recursively when given path has no affixed /' => 'several' . \implode('/', ['level', 'without', 'leading', 'slash']),
-            'It does not throw an exception when folder already exist'               => 'existingFolder',
-            'It handles nested folders with the same name 1'                         => '/one/one',
-            'It handles nested folders with the same name 2'                         => '/one/one/one',
+        return [
+            'It ignores attempt to create /' => [
+                $drive,
+                '/',
+            ],
+            'It can create a folder directly when given path with leading /' => [
+                $drive,
+                \implode('/', ['onelevel']),
+            ],
+            'It can create all folders recursively when given path with leading /' => [
+                $drive,
+                \implode('/', ['several', 'level', 'depth']),
+            ],
+            'It can create a folder directly when given path with suffixed /' => [
+                $drive,
+                \implode('/', ['onelevel']) . '/',
+            ],
+            'It can create all folders recursively when given path with suffixed /' => [
+                $drive,
+                \implode('/', ['several', 'level', 'depth']) . '/',
+            ],
+            'It can create a folder directly when given path without affixed /' => [
+                $drive,
+                'onelevelwithoutleadingslash',
+            ],
+            'It can create all folders recursively when given path without affixed /' => [
+                $drive,
+                'several' . \implode('/', ['level', 'without', 'leading', 'slash']),
+            ],
+            'It does not throw an exception when folder already exist' => [
+                $drive,
+                'existingFolder',
+            ],
+            'It handles nested folders with the same name 1' => [
+                $drive,
+                '/one/one',
+            ],
+            'It handles nested folders with the same name 2' => [
+                $drive,
+                '/one/one/one',
+            ],
         ];
-
-        foreach ($folders as $test => $folder) {
-            yield $test => [$drive, $folder];
-        }
     }
 
     /**
-     * @covers ::rmFolder
+     * @covers ::deleteFolder
      *
      * @dataProvider providerDeleteFolder
      *
@@ -133,21 +173,56 @@ class DriveTest extends TestCase
      */
     public function providerDeleteFolder(): iterable
     {
-        $testDrives = \array_map(static fn () => (new Drive())->createFolder(\implode('/', ['toto', 'tata', 'titi'])), \range(0, 5));
+        $testDrives = \array_map(
+            static fn () => (new Drive())->createFolder(\implode('/', ['toto', 'tata', 'titi'])),
+            \range(0, 5)
+        );
 
         $testDrives[5]->getFolder('/toto')->addFile($this->generateMockFile('test.png'));
 
         return [
-            'It handles non existant path with leading /'                       => [new Drive(), '/toto'],
-            'It handles non existant path without affixed /'                    => [new Drive(), 'toto'],
-            'It handles non existant path with suffixed /'                      => [new Drive(), 'toto/'],
-            'It throws an exception for a folder with an incorrect drive'       => [new Drive(), new Folder('t', new Drive(), '/'), InvalidArgumentException::class],
-            'It throws an exception when attempting to delete the root folder'  => [new Drive(), '/', InvalidArgumentException::class],
-            'It can delete folder when parameter is Folder and path is simple'  => [$testDrives[0], $testDrives[0]->getFolders()['/toto']],
-            'It can delete folder when parameter is Folder and path is complex' => [$testDrives[1], $testDrives[1]->getFolders()['/toto/tata']],
-            'It can delete folder when parameter is string and path is simple'  => [$testDrives[2], \implode('/', ['toto'])],
-            'It can delete folder when parameter is string and path is complex' => [$testDrives[3], \implode('/', ['toto', 'tata'])],
-            'It ignore path targeting file'                                     => [$testDrives[5], \implode('/', ['toto', 'test.png'])],
+            'It handles non existant path with leading /' => [
+                new Drive(),
+                '/toto',
+            ],
+            'It handles non existant path without affixed /' => [
+                new Drive(),
+                'toto',
+            ],
+            'It handles non existant path with suffixed /' => [
+                new Drive(),
+                'toto/',
+            ],
+            'It throws an exception for a folder with an incorrect drive' => [
+                new Drive(),
+                new Folder('t', new Drive(), '/'),
+                InvalidArgumentException::class,
+            ],
+            'It throws an exception when attempting to delete the root folder' => [
+                new Drive(),
+                '/',
+                InvalidArgumentException::class,
+            ],
+            'It can delete folder when parameter is Folder and path is simple' => [
+                $testDrives[0],
+                $testDrives[0]->getFolders()['/toto'],
+            ],
+            'It can delete folder when parameter is Folder and path is complex' => [
+                $testDrives[1],
+                $testDrives[1]->getFolders()['/toto/tata'],
+            ],
+            'It can delete folder when parameter is string and path is simple' => [
+                $testDrives[2],
+                \implode('/', ['toto']),
+            ],
+            'It can delete folder when parameter is string and path is complex' => [
+                $testDrives[3],
+                \implode('/', ['toto', 'tata']),
+            ],
+            'It ignore path targeting file' => [
+                $testDrives[5],
+                \implode('/', ['toto', 'test.png']),
+            ],
         ];
     }
 
@@ -180,13 +255,41 @@ class DriveTest extends TestCase
         $drive->addFile($this->generateMockFile('test.png'));
 
         return [
-            'It returns self when given ' . '/' . ' as argument' => [$drive, '/', $drive],
-            'It returns a folder when the folder exists 1'       => [$drive, '/toto', $drive->getFolders()['/toto']],
-            'It returns a folder when the folder exists 2'       => [$drive, '/toto/tata', $drive->getFolders()['/toto/tata']],
-            'It returns a folder when the folder exists 3'       => [$drive, '/toto/tata/titi', $drive->getFolders()['/toto/tata/titi']],
-            'It returns null when the path does not exists'      => [$drive, '/tutu', null],
-            'It returns null when the path target a file 1'      => [$drive, '/test.png', null],
-            'It returns null when the path target a file 2'      => [$drive, '/toto/test.png', null],
+            'It returns self when given ' . '/' . ' as argument' => [
+                $drive,
+                '/',
+                $drive,
+            ],
+            'It returns a folder when the folder exists 1' => [
+                $drive,
+                '/toto',
+                $drive->getFolders()['/toto'],
+            ],
+            'It returns a folder when the folder exists 2' => [
+                $drive,
+                '/toto/tata',
+                $drive->getFolders()['/toto/tata'],
+            ],
+            'It returns a folder when the folder exists 3' => [
+                $drive,
+                '/toto/tata/titi',
+                $drive->getFolders()['/toto/tata/titi'],
+            ],
+            'It returns null when the path does not exists' => [
+                $drive,
+                '/tutu',
+                null,
+            ],
+            'It returns null when the path target a file 1' => [
+                $drive,
+                '/test.png',
+                null,
+            ],
+            'It returns null when the path target a file 2' => [
+                $drive,
+                '/toto/test.png',
+                null,
+            ],
         ];
     }
 
@@ -212,15 +315,51 @@ class DriveTest extends TestCase
         $drive = $this->getCommonDrive();
 
         return [
-            'It should return the drive for /'                      => [$drive, '/', $drive],
-            'It should return a folder when path target a folder 1' => [$drive, '/toto', $drive->getFolder('/toto')],
-            'It should return a folder when path target a folder 2' => [$drive, '/toto/tata', $drive->getFolder('/toto/tata')],
-            'It should return a folder when path target a folder 3' => [$drive, '/foo/bar', $drive->getFolder('/foo/bar')],
-            'It should return a file when path target a file 1'     => [$drive, '/root.png', $drive->getFolder('/')->getFile('root.png')],
-            'It should return a file when path target a file 2'     => [$drive, '/foo/bar/jamiroquai.png',  $drive->getFolder('/foo/bar')->getFile('jamiroquai.png')],
-            'It should return a file when path target a file 3'     => [$drive, '/toto/tata/titi/hidden.png', $drive->getFolder('/toto/tata/titi')->getFile('hidden.png')],
-            'It should return null when not found 1'                => [$drive, '/toto/tata/hidden.png', null],
-            'It should return null when not found 2'                => [$drive, '/toto/tutu/', null],
+            'It should return the drive for /' => [
+                $drive,
+                '/',
+                $drive,
+            ],
+            'It should return a folder when path target a folder 1' => [
+                $drive,
+                '/toto',
+                $drive->getFolder('/toto'),
+            ],
+            'It should return a folder when path target a folder 2' => [
+                $drive,
+                '/toto/tata',
+                $drive->getFolder('/toto/tata'),
+            ],
+            'It should return a folder when path target a folder 3' => [
+                $drive,
+                '/foo/bar',
+                $drive->getFolder('/foo/bar'),
+            ],
+            'It should return a file when path target a file 1' => [
+                $drive,
+                '/root.png',
+                $drive->getFolder('/')->getFile('root.png'),
+            ],
+            'It should return a file when path target a file 2' => [
+                $drive,
+                '/foo/bar/jamiroquai.png',
+                $drive->getFolder('/foo/bar')->getFile('jamiroquai.png'),
+            ],
+            'It should return a file when path target a file 3' => [
+                $drive,
+                '/toto/tata/titi/hidden.png',
+                $drive->getFolder('/toto/tata/titi')->getFile('hidden.png'),
+            ],
+            'It should return null when not found 1' => [
+                $drive,
+                '/toto/tata/hidden.png',
+                null,
+            ],
+            'It should return null when not found 2' => [
+                $drive,
+                '/toto/tutu/',
+                null,
+            ],
         ];
     }
 
@@ -239,21 +378,69 @@ class DriveTest extends TestCase
         $commonDrive = $this->getCommonDrive();
 
         yield from [
-            'It should return true for root for common drive'                   => [$commonDrive, '/', true],
-            'It should return true for existing folder for common drive 1'      => [$commonDrive, '/toto', true],
-            'It should return true for existing folder for common drive 2'      => [$commonDrive, '/toto/tata', true],
-            'It should return true for existing file for common drive 1'        => [$commonDrive, '/root.png', true],
-            'It should return true for existing file for common drive 2'        => [$commonDrive, '/toto/tata/titi/hidden.png', true],
-            'It should return false for non existing folder for common drive 1' => [$commonDrive, '/tutu', false],
-            'It should return false for non existing folder for common drive 2' => [$commonDrive, '/foo/bar/falm', false],
-            'It should return false for non existing file for common drive 2'   => [$commonDrive, '/false.pdf', false],
-            'It should return false for non existing file for common drive 3'   => [$commonDrive, '/toto/tata/false.pdf', false],
+            'It should return true for root for common drive' => [
+                $commonDrive,
+                '/',
+                true,
+            ],
+            'It should return true for existing folder for common drive 1' => [
+                $commonDrive,
+                '/toto',
+                true,
+            ],
+            'It should return true for existing folder for common drive 2' => [
+                $commonDrive,
+                '/toto/tata',
+                true,
+            ],
+            'It should return true for existing file for common drive 1' => [
+                $commonDrive,
+                '/root.png',
+                true,
+            ],
+            'It should return true for existing file for common drive 2' => [
+                $commonDrive,
+                '/toto/tata/titi/hidden.png',
+                true,
+            ],
+            'It should return false for non existing folder for common drive 1' => [
+                $commonDrive,
+                '/tutu',
+                false,
+            ],
+            'It should return false for non existing folder for common drive 2' => [
+                $commonDrive,
+                '/foo/bar/falm',
+                false,
+            ],
+            'It should return false for non existing file for common drive 2' => [
+                $commonDrive,
+                '/false.pdf',
+                false,
+            ],
+            'It should return false for non existing file for common drive 3' => [
+                $commonDrive,
+                '/toto/tata/false.pdf',
+                false,
+            ],
         ];
 
         yield from [
-            'It should return true for root for new drive'                 => [$commonDrive, '/', true],
-            'It should return false for non existing folder for new drive' => [new Drive(), '/tutu', false],
-            'It should return false for non existing file for new drive'   => [new Drive(), '/false.pdf', false],
+            'It should return true for root for new drive' => [
+                $commonDrive,
+                '/',
+                true,
+            ],
+            'It should return false for non existing folder for new drive' => [
+                new Drive(),
+                '/tutu',
+                false,
+            ],
+            'It should return false for non existing file for new drive' => [
+                new Drive(),
+                '/false.pdf',
+                false,
+            ],
         ];
     }
 
@@ -281,21 +468,71 @@ class DriveTest extends TestCase
     public function providerDelete(): iterable
     {
         yield from [
-            'It should throw an expection for /'                                  => [$this->getCommonDrive(), '/', '/', \LogicException::class],
-            'It should remove file (given as string path) when it is present 1'   => [$this->getCommonDrive(), '/root.png', '/root.png'],
-            'It should remove file (given as string path) when it is present 2'   => [$this->getCommonDrive(), '/toto/tata/titi/hidden.png', '/toto/tata/titi/hidden.png'],
-            'It should remove folder (given as string path) when it is present 1' => [$this->getCommonDrive(), '/toto/tata', '/toto/tata'],
-            'It should remove folder (given as string path) when it is present 2' => [$this->getCommonDrive(), '/foo', '/foo'],
-            'It should not throw exception when path does not exist 1'            => [$this->getCommonDrive(), '/roll.png',  '/roll.png'],
-            'It should not throw exception when path does not exist 2'            => [$this->getCommonDrive(), '/a/z/r/',  '/a/z/r/'],
+            'It should throw an expection for /' => [
+                $this->getCommonDrive(),
+                '/',
+                '/',
+                \LogicException::class,
+            ],
+            'It should remove file (given as string path) when it is present 1' => [
+                $this->getCommonDrive(),
+                '/root.png',
+                '/root.png',
+            ],
+            'It should remove file (given as string path) when it is present 2' => [
+                $this->getCommonDrive(),
+                '/toto/tata/titi/hidden.png',
+                '/toto/tata/titi/hidden.png',
+            ],
+            'It should remove folder (given as string path) when it is present 1' => [
+                $this->getCommonDrive(),
+                '/toto/tata',
+                '/toto/tata',
+            ],
+            'It should remove folder (given as string path) when it is present 2' => [
+                $this->getCommonDrive(),
+                '/foo',
+                '/foo',
+            ],
+            'It should not throw exception when path does not exist 1' => [
+                $this->getCommonDrive(),
+                '/roll.png',
+                '/roll.png',
+            ],
+            'It should not throw exception when path does not exist 2' => [
+                $this->getCommonDrive(),
+                '/a/z/r/',
+                '/a/z/r/',
+            ],
         ];
 
         yield from [
-            'It remove file (as object) if it exists in drive file collection'   => [$drive = $this->getCommonDrive(), $drive->get('/root.png'), '/root.png'],
-            'It ignore unknown absent file (as object) in drive file collection' => [$drive = $this->getCommonDrive(), $this->generateMockFile('dummy.png'), '/dummy.png'],
-            'It remove folder (given as folder object) when it is present 1'     => [$drive = $this->getCommonDrive(), $drive->get('/toto/tata'), '/toto/tata'],
-            'It remove folder (given as folder object) when it is present 2'     => [$drive = $this->getCommonDrive(), $drive->get('/foo'), '/foo'],
-            'It throws an error for drive mismatch'                              => [$drive, new Folder('foo', new Drive(), '/'), '/foo', InvalidArgumentException::class],
+            'It remove file (as object) if it exists in drive file collection' => [
+                $drive = $this->getCommonDrive(),
+                $drive->get('/root.png'),
+                '/root.png',
+            ],
+            'It ignore unknown absent file (as object) in drive file collection' => [
+                $drive = $this->getCommonDrive(),
+                $this->generateMockFile('dummy.png'),
+                '/dummy.png',
+            ],
+            'It remove folder (given as folder object) when it is present 1' => [
+                $drive = $this->getCommonDrive(),
+                $drive->get('/toto/tata'),
+                '/toto/tata',
+            ],
+            'It remove folder (given as folder object) when it is present 2' => [
+                $drive = $this->getCommonDrive(),
+                $drive->get('/foo'),
+                '/foo',
+            ],
+            'It throws an error for drive mismatch' => [
+                $drive,
+                new Folder('foo', new Drive(), '/'),
+                '/foo',
+                InvalidArgumentException::class,
+            ],
         ];
 
         $drive  = $this->getCommonDrive();
@@ -337,7 +574,11 @@ class DriveTest extends TestCase
             'It lists the content of a simple drive'            => [$simpleDrive, [$simpleDrive->getFolder('/toto')]],
             'It lists only the first level for a complex drive' => [
                 $complexDrive,
-                [$complexDrive->getFolder('/toto'), $complexDrive->getFolder('/foo'), $complexDrive->getFile('/root.png')],
+                [
+                    $complexDrive->getFolder('/toto'),
+                    $complexDrive->getFolder('/foo'),
+                    $complexDrive->getFile('/root.png'),
+                ],
             ],
         ];
     }
@@ -368,13 +609,31 @@ class DriveTest extends TestCase
         $complexDrive = $this->getCommonDrive();
 
         return [
-            'It lists no content for an empty drive'                               => [new Drive(), []],
-            'It lists no content for an empty drive no matter the depth'           => [new Drive(), [], 5],
-            'It lists the content of a simple drive 1'                             => [$simpleDrive, [$simpleDrive->getFolder('/toto')]],
-            'It lists the content of a simple drive 2'                             => [$simpleDrive, [$simpleDrive->getFolder('/toto')], 3],
+            'It lists no content for an empty drive' => [
+                new Drive(),
+                [],
+            ],
+            'It lists no content for an empty drive no matter the depth' => [
+                new Drive(),
+                [],
+                5,
+            ],
+            'It lists the content of a simple drive 1' => [
+                $simpleDrive,
+                [$simpleDrive->getFolder('/toto')],
+            ],
+            'It lists the content of a simple drive 2' => [
+                $simpleDrive,
+                [$simpleDrive->getFolder('/toto')],
+                3,
+            ],
             'It lists only the first level for a complex drive with default depth' => [
                 $complexDrive,
-                [$complexDrive->getFolder('/toto'), $complexDrive->getFolder('/foo'), $complexDrive->getFile('/root.png')],
+                [
+                    $complexDrive->getFolder('/toto'),
+                    $complexDrive->getFolder('/foo'),
+                    $complexDrive->getFile('/root.png'),
+                ],
             ],
             'It lists only the first level for a complex drive with default depth arbitrary depth' => [
                 $complexDrive,
