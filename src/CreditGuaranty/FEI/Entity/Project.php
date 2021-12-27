@@ -605,19 +605,17 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      */
     public function getMaxFeiCredit(): MoneyInterface
     {
-        $programMaxFeiCredit = $this->getProgram()->getMaxFeiCredit();
-
         if (false === ($this->getAidIntensity() instanceof ProgramChoiceOption)) {
             return new NullableMoney();
         }
 
         $publicAidLimit = MoneyCalculator::multiply(
-            $this->getTotalFeiCredit()->isNull() ? 0 : $this->getTotalFeiCredit(),
+            $this->getEligibleFeiCredit()->isNull() ? new NullableMoney('EUR', '0') : $this->getEligibleFeiCredit(),
             (float) $this->getAidIntensity()->getDescription()
         );
         $remainingGrantLimit = MoneyCalculator::subtract(
             $publicAidLimit,
-            $this->getGrant()->isNull() ? 0 : $this->getGrant()
+            $this->getGrant()->isNull() ? new NullableMoney('EUR', '0') : $this->getGrant()
         );
         $maxFeiCredit = MoneyCalculator::multiply(
             $remainingGrantLimit,
@@ -630,7 +628,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         );
         $maxFeiCredit = MoneyCalculator::multiply($maxFeiCredit, (float) $duration);
 
-        return MoneyCalculator::max($programMaxFeiCredit, $maxFeiCredit);
+        return MoneyCalculator::min($this->getProgram()->getMaxFeiCredit(), $maxFeiCredit);
     }
 
     /**
@@ -640,7 +638,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     {
         $financingObjects = $this->getReservation()->getFinancingObjects();
 
-        if ($financingObjects->count() < 1) {
+        if (0 === $financingObjects->count()) {
             return new NullableMoney();
         }
 
