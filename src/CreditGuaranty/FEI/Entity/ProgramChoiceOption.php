@@ -209,7 +209,7 @@ class ProgramChoiceOption implements EquivalenceCheckerInterface
     {
         $self = $this;
 
-        return function (int $key, ProgramChoiceOption $pco) use ($self): bool {
+        return static function (int $key, ProgramChoiceOption $pco) use ($self): bool {
             return $pco->getProgram()     === $self->getProgram()
                 && $pco->getField()       === $self->getField()
                 && $pco->getDescription() === $self->getDescription();
