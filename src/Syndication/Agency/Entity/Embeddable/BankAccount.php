@@ -36,7 +36,7 @@ class BankAccount
      *     "agency:bankAccount:write",
      * })
      */
-    protected ?string $bankInstitution;
+    protected ?string $institution;
 
     /**
      * @ORM\Column(type="string", nullable=true)
@@ -91,14 +91,14 @@ class BankAccount
         return $this;
     }
 
-    public function getBankInstitution(): ?string
+    public function getInstitution(): ?string
     {
-        return $this->bankInstitution;
+        return $this->institution;
     }
 
-    public function setBankInstitution(?string $bankInstitution): BankAccount
+    public function setInstitution(?string $institution): BankAccount
     {
-        $this->bankInstitution = $bankInstitution;
+        $this->institution = $institution;
 
         return $this;
     }
@@ -141,6 +141,6 @@ class BankAccount
 
     public function isValid(): bool
     {
-        return $this->getBankInstitution() && $this->getBankAddress() && $this->getIban() && $this->getBic();
+        return $this->getInstitution() && $this->getBankAddress() && $this->getIban() && $this->getBic();
     }
 }
