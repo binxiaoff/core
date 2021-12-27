@@ -370,7 +370,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $agentParticipation->setLegalForm(LegalForm::SARL);
         $agentParticipation->setHeadOffice($this->faker->address);
         $agentParticipation->getBankAccount()
-            ->setBankAddress($this->faker->address)
+            ->setAddress($this->faker->address)
             ->setIban($this->faker->iban('fr'))
             ->setInstitution($this->faker->company)
             ->setBic('AGRIFRPP907')
@@ -492,7 +492,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setIban($this->faker->iban('fr'))
             ->setBic('AGRIFRPP907')
             ->setInstitution('bank institution')
-            ->setBankAddress($this->faker->address)
+            ->setAddress($this->faker->address)
         ;
 
         $agent
@@ -584,7 +584,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         );
 
         $borrower->getBankAccount()
-            ->setBankAddress($this->faker->address)
+            ->setAddress($this->faker->address)
             ->setIban($this->faker->iban('fr'))
             ->setInstitution($this->faker->company)
             ->setBic('AGRIFRPP907')
@@ -662,7 +662,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         ;
 
         $participation->getBankAccount()
-            ->setBankAddress($this->faker->address)
+            ->setAddress($this->faker->address)
             ->setIban($this->faker->iban('fr'))
             ->setInstitution($this->faker->company)
             ->setBic('AGRIFRPP907')
