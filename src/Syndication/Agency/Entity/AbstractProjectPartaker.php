@@ -12,7 +12,7 @@ use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use KLS\Core\Entity\User;
 use KLS\Core\Validator\Constraints\Siren as AssertSiren;
-use Symfony\Component\Serializer\Annotation\Groups;
+use KLS\Syndication\Agency\Entity\Embeddable\BankAccount;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -38,30 +38,6 @@ abstract class AbstractProjectPartaker
      * @ORM\Column(type="string", nullable=true)
      */
     protected ?string $headOffice;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
-    protected ?string $bankInstitution;
-
-    /**
-     * @ORM\Column(type="string", nullable=true)
-     */
-    protected ?string $bankAddress;
-
-    /**
-     * @ORM\Column(type="string", length=11, nullable=true)
-     *
-     * @Assert\Bic
-     */
-    protected ?string $bic;
-
-    /**
-     * @ORM\Column(type="string", length=34, nullable=true)
-     *
-     * @Assert\Iban
-     */
-    protected ?string $iban;
 
     /**
      * @var AbstractProjectMember[]|Collection
@@ -99,12 +75,20 @@ abstract class AbstractProjectPartaker
      */
     private NullableMoney $capital;
 
+    /**
+     * @ORM\Embedded(class=BankAccount::class)
+     *
+     * @Assert\Valid
+     */
+    private BankAccount $bankAccount;
+
     public function __construct(string $matriculationNumber)
     {
         $this->capital             = new NullableMoney();
         $this->matriculationNumber = $matriculationNumber;
         $this->rcs                 = null;
         $this->added               = new DateTimeImmutable();
+        $this->bankAccount         = new BankAccount();
         $this->setPublicId();
     }
 
@@ -170,50 +154,14 @@ abstract class AbstractProjectPartaker
         return $this;
     }
 
-    public function getBankInstitution(): ?string
+    public function getBankAccount(): BankAccount
     {
-        return $this->bankInstitution;
+        return $this->bankAccount;
     }
 
-    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
+    public function setBankAccount(BankAccount $bankAccount): AbstractProjectPartaker
     {
-        $this->bankInstitution = $bankInstitution;
-
-        return $this;
-    }
-
-    public function getBic(): ?string
-    {
-        return $this->bic;
-    }
-
-    public function setBic(?string $bic): AbstractProjectPartaker
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    public function getIban(): ?string
-    {
-        return $this->iban;
-    }
-
-    public function setIban(?string $iban): AbstractProjectPartaker
-    {
-        $this->iban = $iban;
-
-        return $this;
-    }
-
-    public function getBankAddress(): ?string
-    {
-        return $this->bankAddress;
-    }
-
-    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
-    {
-        $this->bankAddress = $bankAddress;
+        $this->bankAccount = $bankAccount;
 
         return $this;
     }

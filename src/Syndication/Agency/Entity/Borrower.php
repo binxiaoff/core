@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Syndication\Agency\Entity\Embeddable\BankAccount;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -20,6 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "groups": {
  *             "agency:borrower:read",
  *             "nullableMoney:read",
+ *             "agency:bankAccount:read",
  *         },
  *         "openapi_definition_name": "read",
  *     },
@@ -36,6 +38,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "agency:borrowerMember:write",
  *                     "user:create",
  *                     "user:write",
+ *                     "agency:bankAccount:write",
  *                 },
  *                 "openapi_definition_name": "collection-post-write",
  *             },
@@ -60,6 +63,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "money:write",
  *                     "user:create",
  *                     "user:write",
+ *                     "agency:bankAccount:write",
  *                 },
  *                 "openapi_definition_name": "item-patch-write",
  *             },
@@ -163,78 +167,6 @@ class Borrower extends AbstractProjectPartaker
     /**
      * @Groups({"agency:borrower:read"})
      */
-    public function getBankInstitution(): ?string
-    {
-        return $this->bankInstitution;
-    }
-
-    /**
-     * @Groups({"agency:borrower:write"})
-     */
-    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
-    {
-        $this->bankInstitution = $bankInstitution;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:borrower:read"})
-     */
-    public function getBankAddress(): ?string
-    {
-        return $this->bankAddress;
-    }
-
-    /**
-     * @Groups({"agency:borrower:write"})
-     */
-    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
-    {
-        $this->bankAddress = $bankAddress;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:borrower:read"})
-     */
-    public function getBic(): ?string
-    {
-        return $this->bic;
-    }
-
-    /**
-     * @Groups({"agency:borrower:write"})
-     */
-    public function setBic(?string $bic): AbstractProjectPartaker
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:borrower:read"})
-     */
-    public function getIban(): ?string
-    {
-        return $this->iban;
-    }
-
-    /**
-     * @Groups({"agency:borrower:write"})
-     */
-    public function setIban(?string $iban): AbstractProjectPartaker
-    {
-        $this->iban = $iban;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:borrower:read"})
-     */
     public function getMatriculationNumber(): string
     {
         return $this->matriculationNumber;
@@ -248,6 +180,22 @@ class Borrower extends AbstractProjectPartaker
         $this->matriculationNumber = $matriculationNumber;
 
         return $this;
+    }
+
+    /**
+     * @Groups({"agency:borrower:read"})
+     */
+    public function getBankAccount(): BankAccount
+    {
+        return parent::getBankAccount();
+    }
+
+    /**
+     * @Groups({"agency:borrower:write"})
+     */
+    public function setBankAccount(BankAccount $bankAccount): Borrower
+    {
+        return parent::setBankAccount($bankAccount);
     }
 
     /**
@@ -345,7 +293,7 @@ class Borrower extends AbstractProjectPartaker
      */
     public function isCompleted()
     {
-        return $this->getBankInstitution() && $this->getBankAddress() && $this->getIban() && $this->getBic();
+        return $this->getBankAccount()->isValid();
     }
 
     /**

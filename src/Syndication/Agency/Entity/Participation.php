@@ -22,6 +22,7 @@ use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
 use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Service\MoneyCalculator;
+use KLS\Syndication\Agency\Entity\Embeddable\BankAccount;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -37,6 +38,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "money:read",
  *             "nullableMoney:read",
  *             "lendingRate:read",
+ *             "agency:bankAccount:read",
  *         },
  *         "openapi_definition_name": "read",
  *     },
@@ -51,6 +53,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "nullableMoney:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write",
+ *                     "agency:bankAccount:write",
  *                 },
  *                 "openapi_definition_name": "collection-post-write",
  *             },
@@ -69,6 +72,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "nullableMoney:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write",
+ *                     "agency:bankAccount:write",
  *                 },
  *                 "openapi_definition_name": "item-patch-write",
  *             },
@@ -447,73 +451,17 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
     /**
      * @Groups({"agency:participation:read"})
      */
-    public function getBankInstitution(): ?string
+    public function getBankAccount(): BankAccount
     {
-        return $this->bankInstitution;
+        return parent::getBankAccount();
     }
 
     /**
      * @Groups({"agency:participation:write"})
      */
-    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
+    public function setBankAccount(BankAccount $bankAccount): Participation
     {
-        $this->bankInstitution = $bankInstitution;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:participation:read"})
-     */
-    public function getBankAddress(): ?string
-    {
-        return $this->bankAddress;
-    }
-
-    /**
-     * @Groups({"agency:participation:write"})
-     */
-    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
-    {
-        $this->bankAddress = $bankAddress;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:participation:read"})
-     */
-    public function getBic(): ?string
-    {
-        return $this->bic;
-    }
-
-    /**
-     * @Groups({"agency:participation:write"})
-     */
-    public function setBic(?string $bic): AbstractProjectPartaker
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:participation:read"})
-     */
-    public function getIban(): ?string
-    {
-        return $this->iban;
-    }
-
-    /**
-     * @Groups({"agency:participation:write"})
-     */
-    public function setIban(?string $iban): AbstractProjectPartaker
-    {
-        $this->iban = $iban;
-
-        return $this;
+        return parent::setBankAccount($bankAccount);
     }
 
     /**

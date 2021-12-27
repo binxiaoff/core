@@ -369,7 +369,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $agentParticipation = $project->getAgentParticipation();
         $agentParticipation->setLegalForm(LegalForm::SARL);
         $agentParticipation->setHeadOffice($this->faker->address);
-        $agentParticipation->setBankAddress($this->faker->address)
+        $agentParticipation->getBankAccount()
+            ->setBankAddress($this->faker->address)
             ->setIban($this->faker->iban('fr'))
             ->setBankInstitution($this->faker->company)
             ->setBic('AGRIFRPP907')
@@ -479,15 +480,23 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
     private function withPublishableAgentData(Project $project): ProjectFixtures
     {
-        $project->getAgent()->getContact()
+        $agent = $project->getAgent();
+
+        $agent->getContact()
             ->setEmail($this->faker->email)
             ->setPhone('+33600000000')
             ->setOccupation('agent')
         ;
-        $project->getAgent()
-            ->setLegalForm(LegalForm::EURL)
+
+        $agent->getBankAccount()
             ->setIban($this->faker->iban('fr'))
             ->setBic('AGRIFRPP907')
+            ->setBankInstitution('bank institution')
+            ->setBankAddress($this->faker->address)
+        ;
+
+        $agent
+            ->setLegalForm(LegalForm::EURL)
             ->setHeadOffice($this->faker->address)
             ->setRcs(\implode(
                 ' ',
@@ -500,8 +509,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ))
             ->setCapital(new NullableMoney('EUR', '300000'))
             ->setVariableCapital(null)
-            ->setBankInstitution('bank institution')
-            ->setBankAddress($this->faker->address)
             ->setCorporateName($this->faker->company)
         ;
 
@@ -576,7 +583,8 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             $this->faker->siren(false), // Works because Faker is set to Fr_fr.
         );
 
-        $borrower->setBankAddress($this->faker->address)
+        $borrower->getBankAccount()
+            ->setBankAddress($this->faker->address)
             ->setIban($this->faker->iban('fr'))
             ->setBankInstitution($this->faker->company)
             ->setBic('AGRIFRPP907')
@@ -651,6 +659,9 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $participation->setLegalForm(LegalForm::SARL)
             ->setCorporateName($this->faker->name)
             ->setHeadOffice($this->faker->address)
+        ;
+
+        $participation->getBankAccount()
             ->setBankAddress($this->faker->address)
             ->setIban($this->faker->iban('fr'))
             ->setBankInstitution($this->faker->company)
