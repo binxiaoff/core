@@ -20,7 +20,8 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 class ImportContactCommand extends Command
 {
     private const DEFAULT_CONTACTS_LIMIT = 100;
-    protected static $defaultName        = 'kls:core:hubspot:contact:import';
+
+    protected static $defaultName = 'kls:core:hubspot:contact:import';
 
     private HubspotContactManager $hubspotManager;
 
@@ -50,8 +51,8 @@ class ImportContactCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $contactAdded  = 0;
-        $limit         = $input->getOption('limit') ?: self::DEFAULT_CONTACTS_LIMIT;
         $lastContactId = 0;
+        $limit         = $input->getOption('limit') ?: self::DEFAULT_CONTACTS_LIMIT;
 
         do {
             $data = $this->hubspotManager->importContacts((int) $lastContactId);
@@ -61,6 +62,6 @@ class ImportContactCommand extends Command
 
         $output->writeln(\sprintf('%s contacts has been linked to our existing users', $contactAdded));
 
-        return self::SUCCESS;
+        return Command::SUCCESS;
     }
 }
