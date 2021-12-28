@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS\Syndication\Arrangement\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Closure;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -17,6 +18,7 @@ use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
 use KLS\Core\Traits\ConstantsAwareTrait;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\EquivalenceCheckerInterface;
 use KLS\Syndication\Arrangement\Entity\Embeddable\Offer;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -76,14 +78,15 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @UniqueEntity({"tranche", "projectParticipation"})
  */
-class ProjectParticipationTranche
+class ProjectParticipationTranche implements EquivalenceCheckerInterface
 {
     use PublicizeIdentityTrait;
     use TimestampableTrait;
     use ConstantsAwareTrait;
     use BlamableAddedTrait;
 
-    // Additional normalizer group that is available for public visibility project. It's also available for the participation owner and arranger
+    // Additional normalizer group that is available for public visibility project.
+    // It's also available for the participation owner and arranger
     public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipationTranche:sensitive:read';
 
     /**
@@ -145,7 +148,11 @@ class ProjectParticipationTranche
     /**
      * @var Collection|InvitationReplyVersion[]
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Arrangement\Entity\InvitationReplyVersion", mappedBy="projectParticipationTranche", orphanRemoval=true)
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Arrangement\Entity\InvitationReplyVersion",
+     *     mappedBy="projectParticipationTranche",
+     *     orphanRemoval=true
+     * )
      *
      * @Groups({ProjectParticipationTranche::SERIALIZER_GROUP_SENSITIVE_READ})
      */
@@ -215,6 +222,16 @@ class ProjectParticipationTranche
         return $this->getProjectParticipation()->getProject()->getTranches()->contains($tranche);
     }
 
+    public function getEquivalenceChecker(): Closure
+    {
+        $self = $this;
+
+        return static function (int $key, ProjectParticipationTranche $ppt) use ($self): bool {
+            return $ppt->getProjectParticipation() === $self->getProjectParticipation()
+                && $ppt->getTranche()              === $self->getTranche();
+        };
+    }
+
     /**
      * @Assert\Callback
      */
@@ -272,7 +289,10 @@ class ProjectParticipationTranche
             return;
         }
 
-        if (Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER === $tranche->getUnsyndicatedFunderType() && $this->getProjectParticipation()->isArrangerParticipation()) {
+        if (
+            Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER === $tranche->getUnsyndicatedFunderType()
+            && $this->getProjectParticipation()->isArrangerParticipation()
+        ) {
             return;
         }
 

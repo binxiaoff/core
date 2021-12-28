@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace KLS\Syndication\Agency\Entity;
 
+use Closure;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\Traits\BlamableAddedTrait;
 use KLS\Core\Entity\Traits\IdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\EquivalenceCheckerInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -22,7 +24,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @UniqueEntity(fields={"project", "status"})
  */
-class ProjectStatusHistory
+class ProjectStatusHistory implements EquivalenceCheckerInterface
 {
     use BlamableAddedTrait;
     use IdentityTrait;
@@ -67,5 +69,15 @@ class ProjectStatusHistory
     public function getStatus(): int
     {
         return $this->status;
+    }
+
+    public function getEquivalenceChecker(): Closure
+    {
+        $self = $this;
+
+        return static function (int $key, ProjectStatusHistory $psh) use ($self): bool {
+            return $psh->getProject() === $self->getProject()
+                && $psh->getStatus()  === $self->getStatus();
+        };
     }
 }

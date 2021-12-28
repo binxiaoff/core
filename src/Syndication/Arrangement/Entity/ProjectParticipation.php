@@ -6,6 +6,7 @@ namespace KLS\Syndication\Arrangement\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Closure;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -26,6 +27,7 @@ use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
 use KLS\Core\Traits\ConstantsAwareTrait;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\EquivalenceCheckerInterface;
 use KLS\Syndication\Arrangement\Entity\Embeddable\Offer;
 use KLS\Syndication\Arrangement\Entity\Embeddable\OfferWithFee;
 use KLS\Syndication\Arrangement\Entity\Embeddable\RangedOfferWithFee;
@@ -198,7 +200,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @UniqueEntity({"participant", "project"})
  */
-class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAwareInterface
+class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAwareInterface, EquivalenceCheckerInterface
 {
     use TimestampableTrait;
     use BlamableAddedTrait;
@@ -615,12 +617,11 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     public function addProjectParticipationMember(
         ProjectParticipationMember $projectParticipationMember
     ): ProjectParticipation {
-        $callback = function (int $key, ProjectParticipationMember $ppm) use ($projectParticipationMember): bool {
-            return $projectParticipationMember->getProjectParticipation() === $ppm->getProjectParticipation()
-                && $projectParticipationMember->getStaff()                === $ppm->getStaff();
-        };
-
-        if (false === $this->projectParticipationMembers->exists($callback)) {
+        if (
+            false === $this->projectParticipationMembers->exists(
+                $projectParticipationMember->getEquivalenceChecker()
+            )
+        ) {
             $this->projectParticipationMembers->add($projectParticipationMember);
         }
 
@@ -710,12 +711,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
 
     public function hasProjectParticipationTranche(ProjectParticipationTranche $projectParticipationTranche): bool
     {
-        $callback = function (int $key, ProjectParticipationTranche $ppt) use ($projectParticipationTranche): bool {
-            return $projectParticipationTranche->getProjectParticipation() === $ppt->getProjectParticipation()
-                && $projectParticipationTranche->getTranche()              === $ppt->getTranche();
-        };
-
-        return $this->projectParticipationTranches->exists($callback);
+        return $this->projectParticipationTranches->exists($projectParticipationTranche->getEquivalenceChecker());
     }
 
     public function isArrangerParticipation(): bool
@@ -798,6 +794,16 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
                     ));
             }
         )->toArray();
+    }
+
+    public function getEquivalenceChecker(): Closure
+    {
+        $self = $this;
+
+        return static function (int $key, ProjectParticipation $pp) use ($self): bool {
+            return $pp->getProject()     === $self->getProject()
+                && $pp->getParticipant() === $self->getParticipant();
+        };
     }
 
     /**
