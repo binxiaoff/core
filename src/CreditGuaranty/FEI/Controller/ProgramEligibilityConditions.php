@@ -37,6 +37,12 @@ class ProgramEligibilityConditions
      */
     public function __invoke($data, Request $request): array
     {
+        if (false === $data instanceof Reservation && false === $data instanceof FinancingObject) {
+            throw new LogicException(
+                'This controller does no support data type other than Reservation or FinancingObject'
+            );
+        }
+
         $eligible = false;
 
         if ((\in_array($request->query->get('eligible'), self::ALLOWED_BOOLEAN_VALUES, true))) {
@@ -54,8 +60,8 @@ class ProgramEligibilityConditions
             $field = $programEligibility->getField();
 
             if (
-                $data instanceof Reservation && 'loan' === $field->getCategory()
-                || $data instanceof FinancingObject && 'loan' !== $field->getCategory()
+                ($data instanceof Reservation && 'loan' === $field->getCategory())
+                || ($data instanceof FinancingObject && 'loan' !== $field->getCategory())
             ) {
                 continue;
             }
@@ -71,10 +77,10 @@ class ProgramEligibilityConditions
             }
 
             foreach ($programEligibility->getProgramEligibilityConfigurations() as $programEligibilityConfiguration) {
-                $ineligibleIds = $this->eligibilityConditionChecker->checkByConfiguration(
+                $ineligibleIds = $this->eligibilityConditionChecker->getIneligibleIdsByConfiguration(
                     $object,
                     $programEligibilityConfiguration,
-                    true
+                    false
                 );
 
                 if (false === empty($ineligibleIds)) {
