@@ -3,7 +3,7 @@ Project import
 ===============
 
 
-The Symfony command ``kls:agency:import`` imports project into the database.
+The Symfony command ``kls:agency:project:import`` imports project into the database.
 
 It expects two arguments:
 
@@ -37,7 +37,7 @@ For mass import the following script is available as an example
             then
               echo -n "  importing $import... "
               # launch import
-              if $console kls:agency:import "$shortCode" "$import"
+              if $console kls:agency:project:import "$shortCode" "$import"
               then
                 echo "OK"
                 mkdir -p "../../processed/$shortCode"

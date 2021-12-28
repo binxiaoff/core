@@ -16,9 +16,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class SendNotificationsFromProject extends Command
+class NotifyProjectPublicationCommand extends Command
 {
-    protected static $defaultName = 'kls:agency:project_publication:notify';
+    protected static $defaultName = 'kls:agency:project-publication:notify';
 
     private ProjectMemberNotifier $projectMemberNotifier;
     private ProjectRepository $projectRepository;
@@ -72,6 +72,6 @@ class SendNotificationsFromProject extends Command
             }
         }
 
-        return self::SUCCESS;
+        return Command::SUCCESS;
     }
 }

@@ -149,7 +149,9 @@ class ImportProjectCommand extends Command
     // Skipped to keep data in file
     private const AMUNDI = 'Amundi';
 
-    private ArrayCollection $tranches;
+    protected static $defaultName = 'kls:agency:project:import';
+
+    private ArrayCollection $tranches; // variable not used
     private ProjectRepository $projectRepository;
     private CompanyRepository $companyRepository;
     private StaffRepository $staffRepository;
@@ -184,7 +186,6 @@ class ImportProjectCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setName('kls:agency:import')
             ->setDescription('This command imports agency projects from Excel files.')
             ->addOption('dry-run', 'd', InputOption::VALUE_NONE, 'Dry run command to check import file data')
             ->addArgument('company', InputArgument::REQUIRED, 'Identifier of the agent company')
@@ -199,7 +200,7 @@ class ImportProjectCommand extends Command
     /**
      * @throws Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io     = new SymfonyStyle($input, $output);
         $dryRun = $input->getOption('dry-run');
@@ -244,6 +245,7 @@ class ImportProjectCommand extends Command
             );
         }
 
+        // variable not used ?
         $indexes = \array_flip(static::SHEETS);
 
         $this->info($io, 'Importing general information...');
@@ -297,7 +299,7 @@ class ImportProjectCommand extends Command
         $row = $rowIterator->current();
 
         if (null === $row) {
-            throw new Exception(\sprintf('There should be at least another row in general information sheet'));
+            throw new Exception('There should be at least another row in general information sheet');
         }
 
         $cells = $row->getCells();
@@ -398,10 +400,12 @@ class ImportProjectCommand extends Command
                 $project,
                 $name,
                 $legalForm,
-                $capital,
                 $address,
                 $siren
-            ))->setRcs($rcs);
+            ))
+                ->setRcs($rcs)
+                ->setCapital($capital)
+            ;
 
             $project->addBorrower($borrower);
 
@@ -414,12 +418,11 @@ class ImportProjectCommand extends Command
                         ->setFirstName(\trim((string) $cells[7]->getValue()))
                     ;
 
-                $signatory = $borrower->findMemberByUser(
-                    $signatoryUser
-                ) ?? (new BorrowerMember($borrower, $signatoryUser))
-                    ->setProjectFunction(\trim((string) $cells[8]->getValue()))
-                    ->setSignatory(true)
-                ;
+                $signatory = $borrower->findMemberByUser($signatoryUser)
+                    ?? (new BorrowerMember($borrower, $signatoryUser))
+                        ->setProjectFunction(\trim((string) $cells[8]->getValue()))
+                        ->setSignatory(true)
+                    ;
 
                 $borrower->addMember($signatory);
             }
@@ -475,7 +478,7 @@ class ImportProjectCommand extends Command
 
             $rateType     = $this->getMapping($cells[6]->getValue(), self::MAPPING_RATE_TYPE);
             $name         = \trim((string) $cells[1]->getValue());
-            $syndicated   = 'Oui' === \trim((string) $cells[2]->getValue());
+            $syndicated   = 'Oui' === \trim((string) $cells[2]->getValue()); // variable not used ?
             $money        = new Money('EUR', (string) $cells[3]->getValue());
             $validityDate = $cells[4]->getValue()
                 ? DateTimeImmutable::createFromMutable($cells[4]->getValue())
@@ -588,6 +591,7 @@ class ImportProjectCommand extends Command
                 (string) $cells[7]->getValue() ?: '0'
             );
 
+            // variable not used ?
             $finalAllocation = new Money('EUR', (string) $cells[8]->getValue());
 
             if (static::AMUNDI === $name) {
@@ -774,14 +778,14 @@ class ImportProjectCommand extends Command
         return $project;
     }
 
-    private function info(SymfonyStyle $output, string $message)
+    private function info(SymfonyStyle $output, string $message): void
     {
         if ($output->isVerbose()) {
             $output->info($message);
         }
     }
 
-    private function success(SymfonyStyle $output, string $message)
+    private function success(SymfonyStyle $output, string $message): void
     {
         if ($output->isVerbose()) {
             $output->success($message);
