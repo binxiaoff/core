@@ -55,6 +55,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "nullablePerson:read",
  *             "nullableMoney:read",
  *             "lendingRate:read",
+ *             "agency:bankAccount:read"
  *         },
  *         "openapi_definition_name": "read",
  *     },
@@ -833,9 +834,13 @@ class Project implements DriveCarrierInterface
     }
 
     /**
+     * The line below is too long.
+     *
+     * @codingStandardsIgnoreStart
      * @ApiProperty(
      *     security="is_granted('agent', object) || is_granted('borrower', object) || is_granted('primary_participant',object)"
      * )
+     * @codingStandardsIgnoreEnd
      *
      * @Groups({"agency:project:read"})
      */
