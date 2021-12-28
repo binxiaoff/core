@@ -18,7 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class NotifyProjectPublicationCommand extends Command
 {
-    protected static $defaultName = 'kls:agency:project-publication:notify';
+    protected static $defaultName = 'kls:agency:project:publication:notify';
 
     private ProjectMemberNotifier $projectMemberNotifier;
     private ProjectRepository $projectRepository;
