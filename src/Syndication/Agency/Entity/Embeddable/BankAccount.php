@@ -54,7 +54,6 @@ class BankAccount
     /**
      * @ORM\Column(type="string", length=11, nullable=true)
      *
-     * @Assert\Length(min=11, max=11)
      * @Assert\Bic
      * @Assert\NotBlank(groups={"bankAccount::completed"})
      *
@@ -68,7 +67,7 @@ class BankAccount
     /**
      * @ORM\Column(type="string", length=34, nullable=true)
      *
-     * @Assert\Length(min=34, max=34)
+     * @Assert\Length(min=14, max=34)
      * @Assert\Iban
      * @Assert\NotBlank(groups={"bankAccount::completed"})
      *
