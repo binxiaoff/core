@@ -453,7 +453,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     {
         $financingObjects = $this->getFinancingObjects();
 
-        if ($financingObjects->count() < 1) {
+        if (0 === $financingObjects->count()) {
             return false;
         }
 
@@ -462,8 +462,8 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
 
         $comparison = MoneyCalculator::compare($esbTotal, $maxFeiCredit);
 
-        // $esbTotal should be superior or equal to $maxFeiCredit
-        return 0 >= $comparison;
+        // $esbTotal should be inferior or equal to $maxFeiCredit
+        return $comparison <= 0;
     }
 
     /**
