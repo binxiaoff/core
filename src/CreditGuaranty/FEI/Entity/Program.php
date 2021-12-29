@@ -9,6 +9,7 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -256,6 +257,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * )
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
+ * @ApiFilter(SearchFilter::class, properties={"companyGroupTag.publicId"})
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_program")
