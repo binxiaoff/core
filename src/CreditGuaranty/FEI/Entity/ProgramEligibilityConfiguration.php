@@ -204,7 +204,7 @@ class ProgramEligibilityConfiguration implements DeepCloneInterface, Equivalence
     }
 
     /**
-     * @return Collection|ProgramEligibilityCondition[}
+     * @return Collection|ProgramEligibilityCondition[]
      */
     public function getProgramEligibilityConditions(): Collection
     {
