@@ -55,7 +55,7 @@ class RemindExpiringReservationCommand extends Command
         self::CR_LIST_TEMPLATE_ID,
     ];
 
-    protected static $defaultName = 'kls:reservation:expiring:remind';
+    protected static $defaultName = 'kls:fei:reservation:expiring:remind';
 
     private Swift_Mailer $mailer;
     private ReservationRepository $reservationRepository;
@@ -79,8 +79,8 @@ class RemindExpiringReservationCommand extends Command
             ->setDescription('Send about to expire reservation reminder mails')
             ->addOption('to', null, InputOption::VALUE_REQUIRED, 'Send reminder mails to CASA or CR staff')
             ->setHelp(
-                'kls:reservation:expiring:remind --to=casa' . "\n"
-                . 'kls:reservation:expiring:remind --to=cr'
+                self::$defaultName . ' --to=casa' . "\n" .
+                self::$defaultName . ' --to=cr'
             )
         ;
     }
@@ -95,10 +95,12 @@ class RemindExpiringReservationCommand extends Command
         $toOption = $input->getOption('to');
 
         if (empty($toOption)) {
-            throw new InvalidArgumentException('The command option --to is missing and/or requires value among them : casa, cr');
+            throw new InvalidArgumentException(
+                'The command option --to is missing and/or requires value among them : casa, cr'
+            );
         }
 
-        if (false === \in_array($toOption, self::COMMAND_OPTIONS)) {
+        if (false === \in_array($toOption, self::COMMAND_OPTIONS, true)) {
             throw new InvalidArgumentException('The command option --to value should be one among them : casa, cr');
         }
 
@@ -107,7 +109,11 @@ class RemindExpiringReservationCommand extends Command
 
         /** @var Reservation $reservation */
         foreach ($this->reservationRepository->findAll() as $reservation) {
-            if ($reservation->isFormalized() || $reservation->isArchived() || $reservation->isRefusedByManagingCompany()) {
+            if (
+                $reservation->isFormalized()
+                || $reservation->isArchived()
+                || $reservation->isRefusedByManagingCompany()
+            ) {
                 continue;
             }
 
@@ -115,7 +121,13 @@ class RemindExpiringReservationCommand extends Command
             $reservationDuration = $program->getReservationDuration();
 
             if (null === $reservationDuration) {
-                $io->warning(\sprintf('Reservation #%s is ignored because reservation duration limit of program #%s is empty.', $reservation->getId(), $program->getId()));
+                $io->warning(
+                    \sprintf(
+                        'Reservation #%s is ignored because reservation duration limit of program #%s is empty.',
+                        $reservation->getId(),
+                        $program->getId()
+                    )
+                );
 
                 continue;
             }
@@ -145,7 +157,7 @@ class RemindExpiringReservationCommand extends Command
 
                     // an user can have multiple staff
                     // to avoid to spam user, we store userId in key and check if it is exists before adding it
-                    if (false === \in_array($userId, \array_keys($staffList), true)) {
+                    if (false === \array_key_exists($userId, $staffList)) {
                         $staffList[$userId] = $staff;
                     }
                 }
@@ -166,7 +178,11 @@ class RemindExpiringReservationCommand extends Command
             $daysInHours    = \bcmul((string) $intervalDate->d, '24', 2);
             $minutesInHours = \bcdiv((string) $intervalDate->i, '60', 2);
             $secondsInHours = \bcdiv((string) $intervalDate->s, '3600', 2);
-            $remainingHours = (float) \bcadd(\bcadd(\bcadd($daysInHours, (string) $intervalDate->h, 2), $minutesInHours, 2), $secondsInHours, 2);
+            $remainingHours = (float) \bcadd(
+                \bcadd(\bcadd($daysInHours, (string) $intervalDate->h, 2), $minutesInHours, 2),
+                $secondsInHours,
+                2
+            );
 
             if (self::OPTION_CASA === $toOption) {
                 $this->handleMailingToCasa($reservation, $remainingHours, $output);
@@ -238,7 +254,10 @@ class RemindExpiringReservationCommand extends Command
                 continue;
             }
 
-            if (\in_array($templateId, self::CR_TEMPLATE_IDS, true) && false === $this->hasReservationPermission($staff)) {
+            if (
+                \in_array($templateId, self::CR_TEMPLATE_IDS, true)
+                && false === $this->hasReservationPermission($staff)
+            ) {
                 continue;
             }
 
@@ -255,7 +274,13 @@ class RemindExpiringReservationCommand extends Command
                 $recipients      = \array_keys($mailjetMessage->getTo());
                 $reservationName = $vars['reservationName'] ?? 'list';
 
-                $output->writeln(\sprintf('Sending an email to %s for reservation %s', \implode(' and ', $recipients), $reservationName));
+                $output->writeln(
+                    \sprintf(
+                        'Sending an email to %s for reservation %s',
+                        \implode(' and ', $recipients),
+                        $reservationName
+                    )
+                );
             }
 
             if ($output->isVeryVerbose()) {

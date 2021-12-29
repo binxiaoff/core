@@ -18,17 +18,20 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class UnreadMessageEmailNotificationCommand extends Command
+class RemindUnreadMessageCommand extends Command
 {
     /** @var string */
-    protected static $defaultName = 'kls:message:unread_email_notification';
+    protected static $defaultName = 'kls:core:message:unread:remind';
 
     private LoggerInterface $logger;
     private Swift_Mailer $mailer;
     private MessageStatusRepository $messageStatusRepository;
 
-    public function __construct(LoggerInterface $logger, Swift_Mailer $mailer, MessageStatusRepository $messageStatusRepository)
-    {
+    public function __construct(
+        LoggerInterface $logger,
+        Swift_Mailer $mailer,
+        MessageStatusRepository $messageStatusRepository
+    ) {
         parent::__construct();
         $this->logger                  = $logger;
         $this->mailer                  = $mailer;
@@ -41,21 +44,34 @@ class UnreadMessageEmailNotificationCommand extends Command
             ->setDescription('Send email to notify user for unread message(s)')
             ->setDefinition(
                 new InputDefinition([
-                    new InputOption('--dry-run', null, InputOption::VALUE_NONE, 'Launch command on dry run mode with console display only.'),
-                    new InputOption('--limit', null, InputOption::VALUE_OPTIONAL, 'Set a limit of user to send messages.'),
+                    new InputOption(
+                        '--dry-run',
+                        null,
+                        InputOption::VALUE_NONE,
+                        'Launch command on dry run mode with console display only.'
+                    ),
+                    new InputOption(
+                        '--limit',
+                        null,
+                        InputOption::VALUE_OPTIONAL,
+                        'Set a limit of user to send messages.'
+                    ),
                 ])
             )
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         /** @var ConsoleSectionOutput $section */
-        $section                   = $output->section();
-        $table                     = $this->createTable($section);
-        $dryRun                    = $input->hasParameterOption('--dry-run');
-        $limit                     = $input->getParameterOption('--limit', null);
-        $totalUnreadMessageByUsers = $this->messageStatusRepository->countUnreadMessageByRecipentForPeriod($limit ? (int) $limit : $limit);
+        $section = $output->section();
+        $table   = $this->createTable($section);
+        $dryRun  = $input->hasParameterOption('--dry-run');
+        $limit   = $input->getParameterOption('--limit', null);
+
+        $totalUnreadMessageByUsers = $this->messageStatusRepository->countUnreadMessageByRecipentForPeriod(
+            $limit ? (int) $limit : $limit
+        );
 
         if ($dryRun && $totalUnreadMessageByUsers) {
             $table->render();
@@ -73,7 +89,12 @@ class UnreadMessageEmailNotificationCommand extends Command
             }
 
             if (0 < $item['nb_messages_unread']) {
-                $this->sendUnreadMessagesNotification($item['email'], $item['first_name'], $item['last_name'], (int) $item['nb_messages_unread']);
+                $this->sendUnreadMessagesNotification(
+                    $item['email'],
+                    $item['first_name'],
+                    $item['last_name'],
+                    (int) $item['nb_messages_unread']
+                );
                 $this->messageStatusRepository->setMessageStatusesToUnreadNotified((int) $item['id']);
             }
         }
@@ -89,8 +110,12 @@ class UnreadMessageEmailNotificationCommand extends Command
         return $table;
     }
 
-    private function sendUnreadMessagesNotification(string $email, string $firstName, string $lastName, int $nbUnreadMessage): void
-    {
+    private function sendUnreadMessagesNotification(
+        string $email,
+        string $firstName,
+        string $lastName,
+        int $nbUnreadMessage
+    ): void {
         $failedRecipient = [];
 
         try {
@@ -100,15 +125,20 @@ class UnreadMessageEmailNotificationCommand extends Command
                 ->setTo($email)
             ;
             if (0 === $this->mailer->send($message, $failedRecipient)) {
-                throw new RuntimeException(\sprintf('Error on sending email to : "%s"', \implode(', ', $failedRecipient)));
+                throw new RuntimeException(
+                    \sprintf('Error on sending email to : "%s"', \implode(', ', $failedRecipient))
+                );
             }
         } catch (Exception $exception) {
-            $this->logger->error('Unable to send unread message(s) email notification with error : ' . $exception->getMessage(), [
-                'class'    => __CLASS__,
-                'function' => __FUNCTION__,
-                'file'     => $exception->getFile(),
-                'line'     => $exception->getLine(),
-            ]);
+            $this->logger->error(
+                'Unable to send unread message(s) email notification with error : ' . $exception->getMessage(),
+                [
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__,
+                    'file'     => $exception->getFile(),
+                    'line'     => $exception->getLine(),
+                ]
+            );
         }
     }
 }

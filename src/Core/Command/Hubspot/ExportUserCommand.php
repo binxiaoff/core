@@ -18,7 +18,7 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class ExportUsersCommand extends Command
+class ExportUserCommand extends Command
 {
     public const DEFAULT_USERS_CHANGED_LIMIT = 100;
 

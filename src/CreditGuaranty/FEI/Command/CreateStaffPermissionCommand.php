@@ -21,7 +21,7 @@ class CreateStaffPermissionCommand extends Command
 {
     private const BATCH_SIZE = 10;
 
-    protected static $defaultName = 'kls:staff-permission:create';
+    protected static $defaultName = 'kls:fei:staff:permission:create';
 
     private StaffRepository $staffRepository;
     private StaffPermissionRepository $staffPermissionRepository;

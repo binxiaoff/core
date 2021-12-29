@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace KLS\Core\Command\Hubspot;
 
+use JsonException;
 use KLS\Core\Service\Hubspot\HubspotContactManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class GetDailyUsageApiCommand extends Command
 {
@@ -24,6 +29,13 @@ class GetDailyUsageApiCommand extends Command
         $this->hubspotManager = $hubspotManager;
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws JsonException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io         = new SymfonyStyle($input, $output);
@@ -32,7 +44,7 @@ class GetDailyUsageApiCommand extends Command
         if (!$dailyUsage) {
             $io->error('There is an error to get data');
 
-            return self::FAILURE;
+            return Command::FAILURE;
         }
 
         $table = new Table($output);
@@ -43,6 +55,6 @@ class GetDailyUsageApiCommand extends Command
         ]);
         $table->render();
 
-        return self::SUCCESS;
+        return Command::SUCCESS;
     }
 }

@@ -6,6 +6,7 @@ namespace KLS\Core\Command\Hubspot;
 
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use JsonException;
 use KLS\Core\Service\Hubspot\HubspotCompanyManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,7 +44,7 @@ class ImportCompanyCommand extends Command
     /**
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws \JsonException
+     * @throws JsonException
      * @throws ClientExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ServerExceptionInterface
@@ -52,8 +53,8 @@ class ImportCompanyCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $companyAdded  = 0;
-        $limit         = $input->getOption('limit') ?: self::DEFAULT_COMPANY_IMPORT_LIMIT;
         $lastCompanyId = 0;
+        $limit         = $input->getOption('limit') ?: self::DEFAULT_COMPANY_IMPORT_LIMIT;
 
         do {
             $data = $this->hubspotCompanyManager->importCompaniesFromHubspot($lastCompanyId);
@@ -63,6 +64,6 @@ class ImportCompanyCommand extends Command
 
         $output->writeln(\sprintf('%s companies has been linked to our existing companies', $companyAdded));
 
-        return self::SUCCESS;
+        return Command::SUCCESS;
     }
 }

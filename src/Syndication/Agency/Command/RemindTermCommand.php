@@ -20,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RemindTermCommand extends Command
 {
-    protected static $defaultName = 'kls:agency:remind';
+    protected static $defaultName = 'kls:agency:term:remind';
 
     private Swift_Mailer $mailer;
     private TermRepository $termRepository;
@@ -58,19 +58,27 @@ class RemindTermCommand extends Command
             $project   = $term->getProject();
             $projectId = $project->getId();
 
-            $borrowerUsersByProject[$projectId] = $borrowerUsersByProject[$projectId] ?? $this->getBorrowerUsers($project);
+            $borrowerUsersByProject[$projectId] = $borrowerUsersByProject[$projectId]
+                ?? $this->getBorrowerUsers($project);
 
-            // This also disable reminder email for borrower as there is no pendingBorrowerInput for control nature terms
+            // This also disable reminder email
+            // for borrower as there is no pendingBorrowerInput for control nature terms
             if ($term->isPendingBorrowerInput()) {
                 foreach ($borrowerUsersByProject[$project->getId()] as $user) {
-                    $this->send($this->createMessage($term, $user, MailjetMessage::TEMPLATE_AGENCY_REMIND_TERM_BORROWER), $output);
+                    $this->send(
+                        $this->createMessage($term, $user, MailjetMessage::TEMPLATE_AGENCY_REMIND_TERM_BORROWER),
+                        $output
+                    );
                 }
             }
 
             $agentUsersByProject[$projectId] = $agentUsersByProject[$projectId] ?? $this->getAgentUsers($project);
 
             foreach ($agentUsersByProject[$projectId] as $user) {
-                $this->send($this->createMessage($term, $user, MailjetMessage::TEMPLATE_AGENCY_REMIND_TERM_AGENT), $output);
+                $this->send(
+                    $this->createMessage($term, $user, MailjetMessage::TEMPLATE_AGENCY_REMIND_TERM_AGENT),
+                    $output
+                );
             }
         }
 
@@ -80,11 +88,15 @@ class RemindTermCommand extends Command
             $project   = $term->getProject();
             $projectId = $project->getId();
 
-            $borrowerUsersByProject[$projectId] = $borrowerUsersByProject[$projectId] ?? $this->getBorrowerUsers($project);
+            $borrowerUsersByProject[$projectId] = $borrowerUsersByProject[$projectId]
+                ?? $this->getBorrowerUsers($project);
 
             if (Covenant::NATURE_CONTROL !== $term->getNature()) {
                 foreach ($borrowerUsersByProject[$projectId] as $user) {
-                    $this->send($this->createMessage($term, $user, MailjetMessage::TEMPLATE_AGENCY_REMIND_TERM_BORROWER), $output);
+                    $this->send(
+                        $this->createMessage($term, $user, MailjetMessage::TEMPLATE_AGENCY_REMIND_TERM_BORROWER),
+                        $output
+                    );
                 }
             }
         }
@@ -97,7 +109,12 @@ class RemindTermCommand extends Command
         $users = [];
 
         foreach ($project->getBorrowers() as $borrower) {
-            $users = [...$users, ...$borrower->getMembers()->map(fn (BorrowerMember $borrowerMember) => $borrowerMember->getUser())->toArray()];
+            $users = [
+                ...$users,
+                ...$borrower->getMembers()
+                    ->map(fn (BorrowerMember $borrowerMember) => $borrowerMember->getUser())
+                    ->toArray(),
+            ];
         }
 
         return \array_unique($users);
@@ -105,7 +122,11 @@ class RemindTermCommand extends Command
 
     private function getAgentUsers(Project $project): iterable
     {
-        return \array_unique($project->getAgent()->getMembers()->map(fn (AgentMember $member) => $member->getUser())->toArray());
+        return \array_unique(
+            $project->getAgent()->getMembers()
+                ->map(fn (AgentMember $member) => $member->getUser())
+                ->toArray()
+        );
     }
 
     /**
@@ -134,7 +155,13 @@ class RemindTermCommand extends Command
         $vars = $mailjetMessage->getVars();
 
         if ($output->isVerbose()) {
-            $output->writeln(\sprintf('Sending an email to %s for %s', \implode(' and ', \array_keys($mailjetMessage->getTo())), $vars['covenantName']));
+            $output->writeln(
+                \sprintf(
+                    'Sending an email to %s for %s',
+                    \implode(' and ', \array_keys($mailjetMessage->getTo())),
+                    $vars['covenantName']
+                )
+            );
         }
 
         if ($output->isVeryVerbose()) {
