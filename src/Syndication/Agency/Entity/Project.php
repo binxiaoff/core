@@ -1103,9 +1103,11 @@ class Project implements DriveCarrierInterface
         \reset($statuses);
 
         while (($status = \current($statuses))) {
-            $projectStatusHistory = new ProjectStatusHistory($this, $this->getAddedBy());
-
-            if (false === $this->statuses->exists($projectStatusHistory->getEquivalenceChecker())) {
+            if (
+                false === $this->statuses->exists(
+                    static fn ($_, ProjectStatusHistory $history) => $history->getStatus() === $status
+                )
+            ) {
                 $context->buildViolation('Agency.Project.missingStatus', [
                     '{{ missingStatus }}' => $status,
                     '{{ nextStatus }}'    => $this->currentStatus,
