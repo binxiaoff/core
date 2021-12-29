@@ -1105,11 +1105,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                     ),
                     FieldAlias::ELIGIBLE_FEI_CREDIT => new NullableMoney(
                         'EUR',
-                        (string) $this->faker->randomNumber(4)
+                        (string) $this->faker->randomNumber(6)
                     ),
                     FieldAlias::TOTAL_FEI_CREDIT => new NullableMoney(
                         'EUR',
-                        (string) $this->faker->randomNumber(4)
+                        (string) $this->faker->randomNumber(6)
                     ),
                     FieldAlias::TANGIBLE_FEI_CREDIT => new NullableMoney(
                         'EUR',
