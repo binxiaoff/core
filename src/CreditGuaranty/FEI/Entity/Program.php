@@ -258,6 +258,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(SearchFilter::class, properties={"companyGroupTag.publicId"})
+ * @ApiFilter(SearchFilter::class, properties={"name": "partial"})
  *
  * @ORM\Entity
  * @ORM\Table(name="credit_guaranty_program")
