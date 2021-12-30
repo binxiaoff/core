@@ -23,7 +23,7 @@ class BankAccount
      *     "agency:bankAccount:write",
      * })
      */
-    protected ?string $name;
+    protected ?string $label;
 
     /**
      * @ORM\Column(type="string", nullable=true)
@@ -36,7 +36,7 @@ class BankAccount
      *     "agency:bankAccount:write",
      * })
      */
-    protected ?string $institution;
+    protected ?string $institutionName;
 
     /**
      * @ORM\Column(type="string", nullable=true)
@@ -49,7 +49,7 @@ class BankAccount
      *     "agency:bankAccount:write",
      * })
      */
-    protected ?string $address;
+    protected ?string $institutionAddress;
 
     /**
      * @ORM\Column(type="string", length=11, nullable=true)
@@ -78,38 +78,38 @@ class BankAccount
      */
     protected ?string $iban;
 
-    public function getName(): ?string
+    public function getLabel(): ?string
     {
-        return $this->name;
+        return $this->label;
     }
 
-    public function setName(?string $name): BankAccount
+    public function setLabel(?string $label): BankAccount
     {
-        $this->name = $name;
+        $this->label = $label;
 
         return $this;
     }
 
-    public function getInstitution(): ?string
+    public function getInstitutionName(): ?string
     {
-        return $this->institution;
+        return $this->institutionName;
     }
 
-    public function setInstitution(?string $institution): BankAccount
+    public function setInstitutionName(?string $institutionName): BankAccount
     {
-        $this->institution = $institution;
+        $this->institutionName = $institutionName;
 
         return $this;
     }
 
-    public function getAddress(): ?string
+    public function getInstitutionAddress(): ?string
     {
-        return $this->address;
+        return $this->institutionAddress;
     }
 
-    public function setAddress(?string $address): BankAccount
+    public function setInstitutionAddress(?string $institutionAddress): BankAccount
     {
-        $this->address = $address;
+        $this->institutionAddress = $institutionAddress;
 
         return $this;
     }
@@ -140,6 +140,6 @@ class BankAccount
 
     public function isValid(): bool
     {
-        return $this->getInstitution() && $this->getAddress() && $this->getIban() && $this->getBic();
+        return $this->getInstitutionName() && $this->getInstitutionAddress() && $this->getIban() && $this->getBic();
     }
 }
