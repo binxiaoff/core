@@ -12,7 +12,6 @@ use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use KLS\Core\Entity\User;
 use KLS\Core\Validator\Constraints\Siren as AssertSiren;
-use KLS\Syndication\Agency\Entity\Embeddable\BankAccount;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -75,20 +74,12 @@ abstract class AbstractProjectPartaker
      */
     private NullableMoney $capital;
 
-    /**
-     * @ORM\Embedded(class=BankAccount::class)
-     *
-     * @Assert\Valid
-     */
-    private BankAccount $bankAccount;
-
     public function __construct(string $matriculationNumber)
     {
         $this->capital             = new NullableMoney();
         $this->matriculationNumber = $matriculationNumber;
         $this->rcs                 = null;
         $this->added               = new DateTimeImmutable();
-        $this->bankAccount         = new BankAccount();
         $this->setPublicId();
     }
 
@@ -150,18 +141,6 @@ abstract class AbstractProjectPartaker
     public function setHeadOffice(?string $headOffice): AbstractProjectPartaker
     {
         $this->headOffice = $headOffice;
-
-        return $this;
-    }
-
-    public function getBankAccount(): BankAccount
-    {
-        return $this->bankAccount;
-    }
-
-    public function setBankAccount(BankAccount $bankAccount): AbstractProjectPartaker
-    {
-        $this->bankAccount = $bankAccount;
 
         return $this;
     }

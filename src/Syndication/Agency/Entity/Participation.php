@@ -288,6 +288,25 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
      */
     private ?DateTimeImmutable $archivingDate;
 
+    /**
+     * @ORM\Embedded(class=BankAccount::class)
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"agency:participation:read", "agency:participation:write"})
+     */
+    private BankAccount $bankAccount;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=AgentBankAccount::class, inversedBy="participations")
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL", name="id_agent_bank_account")
+     *
+     * @Assert\NotBlank(groups={"published"})
+     *
+     * @Groups({"agency:participation:read"})
+     */
+    private ?AgentBankAccount $agentBankAccount;
+
     public function __construct(ParticipationPool $pool, Company $participant)
     {
         parent::__construct($participant->getSiren() ?? '');
@@ -302,6 +321,8 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
         $this->archivingDate            = null;
         $this->members                  = new ArrayCollection();
         $this->confidentialDrive        = new Drive();
+        $this->bankAccount              = new BankAccount();
+        $this->agentBankAccount         = null;
     }
 
     public function getParticipant(): Company
@@ -448,20 +469,34 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
         return $this->confidentialDrive;
     }
 
-    /**
-     * @Groups({"agency:participation:read"})
-     */
     public function getBankAccount(): BankAccount
     {
-        return parent::getBankAccount();
+        return $this->bankAccount;
     }
 
-    /**
-     * @Groups({"agency:participation:write"})
-     */
     public function setBankAccount(BankAccount $bankAccount): Participation
     {
-        return parent::setBankAccount($bankAccount);
+        $this->bankAccount = $bankAccount;
+
+        return $this;
+    }
+
+    public function getAgentBankAccount(): ?AgentBankAccount
+    {
+        return $this->agentBankAccount;
+    }
+
+    public function setAgentBankAccount(?AgentBankAccount $agentBankAccount): Participation
+    {
+        $this->agentBankAccount = $agentBankAccount;
+
+        if ($agentBankAccount) {
+            $agentBankAccount->addParticipation($this);
+        } else {
+            $agentBankAccount->removeParticipation($this);
+        }
+
+        return $this;
     }
 
     /**

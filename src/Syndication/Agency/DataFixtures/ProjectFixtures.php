@@ -22,11 +22,13 @@ use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\Core\Entity\UserStatus;
+use KLS\Syndication\Agency\Entity\AgentBankAccount;
 use KLS\Syndication\Agency\Entity\Borrower;
 use KLS\Syndication\Agency\Entity\BorrowerMember;
 use KLS\Syndication\Agency\Entity\BorrowerTrancheShare;
 use KLS\Syndication\Agency\Entity\Covenant;
 use KLS\Syndication\Agency\Entity\CovenantRule;
+use KLS\Syndication\Agency\Entity\Embeddable\BankAccount;
 use KLS\Syndication\Agency\Entity\Embeddable\Inequality;
 use KLS\Syndication\Agency\Entity\MarginImpact;
 use KLS\Syndication\Agency\Entity\MarginRule;
@@ -68,29 +70,26 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
 
         $draftProject = $this->createProject($staff);
         $this->forcePublicId($draftProject, 'draft');
+        $this->save($manager, $draftProject);
 
         $publishableProject = $this->createPublishableProject($staff, $manager);
         $this->forcePublicId($publishableProject, 'publishable');
+        $this->save($manager, $publishableProject);
 
         $publishedProject = $this->createPublishableProject($staff, $manager);
         $this->forcePublicId($publishedProject, 'published');
-
         // Fix email for one borrower to easy connect as him
         $publishedProject->getBorrowers()[0]->getMembers()[0]->getUser()->setEmail('user42@borrower.com');
+        $this->save($manager, $publishedProject);
 
         $finishedProject = $this->createPublishableProject($staff, $manager);
         $this->forcePublicId($finishedProject, 'finished');
+        $this->save($manager, $finishedProject);
 
         $archivedProject = $this->createPublishableProject($staff, $manager);
         $this->forcePublicId($archivedProject, 'archived');
-
-        // There are multiple save to let the doctrine listener trigger
-
-        $this->save($manager, $draftProject);
-        $this->save($manager, $publishableProject);
-        $this->save($manager, $publishedProject);
-        $this->save($manager, $finishedProject);
         $this->save($manager, $archivedProject);
+        // There are multiple save to let the doctrine listener trigger
 
         $publishedProject->publish();
 
@@ -377,12 +376,13 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         ;
         $agentParticipation->setCorporateName($this->faker->name);
 
-        $this->withPublishableAgentData($project)
+        $this
             ->withPublishableBorrowers($project, $manager)
             ->withPublishableTranches($project)
             ->withPublishableBorrowerTrancheShare($project)
             ->withPublishableCovenants($project)
             ->withPublishableParticipations($project)
+            ->withPublishableAgentData($project, $manager)
             ->withPublishableSyndicationModality($project)
             ->withPublishableParticipationTrancheAllocation($project)
         ;
@@ -478,7 +478,7 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         return $this;
     }
 
-    private function withPublishableAgentData(Project $project): ProjectFixtures
+    private function withPublishableAgentData(Project $project, ObjectManager $manager): ProjectFixtures
     {
         $agent = $project->getAgent();
 
@@ -488,11 +488,27 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
             ->setOccupation('agent')
         ;
 
-        $agent->getBankAccount()
-            ->setIban($this->faker->iban('fr'))
-            ->setBic('AGRIFRPP907')
-            ->setInstitutionName('bank institution')
-            ->setInstitutionAddress($this->faker->address)
+        $agentBankAccount = (new AgentBankAccount($agent))
+            ->setBankAccount(
+                (new BankAccount())
+                    ->setIban($this->faker->iban('fr'))
+                    ->setBic('AGRIFRPP907')
+                    ->setInstitutionName('bank institution')
+                    ->setInstitutionAddress($this->faker->address)
+            )
+        ;
+
+        $manager->persist($agentBankAccount);
+
+        foreach ($project->getParticipations() as $participation) {
+            $agentBankAccount->addParticipation($participation);
+        }
+
+        foreach ($project->getBorrowers() as $borrower) {
+            $agentBankAccount->addBorrower($borrower);
+        }
+
+        $agent->setBankAccounts(new ArrayCollection([$agentBankAccount]))
         ;
 
         $agent
@@ -612,7 +628,6 @@ class ProjectFixtures extends AbstractFixtures implements DependentFixtureInterf
         $user->setCurrentStatus(new UserStatus($user, UserStatus::STATUS_CREATED));
 
         $manager->persist($user);
-        $manager->flush();
 
         $borrowerMember = new BorrowerMember($borrower, $user);
         $borrowerMember->setReferent($referent);

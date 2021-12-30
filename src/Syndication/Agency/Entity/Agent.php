@@ -181,6 +181,17 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
      */
     private Drive $confidentialDrive;
 
+    /**
+     * @var Collection|AgentBankAccount[]
+     *
+     * @ORM\OneToMany(targetEntity=AgentBankAccount::class, mappedBy="agent")
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"agency:agent:read"})
+     */
+    private Collection $bankAccounts;
+
     public function __construct(Project $project, Company $company)
     {
         parent::__construct($company->getSiren() ?? '');
@@ -190,6 +201,7 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
         $this->displayName       = $company->getDisplayName();
         $this->corporateName     = $company->getDisplayName();
         $this->confidentialDrive = new Drive();
+        $this->bankAccounts      = new ArrayCollection();
     }
 
     public function getProject(): Project
@@ -222,6 +234,44 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
     public function setContact(NullablePerson $contact): Agent
     {
         $this->contact = $contact;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|AgentBankAccount[]
+     */
+    public function getBankAccounts(): Collection
+    {
+        return $this->bankAccounts;
+    }
+
+    public function addBankAccount(AgentBankAccount $agentBankAccount): Agent
+    {
+        if (false === $this->bankAccounts->contains($agentBankAccount)) {
+            $this->bankAccounts->add($agentBankAccount);
+        }
+
+        return $this;
+    }
+
+    public function removeBankAccount(AgentBankAccount $agentBankAccount): Agent
+    {
+        if ($this->bankAccounts->contains($agentBankAccount)) {
+            $this->bankAccounts->remove($agentBankAccount);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Collection|AgentBankAccount[] $bankAccounts
+     *
+     * @return Agent
+     */
+    public function setBankAccounts($bankAccounts)
+    {
+        $this->bankAccounts = $bankAccounts;
 
         return $this;
     }
@@ -339,22 +389,6 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
     public function getConfidentialDrive(): Drive
     {
         return $this->confidentialDrive;
-    }
-
-    /**
-     * @Groups({"agency:agent:read"})
-     */
-    public function getBankAccount(): BankAccount
-    {
-        return parent::getBankAccount();
-    }
-
-    /**
-     * @Groups({"agency:agent:write"})
-     */
-    public function setBankAccount(BankAccount $bankAccount): Agent
-    {
-        return parent::setBankAccount($bankAccount);
     }
 
     /**

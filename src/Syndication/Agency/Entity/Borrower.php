@@ -124,6 +124,25 @@ class Borrower extends AbstractProjectPartaker
      */
     private Collection $trancheShares;
 
+    /**
+     * @ORM\Embedded(class=BankAccount::class)
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
+     */
+    private BankAccount $bankAccount;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=AgentBankAccount::class, inversedBy="borrowers")
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL", name="id_agent_bank_account")
+     *
+     * @Assert\NotBlank(groups={"published"})
+     *
+     * @Groups({"agency:borrower:read"})
+     */
+    private ?AgentBankAccount $agentBankAccount;
+
     public function __construct(
         Project $project,
         string $corporateName,
@@ -132,11 +151,13 @@ class Borrower extends AbstractProjectPartaker
         string $matriculationNumber
     ) {
         parent::__construct($matriculationNumber);
-        $this->project       = $project;
-        $this->corporateName = $corporateName;
-        $this->legalForm     = $legalForm;
-        $this->headOffice    = $headOffice;
-        $this->members       = new ArrayCollection();
+        $this->project          = $project;
+        $this->corporateName    = $corporateName;
+        $this->legalForm        = $legalForm;
+        $this->headOffice       = $headOffice;
+        $this->members          = new ArrayCollection();
+        $this->bankAccount      = new BankAccount();
+        $this->agentBankAccount = null;
     }
 
     public function getProject(): Project
@@ -182,20 +203,16 @@ class Borrower extends AbstractProjectPartaker
         return $this;
     }
 
-    /**
-     * @Groups({"agency:borrower:read"})
-     */
     public function getBankAccount(): BankAccount
     {
-        return parent::getBankAccount();
+        return $this->bankAccount;
     }
 
-    /**
-     * @Groups({"agency:borrower:write"})
-     */
     public function setBankAccount(BankAccount $bankAccount): Borrower
     {
-        return parent::setBankAccount($bankAccount);
+        $this->bankAccount = $bankAccount;
+
+        return $this;
     }
 
     /**
@@ -266,6 +283,24 @@ class Borrower extends AbstractProjectPartaker
     public function setHeadOffice(?string $headOffice): AbstractProjectPartaker
     {
         $this->headOffice = $headOffice;
+
+        return $this;
+    }
+
+    public function getAgentBankAccount(): ?AgentBankAccount
+    {
+        return $this->agentBankAccount;
+    }
+
+    public function setAgentBankAccount(?AgentBankAccount $agentBankAccount): Borrower
+    {
+        $this->agentBankAccount = $agentBankAccount;
+
+        if ($agentBankAccount) {
+            $agentBankAccount->addBorrower($this);
+        } else {
+            $agentBankAccount->removeBorrower($this);
+        }
 
         return $this;
     }
