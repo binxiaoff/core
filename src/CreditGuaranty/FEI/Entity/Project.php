@@ -569,7 +569,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
 
     public function isReceivingGrant(): bool
     {
-        return null !== $this->grant->getAmount() || '0' !== $this->grant->getAmount();
+        return false === $this->grant->isNull();
     }
 
     public function getLandValue(): NullableMoney

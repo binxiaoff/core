@@ -110,6 +110,11 @@ class FieldAlias extends AbstractEnum
         self::LOAN_NAF_CODE    => 'loan_nace_code',
     ];
 
+    public const CREATION_IN_PROGRESS_RELATED_FIELDS = [
+        self::ACTIVITY_START_DATE,
+        self::REGISTRATION_NUMBER,
+    ];
+
     public const ESB_RELATED_FIELDS = [
         self::AID_INTENSITY,
         self::LOAN_DURATION,
@@ -118,9 +123,8 @@ class FieldAlias extends AbstractEnum
         self::TOTAL_FEI_CREDIT,
     ];
 
-    public const CREATION_IN_PROGRESS_RELATED_FIELDS = [
-        self::ACTIVITY_START_DATE,
-        self::REGISTRATION_NUMBER,
+    public const RECEIVING_GRANT_RELATED_FIELDS = [
+        self::PROJECT_GRANT,
     ];
 
     //

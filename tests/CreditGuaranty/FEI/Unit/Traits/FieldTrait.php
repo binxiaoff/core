@@ -421,6 +421,23 @@ trait FieldTrait
         );
     }
 
+    protected function createProjectGrantField(): Field
+    {
+        return new Field(
+            FieldAlias::PROJECT_GRANT,
+            Field::TAG_ELIGIBILITY,
+            'project',
+            'other',
+            'project',
+            'grant',
+            'MoneyInterface',
+            Project::class,
+            true,
+            'money',
+            null
+        );
+    }
+
     protected function createProjectTotalAmountField(): Field
     {
         return new Field(
