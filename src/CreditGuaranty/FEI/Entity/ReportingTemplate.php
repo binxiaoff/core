@@ -112,17 +112,6 @@ class ReportingTemplate
     use BlamableAddedTrait;
     use ArchivableTrait;
 
-    public const IMPORT_FILE_COLUMNS = [
-        self::GREEN_COLUMN,
-        self::OPERATION_COLUMN,
-        self::CRD_COLUMN,
-        self::MATURITE_COLUMN,
-    ];
-    public const GREEN_COLUMN     = 'n° GREEN';
-    public const OPERATION_COLUMN = 'n° d\'opération';
-    public const CRD_COLUMN       = 'CRD';
-    public const MATURITE_COLUMN  = 'Maturité';
-
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Program", inversedBy="reportingTemplates")
      * @ORM\JoinColumn(name="id_program", nullable=false)

@@ -289,6 +289,12 @@ CreditGuaranty:
             totalFeiCredit:
                 requiredForEsb: Le montant total du crédit FEI du projet doit être renseigné pour calculer l'équivalent subvention brute.
         financingObject:
+            import:
+                green: Il y a une erreur sur le numero green sur la ligne {{line}}
+                headerEntries: Une ou plusieurs colonnes sont manquantes {{missingColumn}}
+                operation: Il y a une erreur sur le numero d'opération sur la ligne {{line}}
+                crd: Il y a une erreur sur le numero CRD sur la ligne {{line}}
+                maturity: Il y a une erreur sur le numero de maturité sur la ligne {{line}}
             required: La réservation ne peut être envoyée, au moins un objet de financement doit être défini.
             loanDuration:
                 requiredForEsb: La durée du prêt de l'objet de financement doit être renseignée pour calculer l'équivalent subvention brute.

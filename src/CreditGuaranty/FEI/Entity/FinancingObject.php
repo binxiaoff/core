@@ -17,6 +17,7 @@ use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
+use KLS\CreditGuaranty\FEI\Controller\Reporting\FinancingObject\UpdateByFile;
 use KLS\CreditGuaranty\FEI\Entity\Constant\GrossSubsidyEquivalent;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramAwareInterface;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramChoiceOptionCarrierInterface;
@@ -64,6 +65,34 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
+ *         },
+ *         "financing_object_import_file_update": {
+ *             "method": "POST",
+ *             "controller": UpdateByFile::class,
+ *             "path": "/credit_guaranty/financing_objects/import_file/update",
+ *             "deserialize": false,
+ *             "swagger_context": {
+ *                 "consumes": { "multipart/form-data" },
+ *                 "parameters": {
+ *                     {
+ *                         "in": "formData",
+ *                         "name": "file",
+ *                         "type": "file",
+ *                         "description": "The uploaded file",
+ *                         "required": true,
+ *                     },
+ *                 },
+ *                 "responses": {
+ *                     "200": {
+ *                         "description": "OK",
+ *                         "content": {
+ *                             "application/json": {
+ *                                 "schema": {"type": "object"},
+ *                             },
+ *                         },
+ *                     },
+ *                 },
+ *             },
  *         },
  *     },
  * )

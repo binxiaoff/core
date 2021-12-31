@@ -35,7 +35,6 @@ use KLS\Core\Service\MoneyCalculator;
 use KLS\Core\Validator\Constraints\PreviousValue;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Download;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\FinancingObject\BulkUpdate;
-use KLS\CreditGuaranty\FEI\Controller\Reporting\Update;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\DeepCloneInterface;
 use KLS\CreditGuaranty\FEI\Validator\Constraints\IsGrossSubsidyEquivalentConfigured;
 use LogicException;
@@ -130,14 +129,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "path": "/credit_guaranty/programs/{publicId}/reporting/import-file/download",
  *             "security": "is_granted('reporting', object)",
  *             "output_formats": { "xlsx" },
- *         },
- *         "reporting_import_file_upload": {
- *             "method": "POST",
- *             "controller": Update::class,
- *             "path": "/credit_guaranty/programs/{publicId}/reporting/import-file/upload",
- *             "security": "is_granted('reporting', object)",
- *             "input_formats": { "xlsx" },
- *             "deserialize": false,
  *         },
  *         "bulk_update_financing_objects": {
  *             "method": "PATCH",
