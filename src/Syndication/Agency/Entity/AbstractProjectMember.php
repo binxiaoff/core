@@ -58,8 +58,8 @@ abstract class AbstractProjectMember
      * Not used in front only kept here for now for audit purposes.
      * User is used because of borrowers.
      *
-     * @ORM\OneToOne(targetEntity=User::class)
-     * @ORM\JoinColumn(nullable=true)
+     * @ORM\ManyToOne(targetEntity=User::class)
+     * @ORM\JoinColumn(name="id_archiver", nullable=true, unique=false)
      *
      * @Assert\AtLeastOneOf({
      *     @Assert\IsNull,
