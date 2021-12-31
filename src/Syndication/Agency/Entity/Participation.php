@@ -289,6 +289,8 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
     private ?DateTimeImmutable $archivingDate;
 
     /**
+     * BankAccount of the participant.
+     *
      * @ORM\Embedded(class=BankAccount::class)
      *
      * @Assert\Valid
@@ -298,6 +300,8 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
     private BankAccount $bankAccount;
 
     /**
+     * BankAccount given by the agent for the financial transactions.
+     *
      * @ORM\ManyToOne(targetEntity=AgentBankAccount::class, inversedBy="participations")
      * @ORM\JoinColumn(nullable=true, onDelete="SET NULL", name="id_agent_bank_account")
      *

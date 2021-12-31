@@ -125,6 +125,8 @@ class Borrower extends AbstractProjectPartaker
     private Collection $trancheShares;
 
     /**
+     * BankAccount of the borrower.
+     *
      * @ORM\Embedded(class=BankAccount::class)
      *
      * @Assert\Valid
@@ -134,6 +136,8 @@ class Borrower extends AbstractProjectPartaker
     private BankAccount $bankAccount;
 
     /**
+     * BankAccount given by the agent for the financial transactions.
+     *
      * @ORM\ManyToOne(targetEntity=AgentBankAccount::class, inversedBy="borrowers")
      * @ORM\JoinColumn(nullable=true, onDelete="SET NULL", name="id_agent_bank_account")
      *
