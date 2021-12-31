@@ -17,23 +17,33 @@ use KLS\Core\Entity\User;
 use KLS\Core\Exception\Drive\FolderAlreadyExistsException;
 use KLS\Core\Service\File\FileUploadManager;
 use League\Flysystem\FilesystemException;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Callback;
+use Symfony\Component\Validator\Constraints\File as FileConstraint;
+use Symfony\Component\Validator\Constraints\Sequentially;
+use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class Post
 {
     private FileUploadManager $fileUploadManager;
     private Security $security;
+    private ValidatorInterface $validator;
 
-    public function __construct(FileUploadManager $fileUploadManager, Security $security)
-    {
+    public function __construct(
+        FileUploadManager $fileUploadManager,
+        Security $security,
+        ValidatorInterface $validator
+    ) {
         $this->fileUploadManager = $fileUploadManager;
         $this->security          = $security;
+        $this->validator         = $validator;
     }
 
     /**
@@ -102,28 +112,31 @@ class Post
     {
         $files = \array_values($request->files->all());
 
-        // Verify filenames before any upload
-        // Hence the need to have 2 loops
-        $fileEntities = \array_map(static function ($file) use ($parent) {
-            if (false === $file instanceof UploadedFile) {
-                throw new BadRequestException();
-            }
+        $constraints = [
+            new All(
+                new Sequentially([
+                    new Type(UploadedFile::class),
+                    new FileConstraint(),
+                    new Callback(function ($files) use ($parent) {
+                        if ($parent->exist($files->getClientOriginalName())) {
+                            throw new BadRequestHttpException('The file already exist');
+                        }
 
-            if (false === \in_array($file->getClientMimeType(), FileInput::ACCEPTED_MEDIA_TYPE)) {
-                throw new BadRequestException(\sprintf('%s is not an acceptable media type', $file->getClientMimeType()));
-            }
+                        if (false === \in_array($files->getMimeType(), FileInput::ACCEPTED_MEDIA_TYPE, true)) {
+                            throw new BadRequestHttpException(\sprintf(
+                                '%s is not an acceptable media type',
+                                $files->getMimeType()
+                            ));
+                        }
+                    }),
+                ]),
+            ),
+        ];
 
-            $file = new File($file->getClientOriginalName());
+        $this->validator->validate($files, $constraints);
 
-            if ($parent->exist($file->getName())) {
-                throw new BadRequestException('The file already exist');
-            }
-
-            return $file;
-        }, $files);
-
-        foreach ($files as $index => $uploadedFile) {
-            $file = $fileEntities[$index];
+        foreach ($files as $uploadedFile) {
+            $file = new File($uploadedFile->getClientOriginalName());
 
             $this->fileUploadManager->upload($uploadedFile, $user, $file);
 
