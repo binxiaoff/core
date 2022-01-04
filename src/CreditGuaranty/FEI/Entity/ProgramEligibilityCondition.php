@@ -171,6 +171,14 @@ class ProgramEligibilityCondition
         $this->added                           = new DateTimeImmutable();
     }
 
+    /**
+     * @Groups({"creditGuaranty:programEligibilityCondition:field"})
+     */
+    public function getProgramEligibilityField(): Field
+    {
+        return $this->getProgramEligibilityConfiguration()->getProgramEligibility()->getField();
+    }
+
     public function getProgramEligibilityConfiguration(): ProgramEligibilityConfiguration
     {
         return $this->programEligibilityConfiguration;

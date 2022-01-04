@@ -17,6 +17,7 @@ use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
+use KLS\CreditGuaranty\FEI\Controller\ProgramEligibilityConditions;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\FinancingObject\UpdateByFile;
 use KLS\CreditGuaranty\FEI\Entity\Constant\GrossSubsidyEquivalent;
 use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramAwareInterface;
@@ -47,6 +48,40 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "get": {
  *             "security": "is_granted('view', object)",
  *         },
+ *         "get_program_eligibility_conditions": {
+ *             "method": "GET",
+ *             "path": "credit_guaranty/financing_objects/{publicId}/program_eligibility_conditions",
+ *             "controller": ProgramEligibilityConditions::class,
+ *             "security": "is_granted('check_eligibility', object)",
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:programEligibilityCondition:read",
+ *                     "creditGuaranty:programEligibilityCondition:field",
+ *                     "timestampable:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get_program_eligibility_conditions-read",
+ *             },
+ *             "openapi_context": {
+ *                 "parameters": {
+ *                     {
+ *                         "in": "query",
+ *                         "name": "eligible",
+ *                         "schema": {
+ *                             "type": "boolean",
+ *                             "enum": {0, 1, false, true},
+ *                         },
+ *                         "required": false,
+ *                     },
+ *                 },
+ *                 "responses": {
+ *                     "200": {
+ *                         "content": {
+ *                             "application/json+ld": {},
+ *                         },
+ *                     },
+ *                 },
+ *             },
+ *         },
  *         "patch": {
  *             "security": "is_granted('edit', object)",
  *             "denormalization_context": {
@@ -63,6 +98,16 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         },
  *     },
  *     collectionOperations={
+ *         "get": {
+ *             "controller": "ApiPlatform\Core\Action\NotFoundAction",
+ *             "read": false,
+ *             "output": false,
+ *             "openapi_context": {
+ *                 "description": "For get_program_eligibility_conditions route to work
+ *                      because it is a PartialCollectionView type operation",
+ *                 "x-visibility": "hide",
+ *             },
+ *         },
  *         "post": {
  *             "security_post_denormalize": "is_granted('create', object)",
  *         },

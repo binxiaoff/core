@@ -26,6 +26,7 @@ use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
+use KLS\CreditGuaranty\FEI\Controller\ProgramEligibilityConditions;
 use KLS\CreditGuaranty\FEI\Controller\Reservation\Ineligibilities;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
@@ -122,6 +123,40 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "path": "credit_guaranty/reservations/{publicId}/ineligibilities",
  *             "controller": Ineligibilities::class,
  *             "security": "is_granted('check_eligibility', object)",
+ *         },
+ *         "get_program_eligibility_conditions": {
+ *             "method": "GET",
+ *             "path": "credit_guaranty/reservations/{publicId}/program_eligibility_conditions",
+ *             "controller": ProgramEligibilityConditions::class,
+ *             "security": "is_granted('check_eligibility', object)",
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:programEligibilityCondition:read",
+ *                     "creditGuaranty:programEligibilityCondition:field",
+ *                     "timestampable:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get_program_eligibility_conditions-read",
+ *             },
+ *             "openapi_context": {
+ *                 "parameters": {
+ *                     {
+ *                         "in": "query",
+ *                         "name": "eligible",
+ *                         "schema": {
+ *                             "type": "boolean",
+ *                             "enum": {0, 1, false, true},
+ *                         },
+ *                         "required": false,
+ *                     },
+ *                 },
+ *                 "responses": {
+ *                     "200": {
+ *                         "content": {
+ *                             "application/json+ld": {},
+ *                         },
+ *                     },
+ *                 },
+ *             },
  *         },
  *     },
  *     collectionOperations={
