@@ -34,6 +34,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "money:read",
  *             "nullableMoney:read",
  *             "lendingRate:read",
+ *             "agency:bankAccount:read",
  *         },
  *         "openapi_definition_name": "read",
  *     },
@@ -306,7 +307,10 @@ class ParticipationPool implements DriveCarrierInterface
     {
         $validationGroups = ['Default', 'ParticipationPool'];
 
-        if ($pool->getProject()->isPublished() && ($pool->isPrimary() || ($pool->isSecondary() && false === $pool->isEmpty()))) {
+        if (
+            $pool->getProject()->isPublished() && ($pool->isPrimary()
+                || ($pool->isSecondary() && false === $pool->isEmpty()))
+        ) {
             $validationGroups[] = 'ParticipationPool:published:active';
         }
 
@@ -321,7 +325,9 @@ class ParticipationPool implements DriveCarrierInterface
     public function getAllocationSum(): MoneyInterface
     {
         return MoneyCalculator::sum(
-            $this->participations->map(fn (Participation $participation) => $participation->getFinalAllocation())->toArray()
+            $this->participations->map(
+                fn (Participation $participation) => $participation->getFinalAllocation()
+            )->toArray()
         );
     }
 

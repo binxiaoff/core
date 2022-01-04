@@ -17,6 +17,7 @@ use KLS\Core\Entity\Drive;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Embeddable\NullablePerson;
 use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
+use KLS\Syndication\Agency\Entity\Embeddable\BankAccount;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -28,6 +29,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "nullablePerson:read",
  *             "nullableMoney:read",
  *             "money:read",
+ *             "agency:bankAccount:read",
  *         },
  *         "openapi_definition_name": "read",
  *     },
@@ -45,6 +47,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "nullablePerson:write",
  *                     "nullableMoney:write",
  *                     "money:write",
+ *                     "agency:bankAccount:write",
  *                 },
  *                 "openapi_definition_name": "item-patch-write",
  *             },
@@ -225,86 +228,6 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
 
     /**
      * @Groups({"agency:agent:read"})
-     *
-     * @Assert\NotBlank(groups={"published"})
-     */
-    public function getBankInstitution(): ?string
-    {
-        return $this->bankInstitution;
-    }
-
-    /**
-     * @Groups({"agency:agent:write"})
-     */
-    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
-    {
-        $this->bankInstitution = $bankInstitution;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:agent:read"})
-     *
-     * @Assert\NotBlank(groups={"published"})
-     */
-    public function getBankAddress(): ?string
-    {
-        return $this->bankAddress;
-    }
-
-    /**
-     * @Groups({"agency:agent:write"})
-     */
-    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
-    {
-        $this->bankAddress = $bankAddress;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:agent:read"})
-     *
-     * @Assert\NotBlank(groups={"published"})
-     */
-    public function getBic(): ?string
-    {
-        return $this->bic;
-    }
-
-    /**
-     * @Groups({"agency:agent:write"})
-     */
-    public function setBic(?string $bic): AbstractProjectPartaker
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:agent:read"})
-     *
-     * @Assert\NotBlank(groups={"published"})
-     */
-    public function getIban(): ?string
-    {
-        return $this->iban;
-    }
-
-    /**
-     * @Groups({"agency:agent:write"})
-     */
-    public function setIban(?string $iban): AbstractProjectPartaker
-    {
-        $this->iban = $iban;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:agent:read"})
      */
     public function getMatriculationNumber(): string
     {
@@ -421,6 +344,22 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
     /**
      * @Groups({"agency:agent:read"})
      */
+    public function getBankAccount(): BankAccount
+    {
+        return parent::getBankAccount();
+    }
+
+    /**
+     * @Groups({"agency:agent:write"})
+     */
+    public function setBankAccount(BankAccount $bankAccount): Agent
+    {
+        return parent::setBankAccount($bankAccount);
+    }
+
+    /**
+     * @Groups({"agency:agent:read"})
+     */
     public function hasVariableCapital(): ?bool
     {
         return parent::hasVariableCapital();
@@ -432,5 +371,23 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
     public function setVariableCapital(?bool $variableCapital): AbstractProjectPartaker
     {
         return parent::setVariableCapital($variableCapital);
+    }
+
+    /**
+     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups.
+     *
+     * @return array|string[]
+     */
+    public static function getCurrentValidationGroups(AbstractProjectPartaker $abstractProjectPartaker): array
+    {
+        $validationGroups = parent::getCurrentValidationGroups($abstractProjectPartaker);
+
+        $validationGroups[] = 'Agent';
+
+        if ($abstractProjectPartaker->getProject()->isPublished()) {
+            $validationGroups[] = 'bankAccount::completed';
+        }
+
+        return $validationGroups;
     }
 }
