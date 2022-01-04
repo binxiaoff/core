@@ -22,8 +22,9 @@ class RemindTermCommand extends Command
 {
     protected static $defaultName = 'kls:agency:term:remind';
 
-    private Swift_Mailer $mailer;
+    private Swift_Mailer   $mailer;
     private TermRepository $termRepository;
+    private int            $sendCount;
 
     public function __construct(Swift_Mailer $mailer, TermRepository $termRepository, string $name = null)
     {
@@ -31,11 +32,12 @@ class RemindTermCommand extends Command
 
         $this->mailer         = $mailer;
         $this->termRepository = $termRepository;
+        $this->sendCount      = 0;
     }
 
     protected function configure(): void
     {
-        $this->setDescription('Send reminders for terms (1 day before and 1 week before)');
+        $this->setDescription('Send reminders for terms (ending 1 day before and 1 week before, starting today)');
     }
 
     /**
@@ -46,13 +48,18 @@ class RemindTermCommand extends Command
         $borrowerUsersByProject = [];
         $agentUsersByProject    = [];
 
-        $terms = $this->termRepository->findBy([
-            'endDate' => [
-                (new \DateTimeImmutable('+ 1 day'))->format('Y-m-d'),
-                (new \DateTimeImmutable('+ 1 week'))->format('Y-m-d'),
-            ],
-            'sharingDate' => null,
-        ]);
+        $termsEndingTomorrow = $this->termRepository->findUnsharedInPublishedProjectEndingTomorrow();
+        $termsEndingNextWeek = $this->termRepository->findUnsharedInPublishedProjectEndingNextWeek();
+
+        $terms = [
+            ...$termsEndingTomorrow,
+            ...$termsEndingNextWeek,
+        ];
+
+        if ($output->isVerbose()) {
+            $output->writeln(\sprintf('Term ending tomorrow : %d', \count($termsEndingTomorrow)));
+            $output->writeln(\sprintf('Term ending next week : %d', \count($termsEndingNextWeek)));
+        }
 
         foreach ($terms as $term) {
             $project   = $term->getProject();
@@ -82,7 +89,11 @@ class RemindTermCommand extends Command
             }
         }
 
-        $terms = $this->termRepository->findBy(['startDate' => new \DateTimeImmutable('today'), 'sharingDate' => null]);
+        $terms = $this->termRepository->findUnsharedInPublishedProjectStartingToday();
+
+        if ($output->isVerbose()) {
+            $output->writeln(\sprintf('Term starting today : %d', \count($terms)));
+        }
 
         foreach ($terms as $term) {
             $project   = $term->getProject();
@@ -99,6 +110,10 @@ class RemindTermCommand extends Command
                     );
                 }
             }
+        }
+
+        if ($output->isVerbose()) {
+            $output->writeln(\sprintf('Email sent : %d', $this->sendCount));
         }
 
         return Command::SUCCESS;
@@ -153,8 +168,9 @@ class RemindTermCommand extends Command
     private function send(MailjetMessage $mailjetMessage, OutputInterface $output): void
     {
         $vars = $mailjetMessage->getVars();
+        ++$this->sendCount;
 
-        if ($output->isVerbose()) {
+        if ($output->isVeryVerbose()) {
             $output->writeln(
                 \sprintf(
                     'Sending an email to %s for %s',
@@ -164,7 +180,7 @@ class RemindTermCommand extends Command
             );
         }
 
-        if ($output->isVeryVerbose()) {
+        if ($output->isDebug()) {
             $output->writeln('Variables for message :');
             foreach ($vars as $key => $value) {
                 $output->writeln("\t{$key} : {$value}");
@@ -173,7 +189,7 @@ class RemindTermCommand extends Command
 
         $this->mailer->send($mailjetMessage);
 
-        if ($output->isVerbose()) {
+        if ($output->isVeryVerbose()) {
             $output->writeln('Email sent');
         }
     }
