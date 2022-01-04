@@ -130,16 +130,12 @@ class ReportingTest extends AbstractApiTest
             [],
             0,
         ];
-        // TODO uncomment this code below in CALS-5310
-        // this actually returns data with the 4 properties by default
-        // [id_financing_object, reporting_first_date, reporting_last_date, reporting_validation_date]
-        // instead of empty array while this reportingTemplate has no reportingTemplateField
-//        yield 'reporting-template-2 - staff_company:bar_user-a' => [
-//            'staff_company:bar_user-a',
-//            'reporting-template-2',
-//            [],
-//            [],
-//            0,
-//        ];
+        yield 'reporting-template-2 - staff_company:bar_user-a' => [
+            'staff_company:bar_user-a',
+            'reporting-template-2',
+            [],
+            [],
+            0,
+        ];
     }
 }

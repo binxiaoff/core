@@ -15,8 +15,10 @@ class ReportingTemplateVoter extends AbstractEntityVoter
 {
     private StaffPermissionManager $staffPermissionManager;
 
-    public function __construct(AuthorizationCheckerInterface $authorizationChecker, StaffPermissionManager $staffPermissionManager)
-    {
+    public function __construct(
+        AuthorizationCheckerInterface $authorizationChecker,
+        StaffPermissionManager $staffPermissionManager
+    ) {
         parent::__construct($authorizationChecker);
         $this->staffPermissionManager = $staffPermissionManager;
     }
