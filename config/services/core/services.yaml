@@ -3,6 +3,7 @@ imports:
 
 parameters:
   directory.shared: /data/medias/nfs/
+  directory.temporary: '%env(TEMP_DIRECTORY)%'
   directory.protected: '%directory.shared%protected/'
   file_encryption.kek_file: '%env(FILE_ENCRYPTION_KEK_FILE)%'
   file_encryption.kek_passphrase: '%env(FILE_ENCRYPTION_KEK_PASSPHRASE)%'

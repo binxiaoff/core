@@ -5,6 +5,8 @@ services:
   _defaults:
     autowire: true
     autoconfigure: true
+    bind:
+      $temporaryDirectory: '%directory.temporary%'
 
   KLS\CreditGuaranty\:
     resource: '%kernel.project_dir%/src/CreditGuaranty/*'
