@@ -180,6 +180,10 @@ class SwaggerDecorator implements NormalizerInterface
                 'route'  => '/credit_guaranty/programs/{publicId}/financing_objects',
                 'method' => 'patch',
             ],
+            [
+                'route'  => '/credit_guaranty/reporting_templates/{publicId}/export',
+                'method' => 'get',
+            ],
         ];
 
         foreach ($reportingRoutes as $reportingRoute) {
