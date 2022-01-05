@@ -4,6 +4,9 @@
 
 /protected
 
+# test reports
+reports
+
 ###> PHPStorm ###
 .idea/
 ###< PHPStorm ###
