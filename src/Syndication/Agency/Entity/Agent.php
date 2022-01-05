@@ -6,6 +6,7 @@ namespace KLS\Syndication\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -189,6 +190,8 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
      * @Assert\Valid
      *
      * @Groups({"agency:agent:read"})
+     *
+     * @ApiSubresource
      */
     private Collection $bankAccounts;
 
