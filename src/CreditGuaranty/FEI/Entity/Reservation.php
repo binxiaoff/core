@@ -169,7 +169,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "openapi_definition_name": "item-post-create",
  *             },
  *         },
- *         "get",
+ *         "get": {
+ *             "pagination_client_items_per_page": true,
+ *         },
  *         "api_credit_guaranty_programs_reservations_get_subresource": {
  *             "method": "GET",
  *             "pagination_client_items_per_page": true,
