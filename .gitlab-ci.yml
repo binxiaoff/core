@@ -99,7 +99,11 @@ stages:
     - php bin/console doctrine:database:create --env=test --connection=migration
     - php bin/console doctrine:migration:migrate -n --env=test
     - php bin/console doctrine:fixtures:load --env=test -n --group=test
-    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='functional'
+    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='functional' --log-junit report-functional.xml
+    - sed -i "s_${CI_PROJECT_DIR}__g" report-functional.xml   # use relative path instead of absolute path in test report
+  artifacts:
+    reports:
+      junit: report-functional.xml
 
 🧪 unit:
   ### Uncomment the following if using a database
@@ -111,7 +115,16 @@ stages:
     - composer config -g cache-dir "$(pwd)/.composer-cache"
     - composer install
   script:
-    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='unit'
+    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='unit' --coverage-cobertura coverage.xml --log-junit report-unit.xml
+    # pcov.enabled is necessary for coverage calculation to be possible
+    # --coverage-text is used to have a detailed view in the job's log
+    # --coverage-cobertura generates the coverage report to be displayed in the MR
+    # --log-junit generates the test report for display in the pipeline
+    - sed -i "s_${CI_PROJECT_DIR}__g" report-unit.xml   # use relative path instead of absolute path in test report
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+      junit: report-unit.xml
 
 # Deployment
 
