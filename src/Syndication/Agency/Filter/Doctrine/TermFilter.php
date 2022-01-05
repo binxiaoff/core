@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace KLS\Syndication\Agency\Filter\Doctrine;
 
-use DateTime;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Filter\SQLFilter;
 use KLS\Syndication\Agency\Entity\Term;
@@ -14,15 +14,19 @@ use KLS\Syndication\Agency\Entity\Term;
  */
 class TermFilter extends SQLFilter
 {
+    /**
+     * @param mixed $targetTableAlias
+     *
+     * @throws Exception
+     */
     public function addFilterConstraint(ClassMetadata $targetEntity, $targetTableAlias)
     {
         if (false === (Term::class === $targetEntity->name)) {
             return '';
         }
 
-        $connection = $this->getConnection();
+        $date = $this->getConnection()->getDatabasePlatform()->getCurrentDateSQL();
 
-        return $targetTableAlias . '.start_date <= ' .
-            $connection->quote((new DateTime())->setTime(0, 0)->format('Y-m-d'));
+        return $targetTableAlias . '.start_date <= ' . $date;
     }
 }
