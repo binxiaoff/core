@@ -492,12 +492,12 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
 
     public function setAgentBankAccount(?AgentBankAccount $agentBankAccount): Participation
     {
-        $this->agentBankAccount = $agentBankAccount;
-
         if ($agentBankAccount) {
-            $agentBankAccount->addParticipation($this);
+            $this->agentBankAccount = $agentBankAccount;
+            $this->agentBankAccount->addParticipation($this);
         } else {
-            $agentBankAccount->removeParticipation($this);
+            $this->agentBankAccount->removeParticipation($this);
+            $this->agentBankAccount = null;
         }
 
         return $this;

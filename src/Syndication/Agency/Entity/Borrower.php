@@ -298,12 +298,12 @@ class Borrower extends AbstractProjectPartaker
 
     public function setAgentBankAccount(?AgentBankAccount $agentBankAccount): Borrower
     {
-        $this->agentBankAccount = $agentBankAccount;
-
         if ($agentBankAccount) {
-            $agentBankAccount->addBorrower($this);
+            $this->agentBankAccount = $agentBankAccount;
+            $this->agentBankAccount->addBorrower($this);
         } else {
-            $agentBankAccount->removeBorrower($this);
+            $this->agentBankAccount->removeBorrower($this);
+            $this->agentBankAccount = null;
         }
 
         return $this;
