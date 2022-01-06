@@ -56,16 +56,16 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "parameters": {
  *                     {
  *                         "in": "query",
- *                         "name": "itemsPerPage",
+ *                         "name": "page",
  *                         "type": "integer",
- *                         "description": "The items number per page (100 by default)",
+ *                         "description": "The collection page number (Default value : 1)",
  *                         "required": false,
  *                     },
  *                     {
  *                         "in": "query",
- *                         "name": "page",
+ *                         "name": "itemsPerPage",
  *                         "type": "integer",
- *                         "description": "The page number (1 by default)",
+ *                         "description": "The number of items per page (Default value : 60)",
  *                         "required": false,
  *                     },
  *                     {
