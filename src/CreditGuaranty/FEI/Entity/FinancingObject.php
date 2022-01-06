@@ -25,6 +25,7 @@ use KLS\CreditGuaranty\FEI\Entity\Interfaces\ProgramChoiceOptionCarrierInterface
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ApiResource(
@@ -780,5 +781,25 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
             MoneyCalculator::multiply($this->getLoanMoney(), (float) $this->getProgram()->getGuarantyCoverage()),
             (float) \bcmul((string) $this->getLoanDuration(), (string) GrossSubsidyEquivalent::FACTOR, 4)
         );
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validateLoanMoneyAfterContractualisation(ExecutionContextInterface $context): void
+    {
+        if (false === $this->getLoanMoneyAfterContractualisation()->isValid()) {
+            return;
+        }
+
+        $comparison = MoneyCalculator::compare($this->getLoanMoneyAfterContractualisation(), $this->getLoanMoney());
+
+        // loanMoneyAfterContractualisation should be equal or inferior to loanMoney to be valid
+        if ($comparison > 0) {
+            $context->buildViolation('CreditGuaranty.Reservation.financingObject.loanMoneyAfterContractualisation')
+                ->atPath('loanMoneyAfterContractualisation')
+                ->addViolation()
+            ;
+        }
     }
 }
