@@ -7,14 +7,16 @@ namespace KLS\Test\Core\Unit\Service\User;
 use KLS\Core\Entity\TemporaryToken;
 use KLS\Core\Entity\User;
 use KLS\Core\Entity\UserStatus;
+use KLS\Core\Mailer\MailjetMessage;
 use KLS\Core\Service\TemporaryTokenGenerator;
 use KLS\Core\Service\User\UserInitializationNotifier;
-use KLS\Core\SwiftMailer\MailjetMessage;
 use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 /**
@@ -31,14 +33,17 @@ class UserInitializationNotifierTest extends TestCase
     private $router;
     /** @var TemporaryTokenGenerator|ObjectProphecy */
     private $temporaryTokenGenerator;
-    /** @var ObjectProphecy|\Swift_Mailer */
+    /** @var ObjectProphecy|MailerInterface */
     private $mailer;
+    /** @var ObjectProphecy|LoggerInterface */
+    private $logger;
 
     protected function setUp(): void
     {
         $this->router                  = $this->prophesize(RouterInterface::class);
         $this->temporaryTokenGenerator = $this->prophesize(TemporaryTokenGenerator::class);
-        $this->mailer                  = $this->prophesize(\Swift_Mailer::class);
+        $this->mailer                  = $this->prophesize(MailerInterface::class);
+        $this->logger                  = $this->prophesize(LoggerInterface::class);
     }
 
     protected function tearDown(): void
@@ -64,7 +69,7 @@ class UserInitializationNotifierTest extends TestCase
         } else {
             $temporaryToken->getToken()->shouldBeCalledOnce()->willReturn(Argument::type('string'));
             $this->temporaryTokenGenerator->generateUltraLongToken($user)->willReturn($temporaryToken->reveal());
-            $this->mailer->send(Argument::type(MailjetMessage::class))->shouldBeCalledOnce()->willReturn(1);
+            $this->mailer->send(Argument::type(MailjetMessage::class))->shouldBeCalledOnce();
         }
 
         $response = $this->createTestObject()->notifyUserInitialization($user);
@@ -91,7 +96,8 @@ class UserInitializationNotifierTest extends TestCase
         return new UserInitializationNotifier(
             $this->router->reveal(),
             $this->temporaryTokenGenerator->reveal(),
-            $this->mailer->reveal()
+            $this->mailer->reveal(),
+            $this->logger->reveal()
         );
     }
 }

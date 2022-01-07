@@ -11,7 +11,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Serializer\Filter\GroupFilter;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\User;
-use KLS\Core\SwiftMailer\MailjetMessage;
+use KLS\Core\Mailer\MailjetMessage;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -218,6 +218,10 @@ class AgentMember extends AbstractProjectMember
 
     public function getProjectFrontUrl(RouterInterface $router): string
     {
-        return $router->generate('front_agencyAgentProjectView', ['projectPublicId' => $this->getProject()->getPublicId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        return $router->generate(
+            'front_agencyAgentProjectView',
+            ['projectPublicId' => $this->getProject()->getPublicId()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
     }
 }

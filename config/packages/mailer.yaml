@@ -1,0 +1,6 @@
+framework:
+    mailer:
+        dsn: '%env(MAILER_DSN)%'
+        envelope:
+            sender: '%mailer.sender_address%'
+            recipients: ['test@kls-platform.com']

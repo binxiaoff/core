@@ -7,20 +7,20 @@ namespace KLS\CreditGuaranty\FEI\Command;
 use DateInterval;
 use DateTime;
 use InvalidArgumentException;
-use JsonException;
 use KLS\Core\Entity\Staff;
-use KLS\Core\SwiftMailer\MailjetMessage;
+use KLS\Core\Mailer\MailjetMessage;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 use KLS\CreditGuaranty\FEI\Entity\StaffPermission;
 use KLS\CreditGuaranty\FEI\Repository\ReservationRepository;
 use KLS\CreditGuaranty\FEI\Service\StaffPermissionManager;
-use Swift_Mailer;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Mailer\MailerInterface;
 
 class RemindExpiringReservationCommand extends Command
 {
@@ -57,20 +57,23 @@ class RemindExpiringReservationCommand extends Command
 
     protected static $defaultName = 'kls:fei:reservation:expiring:remind';
 
-    private Swift_Mailer $mailer;
-    private ReservationRepository $reservationRepository;
+    private MailerInterface        $mailer;
+    private ReservationRepository  $reservationRepository;
     private StaffPermissionManager $staffPermissionManager;
+    private LoggerInterface        $logger;
 
     public function __construct(
-        Swift_Mailer $mailer,
+        MailerInterface $mailer,
         ReservationRepository $reservationRepository,
-        StaffPermissionManager $staffPermissionManager
+        StaffPermissionManager $staffPermissionManager,
+        LoggerInterface $logger
     ) {
         parent::__construct();
 
         $this->mailer                 = $mailer;
         $this->reservationRepository  = $reservationRepository;
         $this->staffPermissionManager = $staffPermissionManager;
+        $this->logger                 = $logger;
     }
 
     protected function configure(): void
@@ -85,9 +88,6 @@ class RemindExpiringReservationCommand extends Command
         ;
     }
 
-    /**
-     * @throws JsonException
-     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -205,9 +205,6 @@ class RemindExpiringReservationCommand extends Command
         return Command::SUCCESS;
     }
 
-    /**
-     * @throws JsonException
-     */
     private function handleMailingToCasa(Reservation $reservation, float $remainingHours, OutputInterface $output): void
     {
         if ($remainingHours > self::CASA_LIMIT_48_HOURS) {
@@ -222,9 +219,6 @@ class RemindExpiringReservationCommand extends Command
         );
     }
 
-    /**
-     * @throws JsonException
-     */
     private function handleMailingToCr(Reservation $reservation, float $remainingHours, OutputInterface $output): void
     {
         // need to convert float to int to avoid sending mail every day
@@ -244,8 +238,6 @@ class RemindExpiringReservationCommand extends Command
 
     /**
      * @param array|Staff[] $staffList
-     *
-     * @throws JsonException
      */
     private function sendMail(int $templateId, array $staffList, array $vars, OutputInterface $output): void
     {
@@ -264,39 +256,51 @@ class RemindExpiringReservationCommand extends Command
             $user              = $staff->getUser();
             $vars['firstName'] = $user->getFirstName();
             $vars['lastName']  = $user->getLastName();
-            $mailjetMessage    = (new MailjetMessage())
-                ->setTo($user->getEmail())
-                ->setTemplateId($templateId)
-                ->setVars($vars)
-            ;
 
-            if ($output->isVerbose()) {
-                $recipients      = \array_keys($mailjetMessage->getTo());
-                $reservationName = $vars['reservationName'] ?? 'list';
+            try {
+                $mailjetMessage = (new MailjetMessage())
+                    ->to($user->getEmail())
+                    ->setTemplateId($templateId)
+                    ->setVars($vars)
+                ;
 
-                $output->writeln(
+                if ($output->isVerbose()) {
+                    $recipients      = \array_keys($mailjetMessage->getTo());
+                    $reservationName = $vars['reservationName'] ?? 'list';
+
+                    $output->writeln(
+                        \sprintf(
+                            'Sending an email to %s for reservation %s',
+                            \implode(' and ', $recipients),
+                            $reservationName
+                        )
+                    );
+                }
+
+                if ($output->isVeryVerbose()) {
+                    $output->writeln('Variables for message :');
+                    foreach ($vars as $key => $value) {
+                        if (\is_array($value)) {
+                            $value = \json_encode($value, JSON_THROW_ON_ERROR);
+                        }
+                        $output->writeln("\t{$key} : {$value}");
+                    }
+                }
+
+                $this->mailer->send($mailjetMessage);
+            } catch (\Throwable $throwable) {
+                $this->logger->error(
                     \sprintf(
-                        'Sending an email to %s for reservation %s',
-                        \implode(' and ', $recipients),
-                        $reservationName
-                    )
+                        'Remind expiring Reservation mail sending failed for %s with template id %d. Error: %s',
+                        $user->getEmail(),
+                        $templateId,
+                        $throwable->getMessage()
+                    ),
+                    ['throwable' => $throwable]
                 );
             }
-
-            if ($output->isVeryVerbose()) {
-                $output->writeln('Variables for message :');
-                foreach ($vars as $key => $value) {
-                    if (\is_array($value)) {
-                        $value = \json_encode($value);
-                    }
-                    $output->writeln("\t{$key} : {$value}");
-                }
-            }
-
-            $this->mailer->send($mailjetMessage);
-
             if ($output->isVerbose()) {
-                $output->writeln('Email sent');
+                $output->writeln('Email sent for ' . $user->getEmail());
             }
         }
     }

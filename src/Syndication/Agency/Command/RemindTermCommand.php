@@ -6,33 +6,37 @@ namespace KLS\Syndication\Agency\Command;
 
 use JsonException;
 use KLS\Core\Entity\User;
-use KLS\Core\SwiftMailer\MailjetMessage;
+use KLS\Core\Mailer\MailjetMessage;
 use KLS\Syndication\Agency\Entity\AgentMember;
 use KLS\Syndication\Agency\Entity\BorrowerMember;
 use KLS\Syndication\Agency\Entity\Covenant;
 use KLS\Syndication\Agency\Entity\Project;
 use KLS\Syndication\Agency\Entity\Term;
 use KLS\Syndication\Agency\Repository\TermRepository;
-use Swift_Mailer;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
 
 class RemindTermCommand extends Command
 {
     protected static $defaultName = 'kls:agency:term:remind';
 
-    private Swift_Mailer   $mailer;
-    private TermRepository $termRepository;
-    private int            $sendCount;
+    private MailerInterface $mailer;
+    private TermRepository  $termRepository;
+    private int             $sendCount;
+    private LoggerInterface $logger;
 
-    public function __construct(Swift_Mailer $mailer, TermRepository $termRepository, string $name = null)
+    public function __construct(MailerInterface $mailer, TermRepository $termRepository, LoggerInterface $logger)
     {
-        parent::__construct($name);
+        parent::__construct();
 
         $this->mailer         = $mailer;
         $this->termRepository = $termRepository;
         $this->sendCount      = 0;
+        $this->logger         = $logger;
     }
 
     protected function configure(): void
@@ -150,7 +154,7 @@ class RemindTermCommand extends Command
     private function createMessage(Term $term, User $user, int $templateId): MailjetMessage
     {
         return (new MailjetMessage())
-            ->setTo($user->getEmail())
+            ->to($user->getEmail())
             ->setTemplateId($templateId)
             ->setVars([
                 'covenantName'         => $term->getCovenant()->getName(),
@@ -187,7 +191,19 @@ class RemindTermCommand extends Command
             }
         }
 
-        $this->mailer->send($mailjetMessage);
+        try {
+            $this->mailer->send($mailjetMessage);
+        } catch (TransportExceptionInterface $transportException) {
+            $this->logger->error(
+                \sprintf(
+                    'Remind Term mail sending failed for %s with template id %d. Error: %s',
+                    \implode(' and ', \array_keys($mailjetMessage->getTo())),
+                    $mailjetMessage->getTemplateId(),
+                    $transportException->getMessage()
+                ),
+                ['exception' => $transportException]
+            );
+        }
 
         if ($output->isVeryVerbose()) {
             $output->writeln('Email sent');
