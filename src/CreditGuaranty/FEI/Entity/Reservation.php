@@ -204,7 +204,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *     "creditGuaranty:reservation:update:draft"
      * })
      */
-    private ?string $name;
+    private ?string $name = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")

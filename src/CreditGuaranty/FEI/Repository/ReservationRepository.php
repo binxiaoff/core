@@ -8,6 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
 
 /**
@@ -49,5 +50,25 @@ class ReservationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+    }
+
+    public function findIdsByDuplicatedName(Program $program): array
+    {
+        $queryBuilder = $this->createQueryBuilder('r')
+            ->select('r.name')
+            ->addSelect('COUNT(r)')
+            ->addSelect('GROUP_CONCAT(r.id) as ids')
+            ->innerJoin('r.borrower', 'b')
+            ->where('r.program = :program')
+            ->setParameter('program', $program)
+            ->groupBy('r.name')
+            ->having('COUNT(r) > 1')
+        ;
+
+        $result = $queryBuilder->getQuery()->getResult();
+        $result = \array_column($result, 'ids');
+        \array_walk($result, static fn (&$value) => $value = \explode(',', $value));
+
+        return $result;
     }
 }

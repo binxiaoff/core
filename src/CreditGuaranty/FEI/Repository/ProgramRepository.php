@@ -40,6 +40,21 @@ class ProgramRepository extends ServiceEntityRepository
      * @throws NonUniqueResultException
      * @throws NoResultException
      */
+    public function countByPartialName(string $name): int
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->select('COUNT(p)')
+            ->where('p.name LIKE :name')
+            ->setParameter('name', '%' . $name . '%')
+        ;
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     * @throws NoResultException
+     */
     public function countReservations(Program $program, array $reservationStatuses): int
     {
         $queryBuilder = $this->createQueryBuilder('p');
