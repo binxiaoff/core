@@ -84,6 +84,7 @@
     "symfony/messenger": "5.3.*",
     "symfony/mime": "5.3.*",
     "symfony/monolog-bundle": "^3.1",
+    "symfony/notifier": "5.3.*",
     "symfony/options-resolver": "5.3.*",
     "symfony/property-access": "5.3.*",
     "symfony/property-info": "5.3.*",
@@ -144,7 +145,12 @@
     "preferred-install": {
       "*": "dist"
     },
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "composer/package-versions-deprecated": true,
+      "phpro/grumphp": true,
+      "symfony/flex": true
+    }
   },
   "scripts": {
     "auto-scripts": {
