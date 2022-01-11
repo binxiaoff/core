@@ -8,6 +8,7 @@ use Faker\Factory;
 use KLS\Core\Entity\MailLog;
 use KLS\Core\EventSubscriber\Mailer\PreSendMailSubscriber;
 use KLS\Core\Mailer\MailjetMessage;
+use KLS\Core\Mailer\TraceableEmailInterface;
 use KLS\Core\Repository\MailLogRepository;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -88,14 +89,14 @@ class PreSendMailSubscriberTest extends TestCase
         ?MailLog $mailLog
     ): void {
         $message = $event->getMessage();
-        if (false === $message instanceof Message) {
+        if (false === $message instanceof TraceableEmailInterface) {
             $this->mailLogRepository->findOneBy(Argument::any())->shouldNotBeCalled();
             $this->mailLogRepository->persist(Argument::any())->shouldNotBeCalled();
             $this->mailLogRepository->flush()->shouldNotBeCalled();
         } else {
             if (false === $event->isQueued()) {
                 $this->mailLogRepository->findOneBy([
-                    'messageId' => MailLog::findMessageIdFromMessage($message),
+                    'messageId' => $message->getMessageId(),
                 ])->shouldBeCalledOnce()->willReturn($mailLog);
             }
 

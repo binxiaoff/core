@@ -9,7 +9,7 @@ use JsonException;
 use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Mime\Email;
 
-class MailjetMessage extends Email
+class MailjetMessage extends Email implements TraceableEmailInterface
 {
     use ConstantsAwareTrait;
 
@@ -51,9 +51,7 @@ class MailjetMessage extends Email
         $this->from('KLS <support@kls-platform.com>');
         // Generate in advance the message id (normally, it is generated on sending),
         // so that we can use it to update MailLog. See PreSendMailSubscriber::logMessage().
-        if (!$this->getHeaders()->has('Message-ID')) {
-            $this->getHeaders()->addIdHeader('Message-ID', $this->generateMessageId());
-        }
+        $this->getHeaders()->addIdHeader('Message-ID', $this->generateMessageId());
     }
 
     public function getTemplateId(): ?int
@@ -126,6 +124,13 @@ class MailjetMessage extends Email
         $this->getHeaders()->remove('X-MJ-TemplateErrorDeliver');
 
         return $this;
+    }
+
+    public function getMessageId(): ?string
+    {
+        $messageIdHeader = $this->getHeaders()->get('Message-ID');
+
+        return $messageIdHeader ? $messageIdHeader->getBodyAsString() : null;
     }
 
     /**

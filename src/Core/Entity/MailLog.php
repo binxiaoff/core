@@ -9,8 +9,8 @@ use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\IdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use KLS\Core\Mailer\MailjetMessage;
+use KLS\Core\Mailer\TraceableEmailInterface;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\Mime\Message as SymfonyMessage;
 
 /**
  * @ORM\Table(name="core_mail_log", indexes={
@@ -65,18 +65,20 @@ class MailLog
      */
     private ?string $messageId;
 
-    public function __construct(SymfonyMessage $message, string $transport)
+    /**
+     * @param Email|TraceableEmailInterface $email
+     */
+    public function __construct(Email $email, string $transport)
     {
-        $this->serialized = \serialize($message);
-        if ($message instanceof MailjetMessage) {
-            $this->mailjetTemplateId = $message->getTemplateId();
-        }
-        if ($message instanceof Email) {
-            $this->recipients = \array_map(fn ($address) => $address->toString(), $message->getTo());
+        $this->serialized = \serialize($email);
+        if ($email instanceof MailjetMessage) {
+            $this->mailjetTemplateId = $email->getTemplateId();
         }
 
-        $this->messageId = self::findMessageIdFromMessage($message);
-        $this->transport = $transport; // to see if it contains the api key and secret
+        $this->recipients = \array_map(static fn ($address) => $address->toString(), $email->getTo());
+
+        $this->messageId = $email->getMessageId();
+        $this->transport = $transport;
         $this->status    = static::STATUS_QUEUED;
         $this->added     = new DateTimeImmutable();
     }
@@ -114,12 +116,5 @@ class MailLog
         $this->transport = $transport;
 
         return $this;
-    }
-
-    public static function findMessageIdFromMessage(SymfonyMessage $message): ?string
-    {
-        $messageIdHeader = $message->getHeaders()->get('Message-ID');
-
-        return $messageIdHeader ? $messageIdHeader->getBodyAsString() : null;
     }
 }

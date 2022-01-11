@@ -7,11 +7,12 @@ namespace KLS\Core\EventSubscriber\Mailer;
 use Doctrine\ORM\ORMException;
 use KLS\Core\Entity\MailLog;
 use KLS\Core\Mailer\MailjetMessage;
+use KLS\Core\Mailer\TraceableEmailInterface;
 use KLS\Core\Repository\MailLogRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mailer\Event\MessageEvent;
-use Symfony\Component\Mime\Message;
+use Symfony\Component\Mime\Email;
 
 class PreSendMailSubscriber implements EventSubscriberInterface
 {
@@ -61,10 +62,15 @@ class PreSendMailSubscriber implements EventSubscriberInterface
      */
     public function logMessage(MessageEvent $event): void
     {
-        /** @var Message $message */
+        /** @var TraceableEmailInterface $message */
         $message = $event->getMessage();
-        // We log only Message (not RawMessage)
-        if (false === $message instanceof Message) {
+        // We log only TraceableEmailInterface (not RawMessage, neither Message) with a message id.
+        // A mail has no message id means that we don't want to log it.
+        if (
+            false === $message instanceof Email
+            || false === $message instanceof TraceableEmailInterface
+            || null === $message->getMessageId()
+        ) {
             return;
         }
         $queued    = $event->isQueued();
@@ -73,9 +79,7 @@ class PreSendMailSubscriber implements EventSubscriberInterface
         try {
             $mailLog = null;
             if (false === $queued) {
-                $mailLog = $this->mailLogRepository->findOneBy([
-                    'messageId' => MailLog::findMessageIdFromMessage($message),
-                ]);
+                $mailLog = $this->mailLogRepository->findOneBy(['messageId' => $message->getMessageId()]);
             }
 
             // We create the log when it doesn't exist. This is normally done at the "first time".
