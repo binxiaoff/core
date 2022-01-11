@@ -130,7 +130,16 @@ class ProjectStatusUpdatedListener
             ) {
                 $projectParticipationTranches = $tranche->getProjectParticipationTranches();
 
-                if (false === $projectParticipationTranches->exists($arrangerParticipation->getEquivalenceChecker())) {
+                $exist = $projectParticipationTranches->exists(
+                    static function (
+                        int $index,
+                        ProjectParticipationTranche $projectParticipationTranche
+                    ) use ($arrangerParticipation) {
+                        return $arrangerParticipation === $projectParticipationTranche->getProjectParticipation();
+                    }
+                );
+
+                if (false === $exist) {
                     $projectParticipationTranche = new ProjectParticipationTranche(
                         $arrangerParticipation,
                         $tranche,
