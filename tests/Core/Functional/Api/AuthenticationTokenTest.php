@@ -27,11 +27,6 @@ class AuthenticationTokenTest extends ApiTestCase
         self::bootKernel();
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-    }
-
     public function successfullProvider(): iterable
     {
         foreach (\range(1, 10) as $index) {
@@ -50,7 +45,7 @@ class AuthenticationTokenTest extends ApiTestCase
      */
     public function testAuthenticationToken(string $userPublicId): void
     {
-        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => $userPublicId]);
+        $user = static::getContainer()->get(UserRepository::class)->findOneBy(['publicId' => $userPublicId]);
 
         $response = static::createClient()->request(
             Request::METHOD_POST,
@@ -64,8 +59,8 @@ class AuthenticationTokenTest extends ApiTestCase
         );
         $response = $response->toArray();
 
-        $decoder       = static::$container->get(JWTEncoderInterface::class);
-        $iriConverter  = static::$container->get(IriConverterInterface::class);
+        $decoder       = static::getContainer()->get(JWTEncoderInterface::class);
+        $iriConverter  = static::getContainer()->get(IriConverterInterface::class);
         $decodedTokens = \array_map([$decoder, 'decode'], $response['tokens']);
 
         static::assertArrayNotHasKey('token', $response);
@@ -103,7 +98,7 @@ class AuthenticationTokenTest extends ApiTestCase
      */
     public function testAuthenticationTokenUnauthorized(string $userPublicId, string $password): void
     {
-        $user = static::$container->get(UserRepository::class)->findOneBy(['publicId' => $userPublicId]);
+        $user = static::getContainer()->get(UserRepository::class)->findOneBy(['publicId' => $userPublicId]);
 
         $response = static::createClient()->request(
             Request::METHOD_POST,

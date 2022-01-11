@@ -40,10 +40,10 @@ class StaffVoterTest extends KernelTestCase
         int $expected
     ) {
         /** @var TokenStorageInterface $tokenStorage */
-        $tokenStorage = static::$container->get(TokenStorageInterface::class);
+        $tokenStorage = static::getContainer()->get(TokenStorageInterface::class);
         $tokenStorage->setToken($connectedToken);
 
-        $voter = static::$container->get(StaffVoter::class);
+        $voter = static::getContainer()->get(StaffVoter::class);
 
         static::assertSame($expected, $voter->vote($connectedToken, $subject, [$attribute]));
     }
@@ -56,7 +56,7 @@ class StaffVoterTest extends KernelTestCase
         static::bootKernel();
 
         /** @var StaffRepository $repository */
-        $repository = static::$container->get(StaffRepository::class);
+        $repository = static::getContainer()->get(StaffRepository::class);
 
         $fixtures = $repository->createQueryBuilder('s', 's.publicId')->getQuery()->getResult();
 

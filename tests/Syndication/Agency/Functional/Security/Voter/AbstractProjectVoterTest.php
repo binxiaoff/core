@@ -45,7 +45,7 @@ abstract class AbstractProjectVoterTest extends KernelTestCase
             ->setParameter('publicIds', $publicIds)
             ->getQuery()
             ->getResult()
-            ;
+        ;
     }
 
     protected function getProjects(EntityManagerInterface $em, array $tests)
@@ -58,20 +58,22 @@ abstract class AbstractProjectVoterTest extends KernelTestCase
         static::bootKernel();
 
         /** @var EntityManagerInterface $em */
-        $em = static::$container->get(EntityManagerInterface::class);
+        $em = static::getContainer()->get(EntityManagerInterface::class);
 
         $projects = $this->getProjects($em, $tests);
-
-        $staffs = $this->fetchEntities($em, Staff::class, \array_column($tests, 0));
-
-        $users = $this->fetchEntities($em, User::class, \array_column($tests, 0));
+        $staffs   = $this->fetchEntities($em, Staff::class, \array_column($tests, 0));
+        $users    = $this->fetchEntities($em, User::class, \array_column($tests, 0));
 
         $tokens = \array_map([$this, 'loginStaff'], $staffs);
-
         $tokens = \array_merge($tokens, \array_map([$this, 'loginUser'], $users));
 
         foreach ($tests as $test => [$token, $project, $expected]) {
-            yield $test          => [$tokens[$token], \is_string($project) ? $projects[$project] : $project, $attribute, $expected];
+            yield $test          => [
+                $tokens[$token],
+                \is_string($project) ? $projects[$project] : $project,
+                $attribute,
+                $expected,
+            ];
         }
     }
 }

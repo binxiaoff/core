@@ -33,9 +33,9 @@ class ProjectVoterTest extends AbstractProjectVoterTest
     {
         static::bootKernel();
 
-        static::$container->get('security.token_storage')->setToken($token);
+        static::getContainer()->get('security.token_storage')->setToken($token);
 
-        $voter = static::$container->get(ProjectVoter::class);
+        $voter = static::getContainer()->get(ProjectVoter::class);
 
         static::assertSame($expected, $voter->vote($token, $subject, (array) $attribute));
     }
@@ -290,7 +290,8 @@ class ProjectVoterTest extends AbstractProjectVoterTest
                 'draft',
                 VoterInterface::ACCESS_DENIED,
             ],
-            'CREATE: Connected user with company can create a project with connected company and correct permission' => [
+            'CREATE: Connected user with company can create a project' .
+            ' with connected company and correct permission' => [
                 'staff_company:foo_user-b',
                 'draft',
                 VoterInterface::ACCESS_GRANTED,
