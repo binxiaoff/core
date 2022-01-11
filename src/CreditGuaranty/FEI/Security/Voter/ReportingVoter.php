@@ -6,12 +6,12 @@ namespace KLS\CreditGuaranty\FEI\Security\Voter;
 
 use KLS\Core\Entity\User;
 use KLS\Core\Security\Voter\AbstractEntityVoter;
-use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
+use KLS\CreditGuaranty\FEI\Entity\Reporting;
 use KLS\CreditGuaranty\FEI\Entity\StaffPermission;
 use KLS\CreditGuaranty\FEI\Service\StaffPermissionManager;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
-class ReportingTemplateVoter extends AbstractEntityVoter
+class ReportingVoter extends AbstractEntityVoter
 {
     private StaffPermissionManager $staffPermissionManager;
 
@@ -24,12 +24,12 @@ class ReportingTemplateVoter extends AbstractEntityVoter
     }
 
     /**
-     * @param ReportingTemplate $subject
+     * @param Reporting $subject
      */
     protected function isGrantedAll($subject, User $user): bool
     {
         $staff   = $user->getCurrentStaff();
-        $program = $subject->getProgram();
+        $program = $subject->getReportingTemplate()->getProgram();
 
         return $this->authorizationChecker->isGranted(ProgramVoter::ATTRIBUTE_REPORTING, $program)
             && $program->isPaused()

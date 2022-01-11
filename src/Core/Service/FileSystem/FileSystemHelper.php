@@ -13,6 +13,7 @@ use KLS\Core\Entity\FileVersion;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use RuntimeException;
+
 use function Symfony\Component\String\s;
 
 class FileSystemHelper
@@ -23,8 +24,11 @@ class FileSystemHelper
     private FilesystemOperator $userAttachmentFilesystem;
     private FilesystemOperator $generatedDocumentFilesystem;
 
-    public function __construct(FileCrypto $fileCrypto, FilesystemOperator $userAttachmentFilesystem, FilesystemOperator $generatedDocumentFilesystem)
-    {
+    public function __construct(
+        FileCrypto $fileCrypto,
+        FilesystemOperator $userAttachmentFilesystem,
+        FilesystemOperator $generatedDocumentFilesystem
+    ) {
         $this->fileCrypto                  = $fileCrypto;
         $this->userAttachmentFilesystem    = $userAttachmentFilesystem;
         $this->generatedDocumentFilesystem = $generatedDocumentFilesystem;
@@ -33,8 +37,12 @@ class FileSystemHelper
     /**
      * @throws EnvironmentIsBrokenException|IOException|FilesystemException
      */
-    public function writeTempFileToFileSystem(string $temporaryFilePath, FilesystemOperator $filesystem, string $filesystemDestPath, bool $encryption = true): ?string
-    {
+    public function writeTempFileToFileSystem(
+        string $temporaryFilePath,
+        FilesystemOperator $filesystem,
+        string $filesystemDestPath,
+        bool $encryption = true
+    ): ?string {
         $key      = null;
         $filePath = $temporaryFilePath;
 
@@ -51,7 +59,8 @@ class FileSystemHelper
         }
 
         /* We delete only the temporary file that we created for the encryption.
-         * The orignal file ($temporaryFilePath) is managed by other module (for example, Symfony file system), which should not be touched.
+         * The orignal file ($temporaryFilePath) is managed by other module (for example, Symfony file system), which
+         * should not be touched.
         */
         if ($encryption) {
             @\unlink($filePath);
@@ -77,7 +86,10 @@ class FileSystemHelper
                 break;
 
             default:
-                throw new RuntimeException(\sprintf('The filesystem %s is not be supported', $fileVersion->getFileSystem()));
+                throw new RuntimeException(\sprintf(
+                    'The filesystem %s is not be supported',
+                    $fileVersion->getFileSystem()
+                ));
         }
 
         return $filesystem;
@@ -107,6 +119,21 @@ class FileSystemHelper
         $extension = s(\trim($pathInfo['extension'] ?? ''))->ascii()->snake()->toString();
 
         return $fileName . ($extension ? '.' . $extension : '');
+    }
+
+    public function normalizeDirectory(string $rootDirectory, string $subdirectory): string
+    {
+        $hash         = \hash('sha256', $subdirectory);
+        $subdirectory = $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . DIRECTORY_SEPARATOR . $subdirectory;
+
+        $uploadRootDirectory = $this->normalizePath($rootDirectory);
+
+        return $uploadRootDirectory . DIRECTORY_SEPARATOR . $subdirectory;
+    }
+
+    private function normalizePath(string $path): string
+    {
+        return DIRECTORY_SEPARATOR === \mb_substr($path, -1) ? \mb_substr($path, 0, -1) : $path;
     }
 
     /**

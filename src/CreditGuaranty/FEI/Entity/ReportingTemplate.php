@@ -20,7 +20,6 @@ use KLS\Core\Entity\Traits\ArchivableTrait;
 use KLS\Core\Entity\Traits\BlamableAddedTrait;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
-use KLS\CreditGuaranty\FEI\Controller\Reporting\Export;
 use KLS\CreditGuaranty\FEI\Controller\Reporting\Reporting;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -49,48 +48,6 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         },
  *         "delete": {
  *             "security": "is_granted('delete', object)",
- *         },
- *         "export": {
- *             "method": "GET",
- *             "path": "/credit_guaranty/reporting_templates/{publicId}/export",
- *             "controller": Export::class,
- *             "security": "is_granted('view', object)",
- *             "openapi_context": {
- *                 "parameters": {
- *                     {
- *                         "in": "query",
- *                         "name": "itemsPerPage",
- *                         "type": "integer",
- *                         "description": "The items number per page (100 by default)",
- *                         "required": false,
- *                     },
- *                     {
- *                         "in": "query",
- *                         "name": "page",
- *                         "type": "integer",
- *                         "description": "The page number (1 by default)",
- *                         "required": false,
- *                     },
- *                     {
- *                         "in": "query",
- *                         "name": "search",
- *                         "type": "string",
- *                         "description": "The search filter on text values of reporting",
- *                         "required": false,
- *                     },
- *                     {
- *                         "in": "query",
- *                         "name": "order",
- *                         "schema": {
- *                             "type": "object",
- *                         },
- *                         "style": "deepObject",
- *                         "explode": true,
- *                         "description": "The order filter (i.e. order[field_alias]=direction)",
- *                         "required": false,
- *                     },
- *                 },
- *             },
  *         },
  *         "reporting": {
  *             "method": "GET",

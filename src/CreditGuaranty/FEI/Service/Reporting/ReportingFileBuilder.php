@@ -17,47 +17,86 @@ use Box\Spout\Writer\Common\Creator\Style\StyleBuilder;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Box\Spout\Writer\Common\Creator\WriterFactory;
 use Box\Spout\Writer\Exception\WriterNotOpenedException;
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Defuse\Crypto\Exception\IOException as CryptoIOException;
+use Exception;
+use InvalidArgumentException;
+use KLS\Core\Entity\File;
+use KLS\Core\Entity\FileVersion;
+use KLS\Core\Entity\User;
+use KLS\Core\Service\FileSystem\FileSystemHelper;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
 use KLS\CreditGuaranty\FEI\Repository\FinancingObjectRepository;
+use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Mime\MimeTypes;
 
 class ReportingFileBuilder
 {
+    private const XLSX_EXTENSION = 'xlsx';
+    private const ROOT_DIRECTORY = 'reporting_fei';
+
     private FinancingObjectRepository $financingObjectRepository;
     private ReportingQueryGenerator $reportingQueryGenerator;
-    private string $directoryTemporary;
+    private string $temporaryDirectory;
     private Filesystem $fileSystem;
+    private FilesystemOperator $generatedDocumentFilesystem;
+    private FileSystemHelper $fileSystemHelper;
 
     public function __construct(
         FinancingObjectRepository $financingObjectRepository,
         ReportingQueryGenerator $reportingQueryGenerator,
         Filesystem $filesystem,
-        string $directoryTemporary
+        string $temporaryDirectory,
+        FilesystemOperator $generatedDocumentFilesystem,
+        FileSystemHelper $fileSystemHelper
     ) {
-        $this->financingObjectRepository = $financingObjectRepository;
-        $this->reportingQueryGenerator   = $reportingQueryGenerator;
-        $this->directoryTemporary        = $directoryTemporary;
-        $this->fileSystem                = $filesystem;
+        $this->financingObjectRepository   = $financingObjectRepository;
+        $this->reportingQueryGenerator     = $reportingQueryGenerator;
+        $this->temporaryDirectory          = $temporaryDirectory;
+        $this->fileSystem                  = $filesystem;
+        $this->generatedDocumentFilesystem = $generatedDocumentFilesystem;
+        $this->fileSystemHelper            = $fileSystemHelper;
+    }
+
+    /**
+     * @throws UnsupportedTypeException
+     * @throws WriterNotOpenedException
+     * @throws FilesystemException
+     * @throws IOException
+     * @throws CryptoIOException
+     * @throws EnvironmentIsBrokenException
+     */
+    public function build(ReportingTemplate $reportingTemplate, array $filters, User $builtBy): File
+    {
+        $filePath = $this->createFile($reportingTemplate, $filters);
+
+        $file = $this->writeToFileSystem($filePath, $builtBy, $reportingTemplate);
+
+        $this->fileSystem->remove($filePath);
+
+        return $file;
     }
 
     /**
      * @throws IOException
      * @throws UnsupportedTypeException
      * @throws WriterNotOpenedException
-     * @throws \Exception
+     * @throws Exception
      */
-    public function createFile(ReportingTemplate $reportingTemplate, array $filters): string
+    private function createFile(ReportingTemplate $reportingTemplate, array $filters): string
     {
         $headerRow = $this->buildHeader($reportingTemplate);
 
-        if (false === $this->fileSystem->exists($this->directoryTemporary)) {
-            $this->fileSystem->mkdir($this->directoryTemporary, 0700);
+        if (false === $this->fileSystem->exists($this->temporaryDirectory)) {
+            $this->fileSystem->mkdir($this->temporaryDirectory, 0700);
         }
 
-        $tmpfname = $this->fileSystem->tempnam($this->directoryTemporary, '', '.xlsx');
-        $writer   = WriterFactory::createFromType(Type::XLSX);
-        $writer->openToFile($tmpfname);
+        $tmpName = $this->fileSystem->tempnam($this->temporaryDirectory, '', '.xlsx');
+        $writer  = WriterFactory::createFromType(Type::XLSX);
+        $writer->openToFile($tmpName);
         $writer->addRow($headerRow);
 
         $rowStyle = (new StyleBuilder())->build();
@@ -66,24 +105,79 @@ class ReportingFileBuilder
 
         $query = $this->reportingQueryGenerator->generate($filters, $reportingTemplate);
         while (
-            $reporting = $this->financingObjectRepository->findByReportingFilters(
+            $reportingData = $this->financingObjectRepository->findByReportingFilters(
                 $reportingTemplate->getProgram(),
                 $query,
                 $offset,
                 $limit
             )
         ) {
-            foreach ($reporting as $item) {
+            foreach ($reportingData as $item) {
                 unset($item['id_financing_object']);
                 $writer->addRow(WriterEntityFactory::createRowFromArray(\array_values($item), $rowStyle));
             }
-            unset($reporting);
+            unset($reportingData);
             $offset += $limit;
         }
 
         $writer->close();
 
-        return $tmpfname;
+        return $tmpName;
+    }
+
+    /**
+     * @throws FilesystemException
+     * @throws EnvironmentIsBrokenException
+     * @throws CryptoIOException
+     * @throws Exception
+     */
+    private function writeToFileSystem(string $tmpName, User $builtBy, ReportingTemplate $reportingTemplate): File
+    {
+        $uploadDirectory = $this->fileSystemHelper->normalizeDirectory(
+            self::ROOT_DIRECTORY,
+            $this->getUserDirectory($builtBy)
+        );
+        $DestFilePath = $uploadDirectory
+            . DIRECTORY_SEPARATOR
+            . $this->generateFileName($reportingTemplate, $uploadDirectory);
+
+        $encryptionKey = $this->fileSystemHelper->writeTempFileToFileSystem(
+            $tmpName,
+            $this->generatedDocumentFilesystem,
+            $DestFilePath
+        );
+
+        $file = $this->mapToFile(
+            $DestFilePath,
+            MimeTypes::getDefault()->guessMimeType($tmpName),
+            $encryptionKey,
+            $builtBy
+        );
+
+        $this->fileSystem->remove($tmpName);
+
+        return $file;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function mapToFile(string $filePath, string $mimeType, string $encryptionKey, User $builtBy): File
+    {
+        $fileName    = \pathinfo($filePath)['filename'];
+        $file        = new File($fileName);
+        $fileVersion = new FileVersion(
+            $filePath,
+            $builtBy,
+            $file,
+            FileVersion::FILE_SYSTEM_GENERATED_DOCUMENT,
+            $encryptionKey,
+            $mimeType
+        );
+        $fileVersion->setOriginalName($fileName);
+        $file->setCurrentFileVersion($fileVersion);
+
+        return $file;
     }
 
     private function buildHeader(ReportingTemplate $reportingTemplate): Row
@@ -110,5 +204,37 @@ class ReportingFileBuilder
             ->setBorder($border)
             ->build()
         ;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function getUserDirectory(User $user): string
+    {
+        if (null === $user->getId()) {
+            throw new InvalidArgumentException('Cannot find the upload destination. The user id is empty.');
+        }
+
+        return (string) $user->getId();
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    private function generateFileName(ReportingTemplate $reportingTemplate, string $uploadDirectory): string
+    {
+        $fileNameWithExtension = $reportingTemplate->getProgram()->getName() . '_' .
+            $reportingTemplate->getName() . '_' .
+            \uniqid('', true) . '.' . self::XLSX_EXTENSION;
+
+        if (
+            $this->generatedDocumentFilesystem->fileExists(
+                $uploadDirectory . DIRECTORY_SEPARATOR . $fileNameWithExtension
+            )
+        ) {
+            $fileNameWithExtension = $this->generateFileName($reportingTemplate, $uploadDirectory);
+        }
+
+        return $fileNameWithExtension;
     }
 }
