@@ -2,7 +2,9 @@
 
 ## Context
 
-Closes <!-- add issue id here -->
+<!-- add issue id after "Closes" below -->
+
+Closes
 
 <!-- Mention the front branch that should be used to test if it is not develop -->
 
