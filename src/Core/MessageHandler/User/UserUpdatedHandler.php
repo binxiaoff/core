@@ -8,16 +8,11 @@ use KLS\Core\Message\User\UserUpdated;
 use KLS\Core\Repository\UserRepository;
 use KLS\Core\Service\User\UserNotifier;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 
 class UserUpdatedHandler implements MessageHandlerInterface
 {
-    /** @var UserRepository */
-    private $userRepository;
-    /** @var UserNotifier */
-    private $userNotifier;
+    private UserRepository $userRepository;
+    private UserNotifier $userNotifier;
 
     public function __construct(UserRepository $userRepository, UserNotifier $userNotifier)
     {
@@ -25,12 +20,7 @@ class UserUpdatedHandler implements MessageHandlerInterface
         $this->userNotifier   = $userNotifier;
     }
 
-    /**
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     */
-    public function __invoke(UserUpdated $userUpdated)
+    public function __invoke(UserUpdated $userUpdated): void
     {
         $user      = $this->userRepository->find($userUpdated->getUserId());
         $changeSet = $userUpdated->getChangeSet();

@@ -8,7 +8,6 @@ use KLS\Syndication\Agency\Entity\Covenant;
 use KLS\Syndication\Agency\Entity\Project;
 use KLS\Syndication\Agency\Entity\Term;
 use KLS\Syndication\Agency\Security\Voter\ProjectRoleVoter;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class GetCovenants
@@ -23,7 +22,7 @@ class GetCovenants
     /**
      * @return iterable|Term[]
      */
-    public function __invoke(Project $data, Request $request)
+    public function __invoke(Project $data): iterable
     {
         $isAgent = $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $data);
 
