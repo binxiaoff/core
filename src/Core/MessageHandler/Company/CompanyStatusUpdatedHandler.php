@@ -27,12 +27,13 @@ class CompanyStatusUpdatedHandler implements MessageHandlerInterface
      * @throws Exception
      * @throws SlackApiException
      */
-    public function __invoke(CompanyStatusUpdated $companyStatusUpdated)
+    public function __invoke(CompanyStatusUpdated $companyStatusUpdated): void
     {
         $company = $this->companyRepository->find($companyStatusUpdated->getCompanyId());
 
         if (
-            $company && CompanyStatus::STATUS_PROSPECT === $companyStatusUpdated->getPreviousStatus()
+            $company
+            && CompanyStatus::STATUS_PROSPECT === $companyStatusUpdated->getPreviousStatus()
             && CompanyStatus::STATUS_SIGNED === $companyStatusUpdated->getNextStatus()
         ) {
             $this->companySignedNotifier->notify($company);

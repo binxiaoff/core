@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace KLS\Core\MessageHandler\User;
 
+use Http\Client\Exception;
 use KLS\Core\Entity\UserStatus;
 use KLS\Core\Message\Message\User\UserCreated;
 use KLS\Core\Repository\UserRepository;
 use KLS\Core\Service\User\SlackNotifier\UserCreatedNotifier;
+use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 class UserCreatedHandler implements MessageHandlerInterface
@@ -22,10 +24,10 @@ class UserCreatedHandler implements MessageHandlerInterface
     }
 
     /**
-     * @throws \Http\Client\Exception
-     * @throws \Nexy\Slack\Exception\SlackApiException
+     * @throws Exception
+     * @throws SlackApiException
      */
-    public function __invoke(UserCreated $userCreated)
+    public function __invoke(UserCreated $userCreated): void
     {
         $user = $this->userRepository->find($userCreated->getUserId());
 

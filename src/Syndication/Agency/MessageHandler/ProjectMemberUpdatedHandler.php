@@ -26,7 +26,7 @@ class ProjectMemberUpdatedHandler implements MessageHandlerInterface
     /**
      * @throws JsonException
      */
-    public function __invoke(ProjectMemberUpdated $projectMemberUpdated)
+    public function __invoke(ProjectMemberUpdated $projectMemberUpdated): void
     {
         if (false === \in_array('user', $projectMemberUpdated->getChangeSet(), true)) {
             return;
@@ -35,15 +35,24 @@ class ProjectMemberUpdatedHandler implements MessageHandlerInterface
         $manager = $this->registry->getManagerForClass($projectMemberUpdated->getProjectMemberClass());
 
         if (null === $manager) {
-            throw new InvalidArgumentException(\sprintf('Missing manager for %s', $projectMemberUpdated->getProjectMemberClass()));
+            throw new InvalidArgumentException(
+                \sprintf('Missing manager for %s', $projectMemberUpdated->getProjectMemberClass())
+            );
         }
 
         /** @var AbstractProjectMember $projectMember */
-        $projectMember = $manager->find($projectMemberUpdated->getProjectMemberClass(), $projectMemberUpdated->getProjectMemberId());
+        $projectMember = $manager->find(
+            $projectMemberUpdated->getProjectMemberClass(),
+            $projectMemberUpdated->getProjectMemberId()
+        );
 
         if (null === $projectMember) {
             throw new InvalidArgumentException(
-                \sprintf("Project member of class %s with id %d doesn't exist", $projectMemberUpdated->getProjectMemberClass(), $projectMemberUpdated->getProjectMemberId())
+                \sprintf(
+                    "Project member of class %s with id %d doesn't exist",
+                    $projectMemberUpdated->getProjectMemberClass(),
+                    $projectMemberUpdated->getProjectMemberId()
+                )
             );
         }
 

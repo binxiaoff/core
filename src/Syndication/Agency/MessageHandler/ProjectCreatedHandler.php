@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace KLS\Syndication\Agency\MessageHandler;
 
+use Http\Client\Exception;
 use KLS\Syndication\Agency\Message\ProjectCreated;
 use KLS\Syndication\Agency\Notifier\ProjectCreatedNotifier;
 use KLS\Syndication\Agency\Repository\ProjectRepository;
+use Nexy\Slack\Exception\SlackApiException;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 class ProjectCreatedHandler implements MessageHandlerInterface
@@ -21,10 +23,10 @@ class ProjectCreatedHandler implements MessageHandlerInterface
     }
 
     /**
-     * @throws \Http\Client\Exception
-     * @throws \Nexy\Slack\Exception\SlackApiException
+     * @throws Exception
+     * @throws SlackApiException
      */
-    public function __invoke(ProjectCreated $agencyCreated)
+    public function __invoke(ProjectCreated $agencyCreated): void
     {
         $project = $this->projectRepository->find($agencyCreated->getProjectId());
 

@@ -9,16 +9,11 @@ use KLS\Core\Message\Staff\StaffCreated;
 use KLS\Core\Repository\StaffRepository;
 use KLS\Core\Service\Staff\StaffNotifier;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
 
 class StaffCreatedHandler implements MessageHandlerInterface
 {
-    /** @var StaffRepository */
-    private $staffRepository;
-    /** @var StaffNotifier */
-    private $notifier;
+    private StaffRepository $staffRepository;
+    private StaffNotifier $notifier;
 
     public function __construct(StaffRepository $staffRepository, StaffNotifier $notifier)
     {
@@ -27,12 +22,9 @@ class StaffCreatedHandler implements MessageHandlerInterface
     }
 
     /**
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
      * @throws Exception
      */
-    public function __invoke(StaffCreated $staffCreated)
+    public function __invoke(StaffCreated $staffCreated): void
     {
         $staff = $this->staffRepository->find($staffCreated->getStaffId());
         if ($staff) {

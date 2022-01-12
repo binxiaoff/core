@@ -32,7 +32,7 @@ class MessageCreatedHandler implements MessageHandlerInterface
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function __invoke(MessageCreated $messageCreated)
+    public function __invoke(MessageCreated $messageCreated): void
     {
         $message = $this->messageRepository->find($messageCreated->getMessageId());
 
@@ -51,42 +51,50 @@ class MessageCreatedHandler implements MessageHandlerInterface
             ));
         }
 
-        $project                     = $projectParticipation->getProject();
-        $projectParticipationMembers = $message->getMessageThread()->getProjectParticipation()
-            ->getProjectParticipationMembers()
-        ;
-
-        $participationArrangerMembers = $projectParticipation->getProject()->getArrangerProjectParticipation()
-            ->getActiveProjectParticipationMembers()
-        ;
+        $project = $projectParticipation->getProject();
 
         // If the message is sent by arranger to the participant
         if ($message->getSender()->getCompany() === $project->getArranger()) {
+            $messageProjectParticipation = $message->getMessageThread()->getProjectParticipation();
+
+            if (null === $messageProjectParticipation) {
+                return;
+            }
+
+            $projectParticipationMembers = $messageProjectParticipation->getProjectParticipationMembers();
+
             foreach ($projectParticipationMembers as $projectParticipationMember) {
                 if (
                     false === $projectParticipationMember->isArchived()
                     && $projectParticipationMember->getStaff()->isActive()
                 ) {
-                    $this->messageStatusRepository->persist(new MessageStatus(
-                        $message,
-                        $projectParticipationMember->getStaff()
-                    ));
+                    $this->messageStatusRepository->persist(
+                        new MessageStatus($message, $projectParticipationMember->getStaff())
+                    );
                 }
             }
-        } else {
-            // If the message is sent by a participant to the arranger
-            foreach ($participationArrangerMembers as $participationArrangerMember) {
-                if (
-                    false === $participationArrangerMember->isArchived()
-                    && $participationArrangerMember->getStaff()->isActive()
-                ) {
-                    $this->messageStatusRepository->persist(new MessageStatus(
-                        $message,
-                        $participationArrangerMember->getStaff()
-                    ));
-                }
+
+            $this->messageStatusRepository->flush();
+
+            return;
+        }
+
+        $participationArrangerMembers = $projectParticipation->getProject()->getArrangerProjectParticipation()
+            ->getActiveProjectParticipationMembers()
+        ;
+
+        // If the message is sent by a participant to the arranger
+        foreach ($participationArrangerMembers as $participationArrangerMember) {
+            if (
+                false === $participationArrangerMember->isArchived()
+                && $participationArrangerMember->getStaff()->isActive()
+            ) {
+                $this->messageStatusRepository->persist(
+                    new MessageStatus($message, $participationArrangerMember->getStaff())
+                );
             }
         }
+
         $this->messageStatusRepository->flush();
     }
 }
