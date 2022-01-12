@@ -14,3 +14,4 @@ framework:
             # by creating a sync transport and "sending" messages there to be handled immediately.
             'KLS\Core\Entity\Request\ResetPassword': sync
             'KLS\Core\Entity\Request\UserInitialization': sync
+            'Symfony\Component\Mailer\Messenger\SendEmailMessage': async

@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace KLS\Core\SwiftMailer;
+namespace KLS\Core\Mailer;
 
 use InvalidArgumentException;
 use JsonException;
 use KLS\Core\Traits\ConstantsAwareTrait;
+use Symfony\Component\Mime\Email;
 
-class MailjetMessage extends \Swift_Message
+class MailjetMessage extends Email implements TraceableEmailInterface
 {
     use ConstantsAwareTrait;
 
@@ -36,29 +37,28 @@ class MailjetMessage extends \Swift_Message
 
     private array $vars;
 
-    public function __construct(
-        ?string $subject = null,
-        ?string $body = null,
-        ?string $contentType = null,
-        ?string $charset = null
-    ) {
-        parent::__construct($subject, $body, $contentType, $charset);
-
-        // This address is required to respect the SMTP RFC but it is not used by mailjet (set in Mailjet template)
+    public function __construct()
+    {
+        parent::__construct();
+        $this->enableTemplatingLanguage();
+        // The body is required by the Email object (see Email::ensureValidity), but we don't actually need it.
+        $this->text('');
+        // This address is required to respect the SMTP RFC, but it is not used by mailjet (set in Mailjet template)
         // This email and name are defined on MailJet template too and should be the same.
         // If email domain defined here is not the same as template sender, template email and name are used.
         // If email domain defined here is the same as template, email and name defined below are used.
-        $this->setFrom('support@kls-platform.com', 'KLS');
-        $this->enableTemplatingLanguage();
-
-        $this->vars = [];
+        // As the generateMessageId() need the "from", we set it here instead of in mail.yaml
+        $this->from('KLS <support@kls-platform.com>');
+        // Generate in advance the message id (normally, it is generated on sending),
+        // so that we can use it to update MailLog. See PreSendMailSubscriber::logMessage().
+        $this->getHeaders()->addIdHeader('Message-ID', $this->generateMessageId());
     }
 
     public function getTemplateId(): ?int
     {
         $header = $this->getHeaders()->get('X-MJ-TemplateID');
 
-        return $header ? $header->getFieldBodyModel() : null;
+        return $header ? (int) $header->getBody() : null;
     }
 
     /**
@@ -71,9 +71,9 @@ class MailjetMessage extends \Swift_Message
         }
 
         if ($templateId) {
-            $this->getHeaders()->addTextHeader('X-MJ-TemplateID', $templateId);
+            $this->getHeaders()->addTextHeader('X-MJ-TemplateID', (string) $templateId);
         } else {
-            $this->getHeaders()->removeAll('X-MJ-TemplateID');
+            $this->getHeaders()->remove('X-MJ-TemplateID');
         }
 
         return $this;
@@ -84,7 +84,7 @@ class MailjetMessage extends \Swift_Message
      */
     public function setVars(array $vars = []): MailjetMessage
     {
-        $this->vars = $this->filterVars($vars);
+        $this->vars = $this->normalizeVars($vars);
 
         $this->getHeaders()->addTextHeader(
             'X-MJ-Vars',
@@ -102,7 +102,7 @@ class MailjetMessage extends \Swift_Message
     public function setTemplateErrorEmail(?string $email): MailjetMessage
     {
         // Remove the previously existing headers to prevent the duplication.
-        $this->getHeaders()->removeAll('X-MJ-TemplateErrorReporting');
+        $this->getHeaders()->remove('X-MJ-TemplateErrorReporting');
         if ($email) {
             $this->getHeaders()->addTextHeader('X-MJ-TemplateErrorReporting', $email);
         }
@@ -113,7 +113,7 @@ class MailjetMessage extends \Swift_Message
     public function enableErrorDelivery(): MailjetMessage
     {
         // Remove the previously existing headers to prevent the duplication.
-        $this->getHeaders()->removeAll('X-MJ-TemplateErrorDeliver');
+        $this->getHeaders()->remove('X-MJ-TemplateErrorDeliver');
         $this->getHeaders()->addTextHeader('X-MJ-TemplateErrorDeliver', 'deliver');
 
         return $this;
@@ -121,9 +121,16 @@ class MailjetMessage extends \Swift_Message
 
     public function disableErrorDelivery(): MailjetMessage
     {
-        $this->getHeaders()->removeAll('X-MJ-TemplateErrorDeliver');
+        $this->getHeaders()->remove('X-MJ-TemplateErrorDeliver');
 
         return $this;
+    }
+
+    public function getMessageId(): ?string
+    {
+        $messageIdHeader = $this->getHeaders()->get('Message-ID');
+
+        return $messageIdHeader ? $messageIdHeader->getBodyAsString() : null;
     }
 
     /**
@@ -141,13 +148,13 @@ class MailjetMessage extends \Swift_Message
         return $this;
     }
 
-    private function filterVars(array $vars): array
+    private function normalizeVars(array $values): array
     {
         // MailJet do not let var with null value, empty value has to be false instead
-        \array_walk_recursive($vars, function (&$value) {
+        foreach ($values as &$value) {
             $value = $value ?? false;
-        });
+        }
 
-        return $vars;
+        return $values;
     }
 }

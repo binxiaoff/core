@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace KLS\Core\Command;
 
-use Exception;
+use KLS\Core\Mailer\MailjetMessage;
 use KLS\Core\Repository\MessageStatusRepository;
-use KLS\Core\SwiftMailer\MailjetMessage;
 use Psr\Log\LoggerInterface;
-use RuntimeException;
-use Swift_Mailer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputDefinition;
@@ -17,6 +14,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleSectionOutput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Mailer\MailerInterface;
 
 class RemindUnreadMessageCommand extends Command
 {
@@ -24,12 +22,12 @@ class RemindUnreadMessageCommand extends Command
     protected static $defaultName = 'kls:core:message:unread:remind';
 
     private LoggerInterface $logger;
-    private Swift_Mailer $mailer;
+    private MailerInterface $mailer;
     private MessageStatusRepository $messageStatusRepository;
 
     public function __construct(
         LoggerInterface $logger,
-        Swift_Mailer $mailer,
+        MailerInterface $mailer,
         MessageStatusRepository $messageStatusRepository
     ) {
         parent::__construct();
@@ -116,28 +114,24 @@ class RemindUnreadMessageCommand extends Command
         string $lastName,
         int $nbUnreadMessage
     ): void {
-        $failedRecipient = [];
+        $templateId = MailjetMessage::TEMPLATE_MESSAGE_UNREAD_USER_NOTIFICATION;
 
         try {
             $message = (new MailjetMessage())
-                ->setTemplateId(MailjetMessage::TEMPLATE_MESSAGE_UNREAD_USER_NOTIFICATION)
+                ->setTemplateId($templateId)
                 ->setVars(\compact('firstName', 'lastName', 'nbUnreadMessage'))
-                ->setTo($email)
+                ->to($email)
             ;
-            if (0 === $this->mailer->send($message, $failedRecipient)) {
-                throw new RuntimeException(
-                    \sprintf('Error on sending email to : "%s"', \implode(', ', $failedRecipient))
-                );
-            }
-        } catch (Exception $exception) {
+            $this->mailer->send($message);
+        } catch (\Throwable $throwable) {
             $this->logger->error(
-                'Unable to send unread message(s) email notification with error : ' . $exception->getMessage(),
-                [
-                    'class'    => __CLASS__,
-                    'function' => __FUNCTION__,
-                    'file'     => $exception->getFile(),
-                    'line'     => $exception->getLine(),
-                ]
+                \sprintf(
+                    'Unable to send unread message(s) email notification to %s with template id %d. Error: %s',
+                    $email,
+                    $templateId,
+                    $throwable->getMessage()
+                ),
+                ['throwable' => $throwable]
             );
         }
     }

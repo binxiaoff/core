@@ -6,55 +6,43 @@ namespace KLS\Core\Service\Monolog\Handler;
 
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
-use Swift_Mailer;
-use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
 
 class MailHandler extends AbstractProcessingHandler
 {
-    private Swift_Mailer $mailer;
+    private MailerInterface $mailer;
     /** @var mixed */
     private $securityRecipients;
-
-    private Environment $twig;
-
     private string $senderAddress;
 
-    /**
-     * @param mixed  $securityRecipients
-     * @param int    $level
-     * @param bool   $bubble
-     * @param string $senderAddress
-     */
     public function __construct(
-        Swift_Mailer $mailer,
-        Environment $twig,
+        MailerInterface $mailer,
         $securityRecipients,
-        $level = Logger::CRITICAL, // @see https://github.com/symfony/monolog-bundle/issues/322
-        $bubble = true,
-        $senderAddress = 'support@kls-platform.com'
+        int $level = Logger::CRITICAL, // @see https://github.com/symfony/monolog-bundle/issues/322
+        bool $bubble = true,
+        string $senderAddress = 'support@kls-platform.com'
     ) {
         parent::__construct($level, $bubble);
         $this->mailer             = $mailer;
         $this->securityRecipients = $securityRecipients;
-        $this->twig               = $twig;
         $this->senderAddress      = $senderAddress;
     }
 
     /**
      * Writes the record down to the log of the implementing handler.
      *
-     * @throws LoaderError|RuntimeError|SyntaxError
+     * @throws TransportExceptionInterface
      */
     protected function write(array $record): void
     {
-        $message = new \Swift_Message();
-        $message->setSubject('Log')
-            ->setFrom($this->senderAddress)
-            ->setBody($this->twig->render('email/log.html.twig', $record))
-            ->setTo($this->securityRecipients)
+        $message = new TemplatedEmail();
+        $message->subject('Log')
+            ->from($this->senderAddress)
+            ->to($this->securityRecipients)
+            ->htmlTemplate('email/log.html.twig')
+            ->context($record)
         ;
 
         $this->mailer->send($message);

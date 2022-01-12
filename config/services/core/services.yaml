@@ -14,7 +14,7 @@ parameters:
   kls.environment: '%env(KLS_ENV)%'
   locale: fr_FR
   mailer.error_reporting_email: produit@kls-platform.com
-  mailer.sender_address: support@kls-platform.com
+  mailer.sender_address: 'KLS <support@kls-platform.com>'
   maintenance: '%env(MAINTENANCE_MODE)%'
   psn.base_uri: '%env(PSN_BASE_URI)%'
   psn.public_key: '%env(base64:PSN_PUBLIC_KEY)%'
@@ -36,7 +36,6 @@ services:
       $projectDirectory: '%kernel.project_dir%'
       $securityRecipients: '%security.recipients%'
       $senderAddress: '%mailer.sender_address%'
-      $templateMessageFQCN: 'KLS\Core\SwiftMailer\TemplateMessage'
       $userAttachmentFilesystem: '@user_attachment_filesystem'
 
   KLS\Core\:
@@ -160,9 +159,7 @@ services:
     decorates: 'api_platform.openapi.normalizer.api_gateway'
     arguments: ['@.inner']
 
-  KLS\Core\SwiftMailer\TemplateErrorReportingPlugin:
-    tags:
-      - { name: swiftmailer.default.plugin }
+  KLS\Core\EventSubscriber\Mailer\PreSendMailSubscriber:
     arguments:
       $enableErrorDelivery: '%env(MAILJET_ERROR_DELIVERY)%'
       $errorReportingEmail: '%mailer.error_reporting_email%'
