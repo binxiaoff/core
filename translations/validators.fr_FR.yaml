@@ -299,6 +299,7 @@ CreditGuaranty:
             loanDuration:
                 requiredForEsb: La durée du prêt de l'objet de financement doit être renseignée pour calculer l'équivalent subvention brute.
             loanMoneyAfterContractualisation: Le montant du prêt contractualisé ne peut pas être supérieur au montant renseigné lors de la réservation.
+            mainLoan: Un seul objet de financement peut être considéré comme le principal.
         financingObjectRelease:
             invoiceMoney:
                 requiredForLoanReleasedOnInvoice: Le montant des factures du déblocage de l'objet de financement doit être renseigné car les prêts sont débloqués sur facture dans ce programme.
