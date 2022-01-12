@@ -788,8 +788,10 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      */
     public function validateMainLoan(ExecutionContextInterface $context): void
     {
+        $self = $this;
+
         $existingMainLoan = $this->getReservation()->getFinancingObjects()
-            ->filter(static fn (FinancingObject $fo) => $fo->isMainLoan())
+            ->filter(static fn (FinancingObject $fo) => $self !== $fo && $fo->isMainLoan())
         ;
 
         if ($this->isMainLoan() && false === $existingMainLoan->isEmpty()) {

@@ -68,6 +68,13 @@ class FinancingObjectTest extends TestCase
     {
         $reservation = $this->createReservation();
 
+        $financingObject = ($this->createFinancingObject($reservation, false))->setMainLoan(true);
+        yield 'reservation with financingObjects - same financingObject as main' => [
+            $reservation,
+            new ArrayCollection([$financingObject]),
+            $financingObject,
+            false,
+        ];
         yield 'reservation without financingObjects - financingObject as not main' => [
             $reservation,
             new ArrayCollection(),
