@@ -46,10 +46,6 @@ services:
     tags:
       - { name: doctrine.orm.entity_listener, event: postPersist, entity: KLS\Core\Entity\Staff}
 
-  KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\User\UserUpdatedListener:
-    tags:
-      - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Core\Entity\User }
-
   KLS\Core\Listener\Doctrine\Entity\MessageDispatcher\User\UserStatusUpdatedListener:
     tags:
       - { name: doctrine.orm.entity_listener, event: preUpdate, entity: KLS\Core\Entity\User }

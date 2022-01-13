@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Test\Core\Unit\MessageHandler;
+namespace KLS\Test\Core\Unit\MessageHandler\User;
 
 use KLS\Core\Entity\User;
 use KLS\Core\Entity\UserStatus;
