@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace KLS\Core\MessageHandler;
+namespace KLS\Core\MessageHandler\User;
 
 use Exception;
 use KLS\Core\Entity\Request\ResetPassword;
