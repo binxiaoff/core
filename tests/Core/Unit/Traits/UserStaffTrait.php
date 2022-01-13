@@ -24,7 +24,8 @@ trait UserStaffTrait
         $teamRoot = Team::createRootTeam(new Company('Company', ''));
         $team     = Team::createTeam('Team', $teamRoot);
 
-        $user  = new User('user@mail.com');
+        $user = new User('user@mail.com');
+        $user->setPublicId();
         $staff = new Staff($user, $team);
         $staff->setPublicId();
 
