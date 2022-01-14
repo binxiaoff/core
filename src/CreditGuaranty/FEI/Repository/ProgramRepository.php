@@ -28,6 +28,14 @@ class ProgramRepository extends ServiceEntityRepository
 
     /**
      * @throws ORMException
+     */
+    public function persist(Program $program): void
+    {
+        $this->getEntityManager()->persist($program);
+    }
+
+    /**
+     * @throws ORMException
      * @throws OptimisticLockException
      */
     public function save(Program $program): void

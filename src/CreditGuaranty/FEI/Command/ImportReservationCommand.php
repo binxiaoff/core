@@ -7,6 +7,7 @@ namespace KLS\CreditGuaranty\FEI\Command;
 use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
 use Box\Spout\Reader\XLSX\Sheet;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -24,6 +25,7 @@ use KLS\Core\Repository\CompanyRepository;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
+use KLS\CreditGuaranty\FEI\Entity\Participation;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ProgramStatus;
@@ -35,17 +37,27 @@ use KLS\CreditGuaranty\FEI\Repository\ProgramChoiceOptionRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramRepository;
 use KLS\CreditGuaranty\FEI\Repository\ReservationRepository;
 use KLS\CreditGuaranty\FEI\Service\ReservationAccessor;
+use LogicException;
+use NoRewindIterator;
 use ReflectionClass;
 use ReflectionException;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class ImportProgramReservationsCommand extends Command
+class ImportReservationCommand extends Command
 {
     private const BATCH_SIZE = 50;
+
+    private const REQUIRED_FIELD_ALIASES = [
+        FieldAlias::RESERVATION_MANAGING_COMPANY,
+        FieldAlias::BENEFICIARY_NAME,
+        FieldAlias::FINANCING_OBJECT_NAME,
+        FieldAlias::PROJECT_TOTAL_AMOUNT,
+    ];
 
     private const MAPPING_KEYS = [
         "Adresse de l'entreprise"                     => FieldAlias::ACTIVITY_STREET,
@@ -101,6 +113,7 @@ class ImportProgramReservationsCommand extends Command
         'N° d’immatriculation'                        => FieldAlias::REGISTRATION_NUMBER,
         "NAF de l'exploitation"                       => FieldAlias::COMPANY_NAF_CODE,
         'Libellé code NAF'                            => FieldAlias::COMPANY_NAF_CODE,
+        'Libellé CR'                                  => FieldAlias::RESERVATION_MANAGING_COMPANY,
         "Nom de l'agriculteur"                        => FieldAlias::BENEFICIARY_NAME,
         "Nom de l'entreprise"                         => FieldAlias::BENEFICIARY_NAME,
         'Numéro du prêt'                              => FieldAlias::LOAN_NUMBER,
@@ -204,22 +217,15 @@ class ImportProgramReservationsCommand extends Command
     ];
 
     private const MAPPING_RESERVATION_STATUSES = [
-        'Brouillon' => [
-            'value'            => ReservationStatus::STATUS_DRAFT,
-            'previousStatuses' => [],
-        ],
-        'Réservé' => [
-            'value'            => ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
-            'previousStatuses' => [
-                ReservationStatus::STATUS_SENT,
-            ],
+        'Brouillon' => [],
+        'Réservé'   => [
+            ReservationStatus::STATUS_SENT,
+            ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
         ],
         'Contractualisé' => [
-            'value'            => ReservationStatus::STATUS_CONTRACT_FORMALIZED,
-            'previousStatuses' => [
-                ReservationStatus::STATUS_SENT,
-                ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
-            ],
+            ReservationStatus::STATUS_SENT,
+            ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
+            ReservationStatus::STATUS_CONTRACT_FORMALIZED,
         ],
     ];
 
@@ -228,7 +234,7 @@ class ImportProgramReservationsCommand extends Command
         'Montant Équivalent Subvention Brut',
     ];
 
-    protected static $defaultName = 'kls:fei:program:reservations:import';
+    protected static $defaultName = 'kls:fei:reservation:import';
 
     private CompanyRepository $companyRepository;
     private CompanyGroupTagRepository $companyGroupTagRepository;
@@ -263,7 +269,7 @@ class ImportProgramReservationsCommand extends Command
     protected function configure(): void
     {
         $this
-            ->setDescription('Imports program reservations from Excel file')
+            ->setDescription('Imports program reservations from Excel file (with file name as program name)')
             ->addArgument(
                 'path',
                 InputArgument::REQUIRED,
@@ -273,6 +279,7 @@ class ImportProgramReservationsCommand extends Command
     }
 
     /**
+     * @throws RuntimeException
      * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -281,96 +288,101 @@ class ImportProgramReservationsCommand extends Command
 
         $path = $input->getArgument('path');
 
-        $io->title(\sprintf('Start program reservations import from "%s" file', $path));
+        if ($output->isVerbose()) {
+            $io->title(\sprintf('Start program reservations import from "%s" file', $path));
+        }
 
         $reader = ReaderEntityFactory::createXLSXReader();
         $reader->open($path);
+
         $sheetIterator = $reader->getSheetIterator();
         $sheetIterator->rewind();
-        $sheets      = \iterator_to_array($sheetIterator, false);
-        $sheetsCount = \count($sheets);
+        $sheetsCount = \iterator_count($sheetIterator);
 
-        if (0 === \count($sheets)) {
-            throw new Exception('Sheets are not found in the file');
+        if (0 === $sheetsCount) {
+            throw new RuntimeException('Sheets are not found in the file');
         }
 
-        $fileNameParts = \explode('/', $path);
-        $fileName      = \trim(\pathinfo(\end($fileNameParts), PATHINFO_FILENAME));
-
         // program
-        $program = $this->createProgram($fileName);
-        $this->programRepository->save($program);
+        $program = $this->createProgram(\pathinfo($path, PATHINFO_FILENAME));
+        $this->programRepository->persist($program);
+
+        if ($output->isVeryVerbose()) {
+            $io->writeln(\sprintf('- Program "%s" created', $program->getName()));
+        }
 
         $reservationCount = 0;
 
         /** @var Sheet $sheet */
-        foreach ($sheets as $key => $sheet) {
-            $io->info(\sprintf('%s/%s Importing "%s" sheet data...', $key + 1, $sheetsCount, $sheet->getName()));
+        foreach ($sheetIterator as $key => $sheet) {
+            if ($output->isVerbose()) {
+                $io->info(\sprintf('%s/%s Importing "%s" sheet data...', $key, $sheetsCount, $sheet->getName()));
+            }
 
-            $keys   = [];
-            $fields = [];
-            $i      = 0;
+            $rowIterator = $sheet->getRowIterator();
+            $rowIterator->rewind();
+
+            $keys = $rowIterator->current()->toArray();
+
+            if (false === $this->formatHeaderKeys($output, $io, $keys)) {
+                continue;
+            }
+
+            $fields = $this->fieldRepository->findBy(['fieldAlias' => $keys]);
+
+            $rowIterator->next();
+
+            $iterator = new NoRewindIterator($rowIterator);
+            $i        = 0;
 
             // reservations
-            foreach ($sheet->getRowIterator() as $rowKey => $row) {
-                if (1 === $rowKey) {
-                    // put header name as key to convert them to fieldAlias
-                    $keys = \array_flip($row->toArray());
-                    $this->replaceKeys($keys);
-                    // put row index as key with its related fieldAlias to easy get cell value
-                    $keys = \array_flip($keys);
+            foreach ($iterator as $rowIndex => $row) {
+                ++$reservationCount;
 
-                    $fields = $this->fieldRepository->findBy(['fieldAlias' => $keys]);
-
-                    continue;
+                if ($output->isDebug()) {
+                    $io->writeln(\sprintf('Reading row %s...', $rowIndex));
                 }
 
                 $data = $row->toArray();
                 $this->replaceKeys($data, $keys);
-
-                $reservation = $this->createReservation($program, $fields, $data);
+                $reservation = $this->createReservation($output, $io, $program, $fields, $data);
                 $this->reservationRepository->persist($reservation);
-                ++$reservationCount;
-                ++$i;
+
+                if ($output->isVeryVerbose()) {
+                    $io->writeln(
+                        \sprintf('- Reservation #%s "%s" created', $reservation->getId(), $reservation->getName())
+                    );
+                }
 
                 if (0 === $i % self::BATCH_SIZE) {
                     $this->reservationRepository->flush();
                 }
+
+                ++$i;
             }
 
             $this->reservationRepository->flush();
         }
 
-        $this->formatDuplicatedReservationNames($program);
+        $this->renameDuplicatedReservations($program);
 
-        $io->success(
-            \sprintf(
-                '%s reservations have been created for the program "%s"',
-                $reservationCount,
-                $program->getName()
-            )
-        );
+        if ($output->isVerbose()) {
+            $io->success(
+                \sprintf(
+                    '%s reservations have been created for the program "%s"',
+                    $reservationCount,
+                    $program->getName()
+                )
+            );
+        }
 
         return Command::SUCCESS;
-    }
-
-    private function replaceKeys(array &$data, ?array $keys = null): void
-    {
-        $keysToCheck = $keys ?? self::MAPPING_KEYS;
-
-        foreach ($data as $key => $value) {
-            if (false === isset($keysToCheck[$key])) {
-                continue;
-            }
-
-            $data[$keysToCheck[$key]] = $value;
-            unset($data[$key]);
-        }
     }
 
     /**
      * @throws NonUniqueResultException
      * @throws NoResultException
+     * @throws ReflectionException
      */
     private function createProgram(string $name): Program
     {
@@ -380,22 +392,23 @@ class ImportProgramReservationsCommand extends Command
             $name .= ' (' . ($programCount + 1) . ')';
         }
 
+        // we set a program companyGroupTag by default as it is required and not set in the file
         /** @var CompanyGroupTag $companyGroupTag */
         $companyGroupTag = $this->companyGroupTagRepository->findOneBy([
             'code' => Program::COMPANY_GROUP_TAG_AGRICULTURE,
         ]);
         /** @var Company $casaCompany */
         $casaCompany = $this->companyRepository->findOneBy(['shortCode' => Company::SHORT_CODE_CASA]);
-        $casaStaff   = $casaCompany->getStaffCount() > 0
-            ? $this->getManagerStaff($casaCompany)
-            : $casaCompany->getStaff()[0];
+        $casaStaff   = $this->getManagerStaff($casaCompany, true) ?? $this->getManagerStaff($casaCompany, false);
 
+        // we set a program funds by default as it is required and not set in the file
         $program = new Program($name, $companyGroupTag, new Money('EUR', '100000000'), $casaStaff);
-        $program
-            ->setCurrentStatus(new ProgramStatus($program, 20, $casaStaff))
-            ->setCurrentStatus(new ProgramStatus($program, 30, $casaStaff))
-            ->setRatingType(CARatingType::CA_INTERNAL_RETAIL_RATING)
-        ;
+        $program->setRatingType(CARatingType::CA_INTERNAL_RETAIL_RATING);
+
+        $this->forcePropertyValue($program, 'statuses', new ArrayCollection([
+            new ProgramStatus($program, 20, $casaStaff),
+            new ProgramStatus($program, 30, $casaStaff),
+        ]));
 
         return $program;
     }
@@ -406,64 +419,113 @@ class ImportProgramReservationsCommand extends Command
      * @throws ReflectionException
      * @throws ORMException
      */
-    private function createReservation(Program $program, array $fields, array $data): Reservation
-    {
+    private function createReservation(
+        OutputInterface $output,
+        SymfonyStyle $io,
+        Program $program,
+        array $fields,
+        array $data
+    ): Reservation {
         /** @var Company $crCompany */
         $crCompany = $this->companyRepository->findOneBy([
-            'shortCode' => self::MAPPING_COMPANY_SHORTCODES[$data['Libellé CR']],
+            'shortCode' => self::MAPPING_COMPANY_SHORTCODES[$data[FieldAlias::RESERVATION_MANAGING_COMPANY]],
         ]);
-        $crStaff = $this->getManagerStaff($crCompany) ?? \iterator_to_array($crCompany->getStaff())[0];
+        /** @var Staff $crStaff */
+        $crStaff = $this->getManagerStaff($crCompany, true) ?? $this->getManagerStaff($crCompany, false);
+
+        $this->createParticipation($program, $crCompany);
 
         $reservation = new Reservation($program, $crStaff);
         $reservation->setName(\trim($data[FieldAlias::BENEFICIARY_NAME]));
         $this->reservationRepository->persist($reservation);
 
         foreach ($fields as $field) {
-            $object = $this->getObjectByField($reservation, $field, $data);
+            $fieldAlias = $field->getFieldAlias();
 
-            if (null !== $object) {
+            if (FieldAlias::RESERVATION_MANAGING_COMPANY === $fieldAlias) {
+                // This value is already set at top of this method
+                continue;
+            }
+
+            $object = $this->getObjectByField($reservation, $field, $data);
+            $value  = $this->formatValue($reservation, $field, $data[$fieldAlias]);
+
+            if (FieldAlias::RESERVATION_STATUS === $fieldAlias) {
+                $this->setReservationStatuses($reservation, $crStaff, $value);
+
+                continue;
+            }
+
+            if (null !== $value) {
                 $propertyPath = ('reservation' === $field->getCategory())
                     ? $field->getReservationPropertyName()
                     : $field->getPropertyPath();
 
-                $value = $this->formatValue($reservation, $field, $data[$field->getFieldAlias()]);
+                $this->forcePropertyValue($object, $propertyPath, $value);
 
-                if (FieldAlias::RESERVATION_STATUS === $field->getFieldAlias()) {
-                    $statusData = self::MAPPING_RESERVATION_STATUSES[$value];
-                    $value      = new ReservationStatus($reservation, $statusData['value'], $crStaff);
-
-                    foreach ($statusData['previousStatuses'] as $previousStatus) {
-                        $reservation->setCurrentStatus(new ReservationStatus($reservation, $previousStatus, $crStaff));
-                    }
+                if (FieldAlias::BENEFICIARY_NAME === $fieldAlias) {
+                    $object->setCompanyName($value);
                 }
 
-                if (null !== $value) {
-                    $this->forcePropertyValue($object, $propertyPath, $value);
+                continue;
+            }
 
-                    if (FieldAlias::BENEFICIARY_NAME === $field->getFieldAlias()) {
-                        $object->setCompanyName($value);
-                    }
-                }
+            if ($output->isDebug()) {
+                $io->writeln(\sprintf('- Field %s with null value', $fieldAlias));
             }
         }
 
-        if (null === $program->isEsbCalculationActivated()) {
-            foreach (self::ESB_CALCULATION_ACTIVATED_KEYS as $key) {
-                if (\array_key_exists($key, $data)) {
-                    $program->setEsbCalculationActivated(true);
-
-                    break;
-                }
-            }
-        }
+        $this->setEsbCalculationActivated($program, $data);
 
         return $reservation;
     }
 
-    private function getManagerStaff(Company $company): ?Staff
+    private function createParticipation(Program $program, Company $company): void
+    {
+        $existingParticipation = $program->getParticipations()
+            ->filter(fn (Participation $p) => $company === $p->getParticipant())
+        ;
+
+        if (0 === $existingParticipation->count()) {
+            // we set a participation quota by default as it is required and not set in the file
+            $participation = new Participation($program, $company, '1');
+            $program->getParticipations()->add($participation);
+        }
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    private function setReservationStatuses(Reservation $reservation, Staff $addedBy, string $status): void
+    {
+        $statuses = self::MAPPING_RESERVATION_STATUSES[$status];
+        \array_walk(
+            $statuses,
+            static fn (&$value) => $value = new ReservationStatus($reservation, $value, $addedBy)
+        );
+
+        $this->forcePropertyValue($reservation, 'statuses', new ArrayCollection($statuses));
+    }
+
+    private function setEsbCalculationActivated(Program $program, array $data): void
+    {
+        if (null !== $program->isEsbCalculationActivated()) {
+            return;
+        }
+
+        foreach (self::ESB_CALCULATION_ACTIVATED_KEYS as $key) {
+            if (\array_key_exists($key, $data)) {
+                $program->setEsbCalculationActivated(true);
+
+                break;
+            }
+        }
+    }
+
+    private function getManagerStaff(Company $company, bool $manager): ?Staff
     {
         foreach ($company->getStaff() as $staff) {
-            if ($staff->isActive() && $staff->isManager()) {
+            if ($staff->isActive() && $manager) {
                 return $staff;
             }
         }
@@ -472,9 +534,10 @@ class ImportProgramReservationsCommand extends Command
     }
 
     /**
+     * @throws LogicException
      * @throws ORMException
      */
-    private function getObjectByField(Reservation $reservation, Field $field, array $data): ?object
+    private function getObjectByField(Reservation $reservation, Field $field, array $data): object
     {
         switch ($field->getCategory()) {
             case 'program':
@@ -505,7 +568,13 @@ class ImportProgramReservationsCommand extends Command
                 return $object;
         }
 
-        return null;
+        throw new LogicException(
+            \sprintf(
+                'Impossible to get object by field %s for reservation "%s"',
+                $field->getFieldAlias(),
+                $reservation->getName()
+            )
+        );
     }
 
     /**
@@ -528,6 +597,55 @@ class ImportProgramReservationsCommand extends Command
         }
 
         return $programChoiceOption;
+    }
+
+    private function replaceKeys(array &$data, array $keys): void
+    {
+        foreach ($data as $key => $value) {
+            if (false === isset($keys[$key])) {
+                continue;
+            }
+
+            $data[$keys[$key]] = $value;
+            unset($data[$key]);
+        }
+    }
+
+    private function formatHeaderKeys(OutputInterface $output, SymfonyStyle $io, array &$keys): bool
+    {
+        try {
+            // put header name as key to convert them to fieldAlias
+            $keys = \array_flip($keys);
+        } catch (Exception $exception) {
+            if ($output->isVerbose()) {
+                $io->warning('Impossible to import reservations from this sheet, header columns are not found.');
+            }
+
+            return false;
+        }
+
+        // we replace header keys by field_aliases
+        $this->replaceKeys($keys, self::MAPPING_KEYS);
+        // put row index as key to convert them to fieldAlias and to convert data key with field_alias
+        $keys = \array_flip($keys);
+
+        if (
+            \count(\array_intersect($keys, self::REQUIRED_FIELD_ALIASES)) !== \count(self::REQUIRED_FIELD_ALIASES)
+        ) {
+            if ($output->isVerbose()) {
+                $io->warning(
+                    \sprintf(
+                        'Impossible to import reservations from this sheet,' .
+                        ' some header field_alias columns are required and missing : %s.',
+                        \implode(', ', self::REQUIRED_FIELD_ALIASES)
+                    )
+                );
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -603,17 +721,30 @@ class ImportProgramReservationsCommand extends Command
     }
 
     /**
+     * @param mixed $value
+     *
+     * @throws ReflectionException
+     */
+    private function forcePropertyValue(object $object, string $property, $value): void
+    {
+        $ref               = new ReflectionClass(\get_class($object));
+        $reflexionProperty = $ref->getProperty($property);
+        $reflexionProperty->setAccessible(true);
+        $reflexionProperty->setValue($object, $value);
+    }
+
+    /**
      * @throws OptimisticLockException
      * @throws ORMException
      */
-    private function formatDuplicatedReservationNames(Program $program): void
+    private function renameDuplicatedReservations(Program $program): void
     {
         $duplicatedReservations = $this->reservationRepository->findIdsByDuplicatedName($program);
 
         $i = 0;
 
         foreach ($duplicatedReservations as $ids) {
-            // we remove the first element because we do no need to rename the first duplicated reservation
+            // we remove the first element because we do not want to rename the first duplicated reservation
             \array_shift($ids);
             $reservations = $this->reservationRepository->findBy(['id' => $ids]);
 
@@ -629,18 +760,5 @@ class ImportProgramReservationsCommand extends Command
         }
 
         $this->reservationRepository->flush();
-    }
-
-    /**
-     * @param mixed $value
-     *
-     * @throws ReflectionException
-     */
-    private function forcePropertyValue(object $object, string $property, $value): void
-    {
-        $ref               = new ReflectionClass(\get_class($object));
-        $reflexionProperty = $ref->getProperty($property);
-        $reflexionProperty->setAccessible(true);
-        $reflexionProperty->setValue($object, $value);
     }
 }
