@@ -25,7 +25,8 @@ class FileDownloadVoter extends AbstractEntityVoter
      */
     protected function fulfillPreconditions($subject, User $user): bool
     {
-        return $subject->getFileVersion()->getFile() && $subject->getFileVersion() === $subject->getFileVersion()->getFile()->getCurrentFileVersion();
+        return $subject->getFileVersion()->getFile()
+            && $subject->getFileVersion() === $subject->getFileVersion()->getFile()->getCurrentFileVersion();
     }
 
     protected function canCreate(FileDownload $fileDownload, User $user): bool

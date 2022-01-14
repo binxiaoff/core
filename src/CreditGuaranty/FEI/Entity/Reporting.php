@@ -18,6 +18,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
+ *     normalizationContext={
+ *         "groups": {
+ *             "creditGuaranty:reporting:read",
+ *             "file:read"
+ *         },
+ *         "openapi_definition_name": "read",
+ *     },
  *     collectionOperations={
  *         "post": {
  *             "security_post_denormalize": "is_granted('view', object)",
@@ -47,9 +54,13 @@ class Reporting
     use TimestampableAddedOnlyTrait;
     use PublicizeIdentityTrait;
 
+    public const FILE_TYPE_CREDIT_GUARANTY_REPORTING = 'credit_guaranty_reporting';
+
     /**
      * @ORM\OneToOne(targetEntity="KLS\Core\Entity\File", cascade={"persist"})
      * @ORM\JoinColumn(name="id_file", nullable=false, unique=true, )
+     *
+     * @Groups("creditGuaranty:reporting:read")
      */
     private File $file;
 
@@ -59,20 +70,20 @@ class Reporting
      *
      * @ApiProperty(readableLink=false, writableLink=false)
      *
-     * @Groups("creditGuaranty:reporting:create")
+     * @Groups({"creditGuaranty:reporting:read", "creditGuaranty:reporting:create"})
      */
     private ReportingTemplate $reportingTemplate;
 
     /**
      * @ORM\Column(type="json", name="filters", nullable=true)
      *
-     * @Groups("creditGuaranty:reporting:create")
+     * @Groups({"creditGuaranty:reporting:read", "creditGuaranty:reporting:create"})
      */
     private array $filters;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
-     * @ORM\JoinColumn(name="id_company", referencedColumnName="id", nullable=true)
+     * @ORM\JoinColumn(name="added_by_company", referencedColumnName="id", nullable=true)
      */
     private ?Company $addedByCompany;
 

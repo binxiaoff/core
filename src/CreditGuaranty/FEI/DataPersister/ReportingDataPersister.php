@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace KLS\CreditGuaranty\FEI\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
+use Box\Spout\Common\Exception\IOException;
+use Box\Spout\Common\Exception\UnsupportedTypeException;
+use Box\Spout\Writer\Exception\WriterNotOpenedException;
+use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use KLS\CreditGuaranty\FEI\Entity\Reporting;
 use KLS\CreditGuaranty\FEI\Repository\ReportingRepository;
 use KLS\CreditGuaranty\FEI\Service\Reporting\ReportingFileBuilder;
+use League\Flysystem\FilesystemException;
 
 class ReportingDataPersister implements DataPersisterInterface
 {
@@ -32,6 +37,12 @@ class ReportingDataPersister implements DataPersisterInterface
      *
      * @throws ORMException
      * @throws OptimisticLockException
+     * @throws IOException
+     * @throws UnsupportedTypeException
+     * @throws WriterNotOpenedException
+     * @throws EnvironmentIsBrokenException
+     * @throws \Defuse\Crypto\Exception\IOException
+     * @throws FilesystemException
      */
     public function persist($data): Reporting
     {

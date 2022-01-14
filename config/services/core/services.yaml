@@ -32,7 +32,6 @@ services:
       $consoleLogger: '@monolog.logger.console'
       $debug: '%kernel.debug%'
       $defaultLocale: '%locale%'
-      $generatedDocumentFilesystem: '@generated_document_filesystem'
       $projectDirectory: '%kernel.project_dir%'
       $securityRecipients: '%security.recipients%'
       $senderAddress: '%mailer.sender_address%'

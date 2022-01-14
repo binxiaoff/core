@@ -59,7 +59,7 @@ class FileSystemHelper
         }
 
         /* We delete only the temporary file that we created for the encryption.
-         * The orignal file ($temporaryFilePath) is managed by other module (for example, Symfony file system), which
+         * The original file ($temporaryFilePath) is managed by other module (for example, Symfony file system), which
          * should not be touched.
         */
         if ($encryption) {

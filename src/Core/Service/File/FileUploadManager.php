@@ -87,7 +87,7 @@ class FileUploadManager
      */
     private function uploadFile(UploadedFile $file, FilesystemOperator $filesystem, string $subdirectory): array
     {
-        $uploadDirectory = $this->fileSystemHelper->normalizeDirectory('/', $subdirectory);
+        $uploadDirectory = $this->fileSystemHelper->normalizeDirectory(DIRECTORY_SEPARATOR, $subdirectory);
 
         $filename = $this->generateFileName($file, $filesystem, $uploadDirectory);
         $filePath = $uploadDirectory . DIRECTORY_SEPARATOR . $filename;
@@ -116,11 +116,6 @@ class FileUploadManager
         }
 
         return $fileNameWithExtension;
-    }
-
-    private function normalizePath(string $path): string
-    {
-        return DIRECTORY_SEPARATOR === \mb_substr($path, -1) ? \mb_substr($path, 0, -1) : $path;
     }
 
     /**

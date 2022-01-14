@@ -73,11 +73,7 @@ class ReportingFileBuilder
     {
         $filePath = $this->createFile($reportingTemplate, $filters);
 
-        $file = $this->writeToFileSystem($filePath, $builtBy, $reportingTemplate);
-
-        $this->fileSystem->remove($filePath);
-
-        return $file;
+        return $this->writeToFileSystem($filePath, $builtBy, $reportingTemplate);
     }
 
     /**
@@ -137,18 +133,17 @@ class ReportingFileBuilder
             self::ROOT_DIRECTORY,
             $this->getUserDirectory($builtBy)
         );
-        $DestFilePath = $uploadDirectory
+        $destFilePath = $uploadDirectory
             . DIRECTORY_SEPARATOR
             . $this->generateFileName($reportingTemplate, $uploadDirectory);
-
         $encryptionKey = $this->fileSystemHelper->writeTempFileToFileSystem(
             $tmpName,
             $this->generatedDocumentFilesystem,
-            $DestFilePath
+            $destFilePath
         );
 
         $file = $this->mapToFile(
-            $DestFilePath,
+            $destFilePath,
             MimeTypes::getDefault()->guessMimeType($tmpName),
             $encryptionKey,
             $builtBy
@@ -164,7 +159,7 @@ class ReportingFileBuilder
      */
     private function mapToFile(string $filePath, string $mimeType, string $encryptionKey, User $builtBy): File
     {
-        $fileName    = \pathinfo($filePath)['filename'];
+        $fileName    = \pathinfo($filePath)['basename'];
         $file        = new File($fileName);
         $fileVersion = new FileVersion(
             $filePath,
@@ -223,9 +218,9 @@ class ReportingFileBuilder
      */
     private function generateFileName(ReportingTemplate $reportingTemplate, string $uploadDirectory): string
     {
+        $date                  = new \DateTimeImmutable();
         $fileNameWithExtension = $reportingTemplate->getProgram()->getName() . '_' .
-            $reportingTemplate->getName() . '_' .
-            \uniqid('', true) . '.' . self::XLSX_EXTENSION;
+            $reportingTemplate->getName() . '_' . $date->getTimestamp() . '.' . self::XLSX_EXTENSION;
 
         if (
             $this->generatedDocumentFilesystem->fileExists(
