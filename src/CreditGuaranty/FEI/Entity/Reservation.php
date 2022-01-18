@@ -488,8 +488,13 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
             return false;
         }
 
-        $esbTotal     = $this->project->getTotalGrossSubsidyEquivalent();
-        $maxFeiCredit = $this->project->getMaxFeiCredit();
+        $project      = $this->getProject();
+        $esbTotal     = $project->getTotalGrossSubsidyEquivalent();
+        $maxFeiCredit = $project->getMaxFeiCredit();
+
+        if (null === $esbTotal->getAmount() || null === $maxFeiCredit->getAmount()) {
+            return false;
+        }
 
         $comparison = MoneyCalculator::compare($esbTotal, $maxFeiCredit);
 
