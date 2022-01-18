@@ -5,6 +5,12 @@ grumphp:
         enabled: true
         fix_by_default: true
     tasks:
+        shell:
+            metadata:
+                label: cache
+                priority: 1
+            scripts:
+                - ["-c", "[ -e var/cache/dev/KLS_KernelDevDebugContainer.php ] || APP_DEBUG=1 bin/console cache:warmup"]
         git_blacklist:
             keywords: ['dump(', '>>>>', '<<<<']
             triggered_by: ['php', 'js', 'css', 'scss', 'twig', 'xml']
