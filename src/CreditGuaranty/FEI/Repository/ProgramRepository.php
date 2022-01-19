@@ -28,12 +28,35 @@ class ProgramRepository extends ServiceEntityRepository
 
     /**
      * @throws ORMException
+     */
+    public function persist(Program $program): void
+    {
+        $this->getEntityManager()->persist($program);
+    }
+
+    /**
+     * @throws ORMException
      * @throws OptimisticLockException
      */
     public function save(Program $program): void
     {
         $this->getEntityManager()->persist($program);
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     * @throws NoResultException
+     */
+    public function countByPartialName(string $name): int
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->select('COUNT(p)')
+            ->where('p.name LIKE :name')
+            ->setParameter('name', '%' . $name . '%')
+        ;
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**

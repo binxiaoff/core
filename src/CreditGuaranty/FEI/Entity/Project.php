@@ -102,7 +102,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private ?ProgramChoiceOption $investmentType = null;
 
     /**
-     * @ORM\Column(length=1200, nullable=true)
+     * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */

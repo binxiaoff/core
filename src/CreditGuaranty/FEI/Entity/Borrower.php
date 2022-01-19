@@ -71,7 +71,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private Reservation $reservation;
 
     /**
-     * @ORM\Column(type="string", length=40, nullable=true)
+     * @ORM\Column(type="string", nullable=true)
      *
      * @Assert\NotBlank(allowNull=true)
      *
@@ -246,7 +246,7 @@ class Borrower implements ProgramAwareInterface, ProgramChoiceOptionCarrierInter
     private ?ProgramChoiceOption $companyNafCode = null;
 
     /**
-     * @ORM\Column(type="smallint", nullable=true)
+     * @ORM\Column(type="integer", nullable=true)
      *
      * @Assert\Positive
      *
