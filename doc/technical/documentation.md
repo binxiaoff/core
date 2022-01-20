@@ -1,3 +1,4 @@
+`Return to index <../index.rst>`_
 
 Documentation
 =======
@@ -12,12 +13,16 @@ The documentation should be in markdown. Strive to use the most basic markdown a
 
 Organization
 ------------
-It should be placed based on its target audience.
+It should be placed based on its target audience:
+ - The technical folder for technical documentation
+ - The functional folder for external users and product documentation
 
-The dev folder for technical documentation. The functionnal folder for external users.
-
-In both of these folder, if a documentation is specific for a product, put it in a folder named by the concerned product.
+In both of these folders, if a documentation is specific for a product, put it in a folder named by the concerned product.
 
 Diagrams
 --------
-We recommand but do not enforce the usage of [draw.io](https://draw.io) to generate the diagrams. We only require you to externalize any schema, diagrams or any kind of assets and import them in the file. Whatever the solution you choose, it must allow others to edit the diagram easely.
+Whatever the diagram tool you choose, the diagram, schema or any kind of assets must at least respect these requirements:
+ - it has to be externalized and imported in the documentation
+ - it has to be accessible to others to be able to easily edit it if necessary
+
+If you don't know what to use, see [draw.io](https://draw.io).
