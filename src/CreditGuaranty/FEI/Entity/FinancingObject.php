@@ -777,9 +777,15 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
      */
     public function getGrossSubsidyEquivalent(): MoneyInterface
     {
+        $guarantyDuration = $this->getGuarantyDuration();
+
+        if (null === $guarantyDuration) {
+            return new NullableMoney();
+        }
+
         return MoneyCalculator::multiply(
             MoneyCalculator::multiply($this->getLoanMoney(), (float) $this->getProgram()->getGuarantyCoverage()),
-            (float) \bcmul((string) $this->getLoanDuration(), (string) GrossSubsidyEquivalent::FACTOR, 4)
+            (float) \bcmul((string) $guarantyDuration, (string) GrossSubsidyEquivalent::FACTOR, 4)
         );
     }
 
@@ -820,5 +826,17 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
                 ->addViolation()
             ;
         }
+    }
+
+    private function getGuarantyDuration(): ?int
+    {
+        $guarantyDuration = $this->getProgram()->getGuarantyDuration();
+        $loanDuration     = $this->getLoanDuration();
+
+        if (null === $guarantyDuration || null === $loanDuration) {
+            return null;
+        }
+
+        return \min($loanDuration, $guarantyDuration);
     }
 }
