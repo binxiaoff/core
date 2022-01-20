@@ -173,7 +173,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  * )
  *
- * @ApiFilter(SearchFilter::class, properties={"name": "partial"})
+ * @ApiFilter(SearchFilter::class, properties={"name": "partial", "program.publicId": "exact"})
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(OrderFilter::class, properties={"added"})
  * @ApiFilter("KLS\CreditGuaranty\FEI\Filter\ReservationSentDateOrderFilter")
