@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace KLS\Syndication\Agency\Extension;
 
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\ContextAwareQueryCollectionExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use Doctrine\ORM\QueryBuilder;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\User;
 use KLS\Syndication\Agency\Entity\Project;
+use KLS\Syndication\Agency\Filter\ApiPlatform\ProjectFilter;
 use Symfony\Component\Security\Core\Security;
 
-class ProjectExtension implements QueryCollectionExtensionInterface
+class ProjectExtension implements ContextAwareQueryCollectionExtensionInterface
 {
     private Security $security;
 
@@ -25,7 +26,8 @@ class ProjectExtension implements QueryCollectionExtensionInterface
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
         string $resourceClass,
-        string $operationName = null
+        string $operationName = null,
+        array $context = []
     ): void {
         if (false === (Project::class === $resourceClass) || $this->security->isGranted(User::ROLE_ADMIN)) {
             return;
@@ -39,16 +41,30 @@ class ProjectExtension implements QueryCollectionExtensionInterface
             return;
         }
 
+        $queryBuilder->distinct();
+
+        if (empty($context['filters']['as']) || ProjectFilter::VALUE_BORROWER === $context['filters']['as']) {
+            $this->borrowerQuery($queryBuilder, $queryNameGenerator, $user);
+        }
+
+        if (empty($context['filters']['as']) || ProjectFilter::VALUE_PARTICIPANT === $context['filters']['as']) {
+            $this->participantQuery($queryBuilder, $queryNameGenerator);
+        }
+
+        if (empty($context['filters']['as']) || ProjectFilter::VALUE_AGENT === $context['filters']['as']) {
+            $this->agentQuery($queryBuilder, $queryNameGenerator);
+        }
+    }
+
+    private function borrowerQuery($queryBuilder, $queryNameGenerator, $user): void
+    {
+        $rootAlias                    = $queryBuilder->getRootAliases()[0];
+        $borrowerAlias                = $queryNameGenerator->generateJoinAlias('borrower');
+        $borrowerMemberAlias          = $queryNameGenerator->generateJoinAlias('borrowerMember');
         $userParameterName            = $queryNameGenerator->generateParameterName('user');
         $publishedStatusParameterName = $queryNameGenerator->generateParameterName('publishedStatus');
 
-        // Borrower condition
-        $rootAlias           = $queryBuilder->getRootAliases()[0];
-        $borrowerAlias       = $queryNameGenerator->generateJoinAlias('borrower');
-        $borrowerMemberAlias = $queryNameGenerator->generateJoinAlias('borrowerMember');
-
         $queryBuilder
-            ->distinct()
             ->leftJoin("{$rootAlias}.borrowers", $borrowerAlias)
             ->leftJoin("{$borrowerAlias}.members", $borrowerMemberAlias)
             ->orWhere($queryBuilder->expr()->andX(
@@ -57,25 +73,27 @@ class ProjectExtension implements QueryCollectionExtensionInterface
                 "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
             ))
             ->setParameter($userParameterName, $user)
-            ->setParameter($publishedStatusParameterName, [Project::STATUS_PUBLISHED, Project::STATUS_ARCHIVED, Project::STATUS_FINISHED])
+            ->setParameter($publishedStatusParameterName, [
+                Project::STATUS_PUBLISHED, Project::STATUS_ARCHIVED, Project::STATUS_FINISHED,
+            ])
         ;
+    }
 
-        $token = $this->security->getToken();
-
-        /** @var Staff|null $staff */
-        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
-
-        if (false === ($staff instanceof Staff)) {
+    private function participantQuery($queryBuilder, $queryNameGenerator): void
+    {
+        $staff = $this->getCurrentStaff();
+        if (null === $staff) {
             return;
         }
+        $managedUser = $staff->getManagedUsers();
 
-        $managedUserParameterName = $queryNameGenerator->generateParameterName('managedUsers');
-        $companyParameterName     = $queryNameGenerator->generateParameterName('company');
-
-        // Participant condition
-        $participationAlias       = $queryNameGenerator->generateJoinAlias('participation');
-        $participationPoolAlias   = $queryNameGenerator->generateJoinAlias('participationPool');
-        $participationMemberAlias = $queryNameGenerator->generateJoinAlias('participationMember');
+        $rootAlias                    = $queryBuilder->getRootAliases()[0];
+        $participationAlias           = $queryNameGenerator->generateJoinAlias('participation');
+        $participationPoolAlias       = $queryNameGenerator->generateJoinAlias('participationPool');
+        $participationMemberAlias     = $queryNameGenerator->generateJoinAlias('participationMember');
+        $publishedStatusParameterName = $queryNameGenerator->generateParameterName('publishedStatus');
+        $managedUserParameterName     = $queryNameGenerator->generateParameterName('managedUsers');
+        $companyParameterName         = $queryNameGenerator->generateParameterName('company');
 
         $queryBuilder
             ->leftJoin("{$rootAlias}.participationPools", $participationPoolAlias)
@@ -89,11 +107,27 @@ class ProjectExtension implements QueryCollectionExtensionInterface
                     "{$rootAlias}.currentStatus IN (:{$publishedStatusParameterName})"
                 )
             )
+            ->setParameter($publishedStatusParameterName, [
+                Project::STATUS_PUBLISHED, Project::STATUS_ARCHIVED, Project::STATUS_FINISHED,
+            ])
+            ->setParameter($managedUserParameterName, \iterator_to_array($managedUser, false))
+            ->setParameter($companyParameterName, $staff->getCompany())
         ;
+    }
 
-        // Agent condition
-        $agentAlias       = $queryNameGenerator->generateJoinAlias('agent');
-        $agentMemberAlias = $queryNameGenerator->generateJoinAlias('agentMember');
+    private function agentQuery($queryBuilder, $queryNameGenerator): void
+    {
+        $staff = $this->getCurrentStaff();
+        if (null === $staff) {
+            return;
+        }
+        $managedUser = $staff->getManagedUsers();
+
+        $rootAlias                = $queryBuilder->getRootAliases()[0];
+        $agentAlias               = $queryNameGenerator->generateJoinAlias('agent');
+        $agentMemberAlias         = $queryNameGenerator->generateJoinAlias('agentMember');
+        $managedUserParameterName = $queryNameGenerator->generateParameterName('managedUsers');
+        $companyParameterName     = $queryNameGenerator->generateParameterName('company');
 
         $queryBuilder
             ->leftJoin("{$rootAlias}.agent", $agentAlias)
@@ -105,11 +139,15 @@ class ProjectExtension implements QueryCollectionExtensionInterface
                     "{$agentAlias}.company = :{$companyParameterName}",
                 )
             )
-        ;
-
-        $queryBuilder
-            ->setParameter($managedUserParameterName, \iterator_to_array($staff->getManagedUsers(), false))
+            ->setParameter($managedUserParameterName, \iterator_to_array($managedUser, false))
             ->setParameter($companyParameterName, $staff->getCompany())
         ;
+    }
+
+    private function getCurrentStaff(): ?Staff
+    {
+        $token = $this->security->getToken();
+
+        return ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
     }
 }
