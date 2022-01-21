@@ -208,7 +208,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
- * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
+ * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId", "organizers.company.publicId"})
  * @ApiFilter(BooleanFilter::class, properties={"agencyImported"})
  *
  * @ORM\Table(name="syndication_project")
