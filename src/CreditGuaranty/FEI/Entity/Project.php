@@ -677,7 +677,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
             ));
         }
 
-        $ratio = MoneyCalculator::ratio($this->getFundingMoney(), $program->getFunds());
+        $ratio = MoneyCalculator::ratio($this->getReservation()->getTotalLoanMoney(), $program->getFunds());
 
         return \bccomp((string) $ratio, $participation->getQuota(), 4) <= 0;
     }
@@ -737,7 +737,10 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         // so that we get always the same "total" all the time.
         $filters = \array_merge(['exclude' => $this->getId()], $filters);
 
-        return MoneyCalculator::add($program->getTotalProjectFunds($filters), $this->getFundingMoney());
+        return MoneyCalculator::add(
+            $program->getTotalProjectFunds($filters),
+            $this->getReservation()->getTotalLoanMoney()
+        );
     }
 
     private function getGuarantyDuration(): ?int
