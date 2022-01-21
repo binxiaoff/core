@@ -47,8 +47,9 @@ cache:
     - git clone -b "${ANSIBLE_BRANCH:-master}" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/ca-lending-services/infra.git
     - cd infra/provisioning || exit 1
     - export DEPLOY_USER="${GITLAB_USER_NAME}"
+    - export ANSIBLE_REMOTE_USER="gitlab-ci"
   script:
-    - ansible-playbook -i "inventory/private/${CI_ENVIRONMENT_NAME}.yml" deploy-api.yml --extra-vars="gitBranch=${CI_COMMIT_REF_NAME}"
+    - ansible-playbook -i "inventory/${CI_ENVIRONMENT_NAME}.yml" deploy-api.yml --extra-vars="gitBranch=${CI_COMMIT_REF_NAME}" --extra-vars="ansible_ssh_common_args=''"
   tags:
     # this can be overriden, if you specify tags it is replaced, not appended
     - staging-deployment
