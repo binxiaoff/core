@@ -8,13 +8,14 @@ services:
 
 oneup_flysystem:
     adapters:
+        # Local adapters, only used for development
         user_attachment_adapter:
             local:
                 location: '%directory.protected%attachment'
         generated_document_adapter:
             local:
                 location: '%directory.protected%generated_document'
-        # AWS S3 adapters
+        # AWS S3 adapters, used on live environments
         user_attachment_adapter_s3:
             awss3v3:
                 client: kls.s3_client
