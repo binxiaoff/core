@@ -41,23 +41,28 @@ class ProjectExtension implements ContextAwareQueryCollectionExtensionInterface
             return;
         }
 
+        $filterAs = ProjectFilter::normaliseFilter($context);
+
         $queryBuilder->distinct();
 
-        if (empty($context['filters']['as']) || ProjectFilter::VALUE_BORROWER === $context['filters']['as']) {
+        if (empty($filterAs) || \in_array(ProjectFilter::VALUE_BORROWER, $filterAs, true)) {
             $this->borrowerQuery($queryBuilder, $queryNameGenerator, $user);
         }
 
-        if (empty($context['filters']['as']) || ProjectFilter::VALUE_PARTICIPANT === $context['filters']['as']) {
+        if (empty($filterAs) || \in_array(ProjectFilter::VALUE_PARTICIPANT, $filterAs, true)) {
             $this->participantQuery($queryBuilder, $queryNameGenerator);
         }
 
-        if (empty($context['filters']['as']) || ProjectFilter::VALUE_AGENT === $context['filters']['as']) {
+        if (empty($filterAs) || \in_array(ProjectFilter::VALUE_AGENT, $filterAs, true)) {
             $this->agentQuery($queryBuilder, $queryNameGenerator);
         }
     }
 
-    private function borrowerQuery($queryBuilder, $queryNameGenerator, $user): void
-    {
+    private function borrowerQuery(
+        QueryBuilder $queryBuilder,
+        QueryNameGeneratorInterface $queryNameGenerator,
+        User $user
+    ): void {
         $rootAlias                    = $queryBuilder->getRootAliases()[0];
         $borrowerAlias                = $queryNameGenerator->generateJoinAlias('borrower');
         $borrowerMemberAlias          = $queryNameGenerator->generateJoinAlias('borrowerMember');
@@ -79,7 +84,7 @@ class ProjectExtension implements ContextAwareQueryCollectionExtensionInterface
         ;
     }
 
-    private function participantQuery($queryBuilder, $queryNameGenerator): void
+    private function participantQuery(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator): void
     {
         $staff = $this->getCurrentStaff();
         if (null === $staff) {
@@ -115,7 +120,7 @@ class ProjectExtension implements ContextAwareQueryCollectionExtensionInterface
         ;
     }
 
-    private function agentQuery($queryBuilder, $queryNameGenerator): void
+    private function agentQuery(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator): void
     {
         $staff = $this->getCurrentStaff();
         if (null === $staff) {

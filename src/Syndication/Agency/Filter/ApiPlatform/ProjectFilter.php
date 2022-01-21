@@ -48,6 +48,16 @@ class ProjectFilter extends AbstractContextAwareFilter
         ];
     }
 
+    public static function normaliseFilter(array $context): array
+    {
+        $filterAs = $context['filters']['as'] ?? [];
+        if (false === \is_array($filterAs)) {
+            $filterAs = [$filterAs];
+        }
+
+        return \array_unique(\array_values(\array_intersect($filterAs, static::getConstants('VALUE_'))));
+    }
+
     protected function filterProperty(
         string $property,
         $value,
