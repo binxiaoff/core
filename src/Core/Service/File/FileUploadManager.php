@@ -28,8 +28,12 @@ class FileUploadManager
     private FileRepository $fileRepository;
     private MessageBusInterface $messageBus;
 
-    public function __construct(FileSystemHelper $fileSystemHelper, FilesystemOperator $userAttachmentFilesystem, FileRepository $fileRepository, MessageBusInterface $messageBus)
-    {
+    public function __construct(
+        FileSystemHelper $fileSystemHelper,
+        FilesystemOperator $userAttachmentFilesystem,
+        FileRepository $fileRepository,
+        MessageBusInterface $messageBus
+    ) {
         $this->fileSystemHelper         = $fileSystemHelper;
         $this->userAttachmentFilesystem = $userAttachmentFilesystem;
         $this->fileRepository           = $fileRepository;
@@ -43,12 +47,29 @@ class FileUploadManager
      * @throws ORMException
      * @throws OptimisticLockException
      */
-    public function upload(UploadedFile $uploadedFile, User $uploader, File $file, array $context = [], ?Company $company = null): void
-    {
+    public function upload(
+        UploadedFile $uploadedFile,
+        User $uploader,
+        File $file,
+        array $context = [],
+        ?Company $company = null
+    ): void {
         $mineType                               = $uploadedFile->getMimeType();
-        [$relativeUploadedPath, $encryptionKey] = $this->uploadFile($uploadedFile, $this->userAttachmentFilesystem, $this->getUserDirectory($uploader));
+        [$relativeUploadedPath, $encryptionKey] = $this->uploadFile(
+            $uploadedFile,
+            $this->userAttachmentFilesystem,
+            $this->getUserDirectory($uploader)
+        );
 
-        $fileVersion = new FileVersion($relativeUploadedPath, $uploader, $file, FileVersion::FILE_SYSTEM_USER_ATTACHMENT, $encryptionKey, $mineType, $company);
+        $fileVersion = new FileVersion(
+            $relativeUploadedPath,
+            $uploader,
+            $file,
+            FileVersion::FILE_SYSTEM_USER_ATTACHMENT,
+            $encryptionKey,
+            $mineType,
+            $company
+        );
         $fileVersion
             ->setOriginalName($this->fileSystemHelper->normalizeFileName($uploadedFile->getClientOriginalName()))
             ->setSize($uploadedFile->getSize())
@@ -64,18 +85,14 @@ class FileUploadManager
      * @throws FilesystemException
      * @throws IOException
      */
-    private function uploadFile(UploadedFile $file, FilesystemOperator $filesystem, ?string $subdirectory = null, string $uploadRootDirectory = '/', bool $encryption = true): array
+    private function uploadFile(UploadedFile $file, FilesystemOperator $filesystem, string $subdirectory): array
     {
-        $hash         = \hash('sha256', $subdirectory ?? \uniqid('', true));
-        $subdirectory = $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . ($subdirectory ? DIRECTORY_SEPARATOR . $subdirectory : '');
-
-        $uploadRootDirectory = $this->normalizePath($uploadRootDirectory);
-        $uploadDirectory     = $uploadRootDirectory . DIRECTORY_SEPARATOR . $subdirectory;
+        $uploadDirectory = $this->fileSystemHelper->normalizeDirectory(DIRECTORY_SEPARATOR, $subdirectory);
 
         $filename = $this->generateFileName($file, $filesystem, $uploadDirectory);
         $filePath = $uploadDirectory . DIRECTORY_SEPARATOR . $filename;
 
-        $key = $this->fileSystemHelper->writeTempFileToFileSystem($file->getPathname(), $filesystem, $filePath, $encryption);
+        $key = $this->fileSystemHelper->writeTempFileToFileSystem($file->getPathname(), $filesystem, $filePath, true);
 
         return [$filePath, $key];
     }
@@ -83,21 +100,22 @@ class FileUploadManager
     /**
      * @throws FilesystemException
      */
-    private function generateFileName(UploadedFile $uploadedFile, FilesystemOperator $filesystem, string $uploadDirectory): string
-    {
-        $originalFilename      = $this->fileSystemHelper->normalizeFileName(\pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME));
-        $fileNameWithExtension = $originalFilename . '-' . \uniqid('', true) . '.' . $uploadedFile->guessExtension() ?? $uploadedFile->getClientOriginalExtension();
+    private function generateFileName(
+        UploadedFile $uploadedFile,
+        FilesystemOperator $filesystem,
+        string $uploadDirectory
+    ): string {
+        $originalFilename = $this->fileSystemHelper->normalizeFileName(
+            \pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME)
+        );
+        $fileNameWithExtension = $originalFilename . '-' . \uniqid('', true) . '.' .
+            $uploadedFile->guessExtension() ?? $uploadedFile->getClientOriginalExtension();
 
         if ($filesystem->fileExists($uploadDirectory . DIRECTORY_SEPARATOR . $fileNameWithExtension)) {
             $fileNameWithExtension = $this->generateFileName($uploadedFile, $filesystem, $uploadDirectory);
         }
 
         return $fileNameWithExtension;
-    }
-
-    private function normalizePath(string $path): string
-    {
-        return DIRECTORY_SEPARATOR === \mb_substr($path, -1) ? \mb_substr($path, 0, -1) : $path;
     }
 
     /**

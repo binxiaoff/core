@@ -17,6 +17,7 @@ use KLS\Core\Message\File\FileUploaded;
 use KLS\Core\Repository\FileRepository;
 use KLS\Core\Service\File\FileUploadManager;
 use KLS\Core\Service\FileSystem\FileSystemHelper;
+use KLS\Test\Core\Unit\Traits\CompanyTrait;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use PHPUnit\Framework\TestCase;
@@ -36,6 +37,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 class FileUploadManagerTest extends TestCase
 {
     use ProphecyTrait;
+    use CompanyTrait;
 
     /** @var FilesystemOperator|ObjectProphecy */
     private $userAttachmentFilesystem;
@@ -76,17 +78,22 @@ class FileUploadManagerTest extends TestCase
         $uploader   = new User('test@' . Internet::safeEmailDomain());
         $uploaderId = Base::randomDigitNotNull() + 1;
         $idUsersReflectionProperty->setValue($uploader, $uploaderId);
+        $company = $this->createCompany();
 
         $filePath         = \sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
         $originalFileName = Base::asciify(\str_repeat('*', 20));
         \fopen($filePath, 'wb+');
         $uploadedFile = new UploadedFile($filePath, $originalFileName, null, null, true);
 
+        $uploadDirectory = $this->fileSystemHelper->normalizeDirectory(DIRECTORY_SEPARATOR, $uploaderId)
+            ->shouldBeCalledOnce()->willReturn($uploaderId)
+        ;
+
         $fileWriter = $this->fileSystemHelper->writeTempFileToFileSystem(
             Argument::exact($uploadedFile->getPathname()),
-            Argument::exact($this->userAttachmentFilesystem),
+            $this->userAttachmentFilesystem,
             Argument::containingString((string) $uploader->getId()),
-            Argument::exact(true),
+            true,
         );
 
         $fileNameNormalizer = $this->fileSystemHelper->normalizeFileName(Argument::type('string'));
@@ -104,7 +111,8 @@ class FileUploadManagerTest extends TestCase
             $uploadedFile,
             $uploader,
             $file,
-            $context
+            $context,
+            $company
         );
 
         $fileWriter->shouldHaveBeenCalled();
@@ -124,7 +132,6 @@ class FileUploadManagerTest extends TestCase
         static::assertGreaterThanOrEqual(3, $uploadedFilePathDirectories, 'minimum number of directories');
 
         static::assertSame(1, \mb_strlen(\array_shift($uploadedFilePathDirectories)), 'first mandatory subdirectory');
-        static::assertSame(1, \mb_strlen(\array_shift($uploadedFilePathDirectories)), 'second mandatory subdirectory');
 
         static::assertSame($uploader, $file->getCurrentFileVersion()->getAddedBy());
         static::assertStringContainsString((string) $uploader->getId(), $file->getCurrentFileVersion()->getPath());
