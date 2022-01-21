@@ -305,8 +305,6 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
      * @ORM\ManyToOne(targetEntity=AgentBankAccount::class, inversedBy="participations")
      * @ORM\JoinColumn(nullable=true, onDelete="SET NULL", name="id_agent_bank_account")
      *
-     * @Assert\NotBlank(groups={"published"})
-     *
      * @Groups({"agency:participation:read"})
      */
     private ?AgentBankAccount $agentBankAccount;
