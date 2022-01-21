@@ -141,8 +141,6 @@ class Borrower extends AbstractProjectPartaker
      * @ORM\ManyToOne(targetEntity=AgentBankAccount::class, inversedBy="borrowers")
      * @ORM\JoinColumn(nullable=true, onDelete="SET NULL", name="id_agent_bank_account")
      *
-     * @Assert\NotBlank(groups={"published"})
-     *
      * @Groups({"agency:borrower:read"})
      */
     private ?AgentBankAccount $agentBankAccount;
