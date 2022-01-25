@@ -16,10 +16,11 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class ProjectVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_VIEW_NDA   = 'view_nda';
-    public const ATTRIBUTE_ADMIN_VIEW = 'admin_view';
-    public const ATTRIBUTE_COMMENT    = 'comment';
-    public const ATTRIBUTE_EXPORT     = 'export';
+    public const ATTRIBUTE_VIEW_NDA            = 'view_nda';
+    public const ATTRIBUTE_VIEW_GROUP_INTERNAL = 'view_group_internal';
+    public const ATTRIBUTE_ADMIN_VIEW          = 'admin_view';
+    public const ATTRIBUTE_COMMENT             = 'comment';
+    public const ATTRIBUTE_EXPORT              = 'export';
 
     private ProjectParticipationRepository $projectParticipationRepository;
     private ProjectManager $projectManager;
@@ -66,6 +67,28 @@ class ProjectVoter extends AbstractEntityVoter
                 || null === $projectParticipation->getAcceptableNdaVersion()
                 || $project->getArranger() === $staff->getCompany()
             );
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function canViewGroupInternal(Project $project, User $user): bool
+    {
+        if (false === $this->canView($project, $user)) {
+            return false;
+        }
+
+        $staff = $user->getCurrentStaff();
+
+        if (null === $staff) {
+            return false;
+        }
+
+        $arrangerCompany      = $project->getArranger();
+        $arrangerCompanyGroup = $arrangerCompany->getCompanyGroup();
+
+        return $arrangerCompanyGroup ? $arrangerCompanyGroup === $staff->getCompany()->getCompanyGroup() :
+            $staff->getCompany()                             === $arrangerCompany;
     }
 
     /**
