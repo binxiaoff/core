@@ -7,13 +7,12 @@ namespace KLS\CreditGuaranty\FEI\Service;
 use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
-use Doctrine\Persistence\Mapping\MappingException;
 use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Staff;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
+use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Repository\FinancingObjectRepository;
-use KLS\CreditGuaranty\FEI\Security\Voter\ProgramVoter;
 use KLS\CreditGuaranty\FEI\Validator\Constraints\FinancingObjectImportData;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -37,18 +36,17 @@ class FinancingObjectUpdater
 
     public function __construct(
         ValidatorInterface $validator,
-        FinancingObjectRepository $financingObjectRepository,
-        Security $security
+        Security $security,
+        FinancingObjectRepository $financingObjectRepository
     ) {
         $this->validator                 = $validator;
-        $this->financingObjectRepository = $financingObjectRepository;
         $this->security                  = $security;
+        $this->financingObjectRepository = $financingObjectRepository;
     }
 
     /**
      * @throws ORMException
      * @throws OptimisticLockException
-     * @throws MappingException
      */
     public function update(array $data): array
     {
@@ -57,7 +55,8 @@ class FinancingObjectUpdater
         $violations = new ConstraintViolationList();
         // First we check if the file contains errors
         foreach ($data as $line => $item) {
-            $item['line'] = $line + 1;
+            // +2 because array starts with key 0 and we need to skip the header line
+            $item['line'] = $line + 2;
             $violations->addAll($this->validator->validate($item, $importDataConstraint));
 
             if (\count($violations) > 10) {
@@ -73,16 +72,15 @@ class FinancingObjectUpdater
     }
 
     /**
-     * @throws MappingException
      * @throws ORMException
      * @throws OptimisticLockException
      */
     private function processData(array $data): array
     {
-        $batchSize               = 100;
-        $itemUpdated             = 0;
-        $notFoundFinancingObject = [];
-        $programAccessibilities  = [];
+        $batchSize                   = 100;
+        $itemUpdated                 = 0;
+        $notFoundFinancingObject     = [];
+        $accessDeniedFinancingObject = [];
 
         foreach ($data as $line => $item) {
             $financingObject = $this->financingObjectRepository->findOneBy([
@@ -90,11 +88,13 @@ class FinancingObjectUpdater
                 'operationNumber' => $item[self::OPERATION_COLUMN],
             ]);
 
+            $lineNumber = $line + 2;
+
             if (false === $financingObject instanceof FinancingObject) {
-                //We need to return the lines not corresponding with our database
+                // We need to return the lines not corresponding with our database
                 $notFoundFinancingObject[] = [
-                    //+ 1 because we need to add the header line
-                    'Ligne ' . ($line + 1) => [
+                    // +2 because array starts with key 0 and we need to skip the header line
+                    'Ligne ' . $lineNumber => [
                         self::GREEN_COLUMN     => $item[self::GREEN_COLUMN],
                         self::OPERATION_COLUMN => $item[self::OPERATION_COLUMN],
                     ],
@@ -103,15 +103,11 @@ class FinancingObjectUpdater
                 continue;
             }
 
-            if (false === \in_array($financingObject->getProgram()->getId(), $programAccessibilities, true)) {
-                $programAccessibilities[$financingObject->getProgram()->getId()] = $this->security->isGranted(
-                    ProgramVoter::ATTRIBUTE_REPORTING,
-                    $financingObject->getProgram()
-                );
-            }
+            if (false === $this->isStaffCompanySameAsProgram($financingObject->getProgram())) {
+                // +2 because array starts with key 0 and we need to skip the header line
+                $accessDeniedFinancingObject[] = 'Ligne ' . $lineNumber;
 
-            if (false === $programAccessibilities[$financingObject->getProgram()->getId()]) {
-                throw new AccessDeniedException();
+                continue;
             }
 
             $financingObject->setNewMaturity((int) $item[self::MATURITY_COLUMN]);
@@ -126,9 +122,19 @@ class FinancingObjectUpdater
         $this->financingObjectRepository->flush();
 
         return [
-            'notFoundFinancingObject' => $notFoundFinancingObject,
-            'itemUpdated'             => $itemUpdated,
-            'itemTotal'               => \count($data),
+            'accessDeniedFinancingObject' => $accessDeniedFinancingObject,
+            'notFoundFinancingObject'     => $notFoundFinancingObject,
+            'itemUpdated'                 => $itemUpdated,
+            'itemTotal'                   => \count($data),
         ];
+    }
+
+    private function isStaffCompanySameAsProgram(Program $program): bool
+    {
+        $token = $this->security->getToken();
+        /** @var Staff|null $staff */
+        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
+
+        return $staff->getCompany() === $program->getManagingCompany();
     }
 }

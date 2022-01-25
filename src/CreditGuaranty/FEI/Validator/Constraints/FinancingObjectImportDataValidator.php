@@ -11,6 +11,10 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class FinancingObjectImportDataValidator extends ConstraintValidator
 {
+    /**
+     * @param array                     $value
+     * @param FinancingObjectImportData $constraint
+     */
     public function validate($value, Constraint $constraint): void
     {
         if (!$constraint instanceof FinancingObjectImportData) {
