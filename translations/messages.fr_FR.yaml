@@ -1,3 +1,93 @@
+field:
+  activity_city: Ville
+  activity_country: Pays
+  activity_department: Département
+  activity_post_code: Code postal
+  activity_start_date: Date de création de l'entreprise
+  activity_street: N° et nom de la Rue
+  additional_guaranty: Garantie complémentaire
+  agricultural_branch: Branche agricole
+  aid_intensity: Plafond d'intensité d'aide
+  beneficiary_name: Nom du bénéficiaire
+  benefiting_profit_transfer: L'emprunteur bénéficie-t-il du transfert de bénéfice, à savoir d'une réduction du taux et une limitation des garanties ?
+  bfr_value: Montant du BFR (dont BFR)
+  borrower_type: Type d'emprunteur
+  borrower_type_grade: Notation emprunteur
+  company_naf_code: Code NAF du bénéficiaire
+  company_name: Raison sociale
+  creation_in_progress: L'entreprise est-elle en cours de création ?︎
+  credit_excluding_fei: Montant du crédit hors FEI
+  economically_viable: L'emprunteur est-il considéré comme étant économiquement viable ?
+  eligible_fei_credit: Montant total éligible FEI
+  esb_calculation_activated: Activer calcul de l'ESB ?
+  employees_number: Nombre d'employés
+  exploitation_size: Taille de l'exploitation
+  financing_object_name: Nom de l'objet de financement
+  financing_object_type: Type de l'objet de financement
+  funding_object: Objet de financement
+  funding_object_amount: Montant de l'objet de financement
+  first_release_date: Date de premier déblocage
+  guaranty_duration: Durée de la garantie
+  in_non_cooperative_jurisdiction: L'emprunteur est-il établi dans une juridiction Non coopérative ?
+  intangible_fei_credit: Montant total du crédit FEI (incorporelle)
+  investment_city: Ville de l'investissement
+  investment_country: Pays de l'investissement
+  investment_department: Département de l'investissement
+  investment_location: Localisation de l'investissement
+  investment_post_code: Code postal de l'investissement
+  investment_street: N° et nom de la rue de l'investissement
+  investment_thematic: Thématique d'investissement
+  investment_type: Type d'investissement
+  land_value: Montant du Foncier
+  legal_form: Forme juridique
+  listed_on_stock_market: L'emprunteur est-il côté sur un marché boursier ?
+  loan_allowed_refinance_restructure: Le prêt permet-il de refinancer ou restructurer un prêt existant ?
+  loan_deferral: Différé du prêt
+  loan_duration: Durée du prêt
+  loan_money: Montant du prêt
+  loan_number: N° prêt
+  loan_new_maturity: Nouvelle maturité
+  loan_naf_code: Code NAF du prêt
+  loan_money_after_contractualisation: Montant du prêt après contractualisation
+  loan_operation_number: N° d'opération
+  loan_periodicity: Périodicité du prêt
+  loan_released_on_invoice: Débloqué sur facture ?
+  loan_remaining_capital: Capital restant dû (CRD)
+  loan_supporting_documents_dates_after_application: Les dates des justificatifs de l'objet du prêt sont postérieurs à celle de la demande du prêt ?
+  loan_type: Type de prêt
+  main_loan: Considéré comme prêt principal
+  max_fei_credit: Valeur max des prêts FEI
+  product_category_code: Product Category (CN code)
+  program_currency: Currency
+  project_contribution: Apport
+  project_detail: Détail sur le projet
+  project_grant: Subventions liées au projet
+  project_received_feaga_ocm_funding: Le projet a-t-il bénéficié d'un financement du FEAGA/OCM pour le même objet ?
+  project_total_amount: Montant total du projet client
+  rating_model: Modèle de notation
+  receiving_grant: Le projet bénéficie-t-il de subventions ?
+  registration_number: N° d'immatriculation (SIRET ou N° Fiscal)
+  reservation_name: Nom du dossier
+  reservation_creation_date: Date de création du dossier
+  reservation_exclusion_date: Date d'exclusion
+  reservation_managing_company: CR du prêt
+  reservation_signing_date: Date de signature
+  reservation_status: Statut du dossier
+  reporting_first_date: Première date de reporting
+  reporting_last_date: Dernière date de reporting
+  reporting_validation_date: Date de validation du reporting
+  subject_of_restructuring_plan: L'emprunteur fait-il l'objet d'un plan de restructuration (aide au sauvetage, aide à la restructuration ) ?
+  subject_of_unperformed_recovery_order: L'emprunteur fait-il l'objet d'une injonction de récupération non exécutée ?
+  subsidiary: L'entreprise fait-elle partie d'un groupe ?
+  supporting_generations_renewal: Le prêt supporte-t-il le renouvellement des générations ?
+  tangible_fei_credit: Le prêt supporte-t-il le renouvellement des générations ?
+  target_type: Type de cible
+  total_assets: Total bilan
+  total_fei_credit: Montant total du crédit FEI
+  total_gross_subsidy_equivalent: Calcul de l'ESB
+  transaction_affected: La transaction est-elle affectée par une irrégularité ou une fraude ?
+  turnover: Chiffre d'affaires
+  young_farmer: L'emprunteur est-il un jeune agriculteur ?
 market-segment:
   corporate: Entreprises
   public_collectivity: Collectivités publiques
@@ -15,8 +105,17 @@ staff-roles:
   duty_staff_signatory: signataire
   duty_staff_auditor: Auditeur
 project-participation-status:
-  -10: Archivé par l’arrangeur
+  -10: Archivé par l'arrangeur
   -20: Archivé par le participant
   -30: Rejeté par le comité
 rate-limit:
   too-many-calls: Suite à de trop nombreuses tentatives, vous avez été bloqué temporairement. Merci de bien vouloir ré-essayer dans %minutes% minutes.
+reservation-status:
+  10: Brouillon
+  20: Envoyée
+  30: En attente de retour FEI
+  40: En attente d'informations complémentaires
+  50: Acceptée
+  60: Contractualisée
+  -10: Archivée
+  -20: Refusée

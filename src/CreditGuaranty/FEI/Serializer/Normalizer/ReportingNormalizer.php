@@ -7,13 +7,12 @@ namespace KLS\CreditGuaranty\FEI\Serializer\Normalizer;
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
-use KLS\CreditGuaranty\FEI\Entity\Field;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
-use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
 use KLS\CreditGuaranty\FEI\Repository\FinancingObjectRepository;
+use KLS\CreditGuaranty\FEI\Service\Reporting\ReportingTransformer;
 use KLS\CreditGuaranty\FEI\Service\ReservationAccessor;
 use LogicException;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
@@ -35,17 +34,20 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
     private FieldRepository $fieldRepository;
     private FinancingObjectRepository $financingObjectRepository;
     private ReservationAccessor $reservationAccessor;
+    private ReportingTransformer $reportingTransformer;
 
     public function __construct(
         IriConverterInterface $iriConverter,
         FieldRepository $fieldRepository,
         FinancingObjectRepository $financingObjectRepository,
-        ReservationAccessor $reservationAccessor
+        ReservationAccessor $reservationAccessor,
+        ReportingTransformer $reportingTransformer
     ) {
         $this->iriConverter              = $iriConverter;
         $this->financingObjectRepository = $financingObjectRepository;
         $this->fieldRepository           = $fieldRepository;
         $this->reservationAccessor       = $reservationAccessor;
+        $this->reportingTransformer      = $reportingTransformer;
     }
 
     public function supportsNormalization($data, string $format = null, array $context = []): bool
@@ -84,18 +86,13 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
 
                 $row['id_financing_object'] = $this->iriConverter->getIriFromItem($financingObject);
             }
-
-            // set virtual fields value
             foreach (FieldAlias::VIRTUAL_FIELDS as $fieldAlias) {
                 if (\array_key_exists($fieldAlias, $row)) {
-                    $row[$fieldAlias] = $this->getVirtualFieldValue($financingObject->getReservation(), $fieldAlias);
+                    $row[$fieldAlias] = $this->reportingTransformer->transformVirtualFieldValue(
+                        $financingObject->getReservation(),
+                        $fieldAlias
+                    );
                 }
-            }
-
-            // special case for transforming decimal to percentage
-            // TODO: if there is another one decimal field, create a constant in FieldAlias file and loop through it
-            if (false === empty($row[FieldAlias::AID_INTENSITY])) {
-                $row[FieldAlias::AID_INTENSITY] = ($row[FieldAlias::AID_INTENSITY] * 100) . ' %';
             }
 
             // concatenate all investment thematics of project here because it was hard to do in sql all at once
@@ -110,32 +107,10 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
 
                 $row[FieldAlias::INVESTMENT_THEMATIC] = \implode(' ; ', $investmentThematics);
             }
+
+            $row = $this->reportingTransformer->transform($row, $financingObject);
         }
 
         return $data;
-    }
-
-    private function getVirtualFieldValue(Reservation $reservation, string $fieldAlias)
-    {
-        /** @var Field|null $field */
-        $field = $this->fieldRepository->findOneBy(['fieldAlias' => $fieldAlias]);
-
-        if (false === ($field instanceof Field)) {
-            throw new LogicException(
-                \sprintf('Impossible to generate reporting, field with alias %s is not found', $fieldAlias)
-            );
-        }
-
-        $value = $this->reservationAccessor->getEntity($reservation, $field);
-
-        if (false === empty($field->getPropertyPath())) {
-            $value = $this->reservationAccessor->getValue($value, $field);
-        }
-
-        if (FieldAlias::TOTAL_GROSS_SUBSIDY_EQUIVALENT === $fieldAlias) {
-            $value .= ' EUR';
-        }
-
-        return $value;
     }
 }

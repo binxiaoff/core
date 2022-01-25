@@ -69,7 +69,14 @@ class ReportingQueryHelper
                 return \sprintf(self::ALIAS_FORMAT_NAF_NACE . '.naceCode', $fieldAlias);
             }
 
-            return \sprintf(self::ALIAS_FORMAT_PROGRAM_CHOICE_OPTION . '.description', $fieldAlias);
+            $format = 'COALESCE(' . self::ALIAS_FORMAT_PROGRAM_CHOICE_OPTION . ', ' .
+                self::ALIAS_FORMAT_PROGRAM_CHOICE_OPTION . ')';
+
+            return \sprintf(
+                $format,
+                $fieldAlias . '.transcode',
+                $fieldAlias . '.description'
+            );
         }
 
         $fieldPropertyName = $field->getReservationPropertyName();
