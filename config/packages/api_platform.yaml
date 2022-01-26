@@ -2,6 +2,7 @@ api_platform:
     defaults:
         pagination_items_per_page: 60
         pagination_maximum_items_per_page: 60
+        pagination_client_items_per_page: true
     show_webby: false
     title: 'KLS'
     description: 'Backend API of KLS'

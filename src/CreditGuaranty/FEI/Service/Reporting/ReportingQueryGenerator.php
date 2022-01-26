@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace KLS\CreditGuaranty\FEI\Service\Reporting;
 
-use ArrayIterator;
 use Exception;
 use KLS\Core\DTO\Query;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
@@ -30,13 +29,17 @@ class ReportingQueryGenerator
     public function generate(array $filters, ?ReportingTemplate $reportingTemplate = null): Query
     {
         $searchableFields = ($reportingTemplate instanceof ReportingTemplate)
-            ? $this->getOrderedFields($reportingTemplate)
+            ? $reportingTemplate->getOrderedFields()
             : $this->fieldRepository->findAll() // we retrieve all fields to be able to search or to filter
         ;
 
         $query = new Query();
 
         if ($reportingTemplate instanceof ReportingTemplate) {
+            if (0 === $reportingTemplate->getReportingTemplateFields()->count()) {
+                return $query;
+            }
+
             foreach (FieldAlias::MAPPING_REPORTING_DATES as $fieldAlias => $property) {
                 $query->addSelect(
                     \sprintf('DATE_FORMAT(financingObjects.%s, %s) AS %s', $property, '\'%Y-%m-%d\'', $fieldAlias)
@@ -97,7 +100,7 @@ class ReportingQueryGenerator
                 if (false === empty($searchExpressions)) {
                     $query->addClause([
                         'expression' => \implode(' OR ', $searchExpressions),
-                        'parameter'  => ['search', '%' . $filters['search'] . '%'], // @todo be careful of special chars
+                        'parameter'  => ['search', '%' . $filters['search'] . '%'],
                     ]);
                 }
 
@@ -118,29 +121,6 @@ class ReportingQueryGenerator
             // already are in the query by default
             // we should generate them if we add a new filter which the field do not belong to any of these entities
         }
-    }
-
-    /**
-     * @throws Exception
-     *
-     * @return array|Field[]
-     */
-    private function getOrderedFields(ReportingTemplate $reportingTemplate): array
-    {
-        if ($reportingTemplate->getReportingTemplateFields()->isEmpty()) {
-            return [];
-        }
-
-        // sort reportingTemplateFields by position
-        /** @var ArrayIterator $iterator */
-        $iterator = $reportingTemplate->getReportingTemplateFields()->getIterator();
-        $iterator->uasort(fn ($a, $b) => $a->getPosition() > $b->getPosition() ? 1 : -1);
-
-        // retrieve only field
-        $fields = $iterator->getArrayCopy();
-        \array_walk_recursive($fields, fn (&$item) => $item = $item->getField());
-
-        return $fields;
     }
 
     /**

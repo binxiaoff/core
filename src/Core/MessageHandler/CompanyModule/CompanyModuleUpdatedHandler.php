@@ -14,7 +14,6 @@ use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 class CompanyModuleUpdatedHandler implements MessageHandlerInterface
 {
     private CompanyModuleRepository $repository;
-
     private CompanyModuleNotifier $notifier;
 
     public function __construct(CompanyModuleRepository $repository, CompanyModuleNotifier $notifier)
@@ -27,7 +26,7 @@ class CompanyModuleUpdatedHandler implements MessageHandlerInterface
      * @throws Exception
      * @throws SlackApiException
      */
-    public function __invoke(CompanyModuleUpdated $companyModuleUpdated)
+    public function __invoke(CompanyModuleUpdated $companyModuleUpdated): void
     {
         $companyModule = $this->repository->find($companyModuleUpdated->getCompanyModuleId());
 

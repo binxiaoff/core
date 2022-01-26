@@ -76,7 +76,7 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
     public function testFindActiveByManager(string $managerPublicId, $expected): void
     {
         /** @var StaffRepository $staffRepository */
-        $staffRepository = static::$container->get(StaffRepository::class);
+        $staffRepository = static::getContainer()->get(StaffRepository::class);
 
         $manager = $staffRepository->findOneBy(['publicId' => $managerPublicId]);
 
@@ -85,7 +85,9 @@ class ProjectParticipationMemberRepositoryTest extends KernelTestCase
         }, $expected);
 
         /** @var ProjectParticipationMemberRepository $projectParticipationMemberRepository */
-        $projectParticipationMemberRepository = static::$container->get(ProjectParticipationMemberRepository::class);
+        $projectParticipationMemberRepository = static::getContainer()->get(
+            ProjectParticipationMemberRepository::class
+        );
 
         $result = $projectParticipationMemberRepository->findActiveByManager($manager);
 

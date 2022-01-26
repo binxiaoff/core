@@ -21,7 +21,7 @@ class Delete
         $this->manager = $manager;
     }
 
-    public function __invoke(Drive $data, Request $request)
+    public function __invoke(Drive $data, Request $request): Response
     {
         $return = $data->get($request->get('path'));
 

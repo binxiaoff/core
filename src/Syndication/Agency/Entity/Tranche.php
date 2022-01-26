@@ -222,7 +222,10 @@ class Tranche
     /**
      * @var BorrowerTrancheShare[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="KLS\Syndication\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche", cascade={"persist", "remove"}, orphanRemoval=true)
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Syndication\Agency\Entity\BorrowerTrancheShare", mappedBy="tranche",
+     *     cascade={"persist", "remove"}, orphanRemoval=true
+     * )
      *
      * @Groups({"agency:tranche:read", "agency:tranche:write"})
      *
@@ -535,7 +538,7 @@ class Tranche
 
     public function addBorrowerShare(BorrowerTrancheShare $borrowerTrancheShare): Tranche
     {
-        if (false === $this->borrowerShares->contains($borrowerTrancheShare)) {
+        if (false === $this->borrowerShares->exists($borrowerTrancheShare->getEquivalenceChecker())) {
             $this->borrowerShares->add($borrowerTrancheShare);
         }
 
@@ -564,11 +567,7 @@ class Tranche
 
     public function addAllocation(ParticipationTrancheAllocation $participationTrancheAllocation): Tranche
     {
-        if (
-            false === $this->allocations->exists(
-                fn ($key, ParticipationTrancheAllocation $item) => $item->getParticipation() === $participationTrancheAllocation->getParticipation()
-            )
-        ) {
+        if (false === $this->allocations->exists($participationTrancheAllocation->getEquivalenceChecker())) {
             $this->allocations->add($participationTrancheAllocation);
             $participationTrancheAllocation->getParticipation()->addAllocation($participationTrancheAllocation);
         }

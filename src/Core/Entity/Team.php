@@ -96,7 +96,10 @@ class Team
     /**
      * @var TeamEdge[]|Collection
      *
-     * @ORM\OneToMany(targetEntity="KLS\Core\Entity\TeamEdge", mappedBy="descendent", cascade={"persist"}, indexBy="depth")
+     * @ORM\OneToMany(
+     *     targetEntity="KLS\Core\Entity\TeamEdge", mappedBy="descendent",
+     *     cascade={"persist"}, indexBy="depth"
+     * )
      *
      * @Assert\Unique
      * @Assert\Valid
@@ -115,10 +118,7 @@ class Team
         $this->staff         = new ArrayCollection();
     }
 
-    /**
-     * @param $name
-     */
-    public static function createTeam($name, Team $parent): Team
+    public static function createTeam(string $name, Team $parent): Team
     {
         $team       = new Team();
         $team->name = $name;
@@ -150,6 +150,40 @@ class Team
         return $this->name;
     }
 
+    public function setName(string $name): Team
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getCompany(): Company
+    {
+        return $this->isRoot() ? $this->company : $this->getRoot()->getCompany();
+    }
+
+    /**
+     * @return Staff[]|iterable
+     */
+    public function getStaff(): iterable
+    {
+        return $this->staff;
+    }
+
+    public function addStaff(Staff $staff)
+    {
+        if (false === $this->staff->exists($staff->getEquivalenceChecker())) {
+            $this->staff->add($staff);
+        }
+
+        return $this;
+    }
+
+    public function removeStaff(Staff $staff)
+    {
+        $this->staff->removeElement($staff);
+    }
+
     /**
      * @return Team[]|array
      */
@@ -166,11 +200,6 @@ class Team
         return $this->outgoingEdges->map(fn (TeamEdge $edge) => $edge->getDescendent())->toArray();
     }
 
-    public function getCompany(): Company
-    {
-        return $this->isRoot() ? $this->company : $this->getRoot()->getCompany();
-    }
-
     /**
      * @ApiProperty(readableLink=false, writableLink=false)
      *
@@ -183,15 +212,11 @@ class Team
 
     public function getChildren(): array
     {
-        return $this->outgoingEdges->filter(fn (TeamEdge $edge) => 1 === $edge->getDepth())->map(fn (TeamEdge $edge) => $edge->getDescendent())->toArray();
-    }
-
-    /**
-     * @return Staff[]|iterable
-     */
-    public function getStaff(): iterable
-    {
-        return $this->staff;
+        return $this->outgoingEdges
+            ->filter(fn (TeamEdge $edge) => 1 === $edge->getDepth())
+            ->map(fn (TeamEdge $edge)    => $edge->getDescendent())
+            ->toArray()
+        ;
     }
 
     public function getRoot(): Team
@@ -211,30 +236,5 @@ class Team
     public function isRoot()
     {
         return 0 === \count($this->incomingEdges);
-    }
-
-    public function setName(string $name): Team
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function addStaff(Staff $staff)
-    {
-        $callback = function (int $key, Staff $s) use ($staff): bool {
-            return $staff->getUser() === $s->getUser() && $staff->getTeam() === $s->getTeam();
-        };
-
-        if (false === $this->staff->exists($callback)) {
-            $this->staff->add($staff);
-        }
-
-        return $this;
-    }
-
-    public function removeStaff(Staff $staff)
-    {
-        $this->staff->removeElement($staff);
     }
 }

@@ -17,40 +17,20 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class ProgramBorrowerTypeAllocationFixtures extends AbstractFixtures implements DependentFixtureInterface
 {
-    private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
-    private ProgramChoiceOptionRepository             $programChoiceOptionRepository;
     private FieldRepository                           $fieldRepository;
+    private ProgramChoiceOptionRepository             $programChoiceOptionRepository;
+    private ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository;
 
     public function __construct(
         TokenStorageInterface $tokenStorage,
-        ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository,
+        FieldRepository $fieldRepository,
         ProgramChoiceOptionRepository $programChoiceOptionRepository,
-        FieldRepository $fieldRepository
+        ProgramEligibilityConfigurationRepository $programEligibilityConfigurationRepository
     ) {
         parent::__construct($tokenStorage);
-        $this->programEligibilityConfigurationRepository = $programEligibilityConfigurationRepository;
-        $this->programChoiceOptionRepository             = $programChoiceOptionRepository;
         $this->fieldRepository                           = $fieldRepository;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function load(ObjectManager $manager): void
-    {
-        $programBorrowerTypeField          = $this->fieldRepository->findOneBy(['fieldAlias' => FieldAlias::BORROWER_TYPE]);
-        $programBorrowerTypeChoiceOptions  = $this->programChoiceOptionRepository->findBy(['field' => $programBorrowerTypeField]);
-        $programBorrowerTypeConfigurations = $this->programEligibilityConfigurationRepository->findBy(['programChoiceOption' => $programBorrowerTypeChoiceOptions]);
-
-        foreach ($programBorrowerTypeConfigurations as $programBorrowerTypeConfiguration) {
-            $programBorrowerTypeAllocation = new ProgramBorrowerTypeAllocation(
-                $programBorrowerTypeConfiguration->getProgramEligibility()->getProgram(),
-                $programBorrowerTypeConfiguration->getProgramChoiceOption(),
-                (string) (\random_int(0, 100) / 100)
-            );
-            $manager->persist($programBorrowerTypeAllocation);
-        }
-        $manager->flush();
+        $this->programChoiceOptionRepository             = $programChoiceOptionRepository;
+        $this->programEligibilityConfigurationRepository = $programEligibilityConfigurationRepository;
     }
 
     /**
@@ -59,9 +39,34 @@ class ProgramBorrowerTypeAllocationFixtures extends AbstractFixtures implements 
     public function getDependencies(): array
     {
         return [
-            FieldFixtures::class,
-            ProgramChoiceOptionFixtures::class,
             ProgramEligibilityConfigurationFixtures::class,
         ];
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function load(ObjectManager $manager): void
+    {
+        $borrowerTypeField = $this->fieldRepository->findOneBy([
+            'fieldAlias' => FieldAlias::BORROWER_TYPE,
+        ]);
+        $borrowerTypeProgramChoiceOptions = $this->programChoiceOptionRepository->findBy([
+            'field' => $borrowerTypeField,
+        ]);
+        $borrowerTypeProgramEligibilityConfigurations = $this->programEligibilityConfigurationRepository->findBy([
+            'programChoiceOption' => $borrowerTypeProgramChoiceOptions,
+        ]);
+
+        foreach ($borrowerTypeProgramEligibilityConfigurations as $programEligibilityConfiguration) {
+            $programBorrowerTypeAllocation = new ProgramBorrowerTypeAllocation(
+                $programEligibilityConfiguration->getProgramEligibility()->getProgram(),
+                $programEligibilityConfiguration->getProgramChoiceOption(),
+                (string) (\random_int(0, 100) / 100)
+            );
+            $manager->persist($programBorrowerTypeAllocation);
+        }
+
+        $manager->flush();
     }
 }

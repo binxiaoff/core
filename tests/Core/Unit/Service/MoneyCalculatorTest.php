@@ -286,6 +286,51 @@ class MoneyCalculatorTest extends TestCase
         $moneyCalculator::max($moneyA, $moneyB);
     }
 
+    /**
+     * @covers ::min
+     */
+    public function testMin(): void
+    {
+        $moneyA   = new Money('EUR', '94');
+        $moneyB   = new Money('EUR', '85');
+        $expected = $moneyB;
+
+        $moneyCalculator = new MoneyCalculator();
+        $result          = $moneyCalculator::min($moneyA, $moneyB);
+
+        static::assertSame($expected->getAmount(), $result->getAmount());
+        static::assertSame($expected->getCurrency(), $result->getCurrency());
+    }
+
+    /**
+     * @covers ::min
+     */
+    public function testMinWithBothNullMoney(): void
+    {
+        $moneyA = new NullableMoney('EUR');
+        $moneyB = new NullableMoney('EUR');
+
+        $moneyCalculator = new MoneyCalculator();
+        $result          = $moneyCalculator::min($moneyA, $moneyB);
+
+        static::assertSame($moneyA->getAmount(), $result->getAmount());
+        static::assertSame($moneyA->getCurrency(), $result->getCurrency());
+    }
+
+    /**
+     * @covers ::min
+     */
+    public function testMinExceptionWithDifferentCurrency(): void
+    {
+        $moneyA = new Money('KR', '88');
+        $moneyB = new Money('JYP', '92');
+
+        static::expectException(DifferentCurrencyException::class);
+
+        $moneyCalculator = new MoneyCalculator();
+        $moneyCalculator::min($moneyA, $moneyB);
+    }
+
     public function differentCurrencyProvider(): iterable
     {
         yield 'EUR - EUR' => ['EUR', 'EUR', false];

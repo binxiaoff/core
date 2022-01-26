@@ -6,6 +6,7 @@ namespace KLS\Syndication\Agency\MessageHandler;
 
 use Http\Client\Exception;
 use InvalidArgumentException;
+use JsonException;
 use KLS\Syndication\Agency\Entity\Project;
 use KLS\Syndication\Agency\Message\ProjectStatusUpdated;
 use KLS\Syndication\Agency\Notifier\ProjectClosedNotifier;
@@ -36,10 +37,10 @@ class ProjectStatusUpdatedHandler implements MessageHandlerInterface
 
     /**
      * @throws Exception
-     * @throws \JsonException
+     * @throws JsonException
      * @throws SlackApiException
      */
-    public function __invoke(ProjectStatusUpdated $projectStatusUpdated)
+    public function __invoke(ProjectStatusUpdated $projectStatusUpdated): void
     {
         $project = $this->projectRepository->find($projectStatusUpdated->getProjectId());
 
@@ -65,7 +66,7 @@ class ProjectStatusUpdatedHandler implements MessageHandlerInterface
     /**
      * @throws Exception
      * @throws SlackApiException
-     * @throws \JsonException
+     * @throws JsonException
      */
     private function onProjectPublication(Project $project): void
     {
@@ -75,7 +76,7 @@ class ProjectStatusUpdatedHandler implements MessageHandlerInterface
     /**
      * @throws Exception
      * @throws SlackApiException
-     * @throws \JsonException
+     * @throws JsonException
      */
     private function notifyProjectPublication(Project $project): void
     {

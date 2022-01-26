@@ -6,6 +6,7 @@ namespace KLS\Syndication\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -17,6 +18,7 @@ use KLS\Core\Entity\Drive;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Embeddable\NullablePerson;
 use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
+use KLS\Syndication\Agency\Entity\Embeddable\BankAccount;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -28,6 +30,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             "nullablePerson:read",
  *             "nullableMoney:read",
  *             "money:read",
+ *             "agency:bankAccount:read",
  *         },
  *         "openapi_definition_name": "read",
  *     },
@@ -45,6 +48,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "nullablePerson:write",
  *                     "nullableMoney:write",
  *                     "money:write",
+ *                     "agency:bankAccount:write",
  *                 },
  *                 "openapi_definition_name": "item-patch-write",
  *             },
@@ -178,6 +182,19 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
      */
     private Drive $confidentialDrive;
 
+    /**
+     * @var Collection|AgentBankAccount[]
+     *
+     * @ORM\OneToMany(targetEntity=AgentBankAccount::class, mappedBy="agent")
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"agency:agent:read"})
+     *
+     * @ApiSubresource
+     */
+    private Collection $bankAccounts;
+
     public function __construct(Project $project, Company $company)
     {
         parent::__construct($company->getSiren() ?? '');
@@ -187,6 +204,7 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
         $this->displayName       = $company->getDisplayName();
         $this->corporateName     = $company->getDisplayName();
         $this->confidentialDrive = new Drive();
+        $this->bankAccounts      = new ArrayCollection();
     }
 
     public function getProject(): Project
@@ -224,81 +242,39 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
     }
 
     /**
-     * @Groups({"agency:agent:read"})
-     *
-     * @Assert\NotBlank(groups={"published"})
+     * @return Collection|AgentBankAccount[]
      */
-    public function getBankInstitution(): ?string
+    public function getBankAccounts(): Collection
     {
-        return $this->bankInstitution;
+        return $this->bankAccounts;
     }
 
-    /**
-     * @Groups({"agency:agent:write"})
-     */
-    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
+    public function addBankAccount(AgentBankAccount $agentBankAccount): Agent
     {
-        $this->bankInstitution = $bankInstitution;
+        if (false === $this->bankAccounts->contains($agentBankAccount)) {
+            $this->bankAccounts->add($agentBankAccount);
+        }
+
+        return $this;
+    }
+
+    public function removeBankAccount(AgentBankAccount $agentBankAccount): Agent
+    {
+        if ($this->bankAccounts->contains($agentBankAccount)) {
+            $this->bankAccounts->remove($agentBankAccount);
+        }
 
         return $this;
     }
 
     /**
-     * @Groups({"agency:agent:read"})
+     * @param Collection|AgentBankAccount[] $bankAccounts
      *
-     * @Assert\NotBlank(groups={"published"})
+     * @return Agent
      */
-    public function getBankAddress(): ?string
+    public function setBankAccounts($bankAccounts)
     {
-        return $this->bankAddress;
-    }
-
-    /**
-     * @Groups({"agency:agent:write"})
-     */
-    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
-    {
-        $this->bankAddress = $bankAddress;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:agent:read"})
-     *
-     * @Assert\NotBlank(groups={"published"})
-     */
-    public function getBic(): ?string
-    {
-        return $this->bic;
-    }
-
-    /**
-     * @Groups({"agency:agent:write"})
-     */
-    public function setBic(?string $bic): AbstractProjectPartaker
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:agent:read"})
-     *
-     * @Assert\NotBlank(groups={"published"})
-     */
-    public function getIban(): ?string
-    {
-        return $this->iban;
-    }
-
-    /**
-     * @Groups({"agency:agent:write"})
-     */
-    public function setIban(?string $iban): AbstractProjectPartaker
-    {
-        $this->iban = $iban;
+        $this->bankAccounts = $bankAccounts;
 
         return $this;
     }
@@ -432,5 +408,23 @@ class Agent extends AbstractProjectPartaker implements DriveCarrierInterface
     public function setVariableCapital(?bool $variableCapital): AbstractProjectPartaker
     {
         return parent::setVariableCapital($variableCapital);
+    }
+
+    /**
+     * Must be static : https://api-platform.com/docs/core/validation/#dynamic-validation-groups.
+     *
+     * @return array|string[]
+     */
+    public static function getCurrentValidationGroups(AbstractProjectPartaker $abstractProjectPartaker): array
+    {
+        $validationGroups = parent::getCurrentValidationGroups($abstractProjectPartaker);
+
+        $validationGroups[] = 'Agent';
+
+        if ($abstractProjectPartaker->getProject()->isPublished()) {
+            $validationGroups[] = 'bankAccount::completed';
+        }
+
+        return $validationGroups;
     }
 }

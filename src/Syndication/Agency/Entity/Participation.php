@@ -18,11 +18,11 @@ use KLS\Core\Controller\Dataroom\Get;
 use KLS\Core\Controller\Dataroom\Post;
 use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Drive;
-use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
 use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Service\MoneyCalculator;
+use KLS\Syndication\Agency\Entity\Embeddable\BankAccount;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -38,6 +38,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "money:read",
  *             "nullableMoney:read",
  *             "lendingRate:read",
+ *             "agency:bankAccount:read",
  *         },
  *         "openapi_definition_name": "read",
  *     },
@@ -52,6 +53,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "nullableMoney:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write",
+ *                     "agency:bankAccount:write",
  *                 },
  *                 "openapi_definition_name": "collection-post-write",
  *             },
@@ -70,6 +72,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *                     "nullableMoney:write",
  *                     "money:write",
  *                     "agency:participationTrancheAllocation:write",
+ *                     "agency:bankAccount:write",
  *                 },
  *                 "openapi_definition_name": "item-patch-write",
  *             },
@@ -285,6 +288,27 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
      */
     private ?DateTimeImmutable $archivingDate;
 
+    /**
+     * BankAccount of the participant.
+     *
+     * @ORM\Embedded(class=BankAccount::class)
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"agency:participation:read", "agency:participation:write"})
+     */
+    private BankAccount $bankAccount;
+
+    /**
+     * BankAccount given by the agent for the financial transactions.
+     *
+     * @ORM\ManyToOne(targetEntity=AgentBankAccount::class, inversedBy="participations")
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL", name="id_agent_bank_account")
+     *
+     * @Groups({"agency:participation:read"})
+     */
+    private ?AgentBankAccount $agentBankAccount;
+
     public function __construct(ParticipationPool $pool, Company $participant)
     {
         parent::__construct($participant->getSiren() ?? '');
@@ -299,6 +323,8 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
         $this->archivingDate            = null;
         $this->members                  = new ArrayCollection();
         $this->confidentialDrive        = new Drive();
+        $this->bankAccount              = new BankAccount();
+        $this->agentBankAccount         = null;
     }
 
     public function getParticipant(): Company
@@ -416,9 +442,9 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
     public function getFinalAllocation(): MoneyInterface
     {
         $result = MoneyCalculator::sum(
-            $this->allocations->map(
-                fn (ParticipationTrancheAllocation $allocation) => $allocation->getAllocation()
-            )->toArray()
+            $this->allocations
+                ->map(fn (ParticipationTrancheAllocation $allocation) => $allocation->getAllocation())
+                ->toArray()
         );
 
         if (null === $result->getCurrency()) {
@@ -445,74 +471,32 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
         return $this->confidentialDrive;
     }
 
-    /**
-     * @Groups({"agency:participation:read"})
-     */
-    public function getBankInstitution(): ?string
+    public function getBankAccount(): BankAccount
     {
-        return $this->bankInstitution;
+        return $this->bankAccount;
     }
 
-    /**
-     * @Groups({"agency:participation:write"})
-     */
-    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
+    public function setBankAccount(BankAccount $bankAccount): Participation
     {
-        $this->bankInstitution = $bankInstitution;
+        $this->bankAccount = $bankAccount;
 
         return $this;
     }
 
-    /**
-     * @Groups({"agency:participation:read"})
-     */
-    public function getBankAddress(): ?string
+    public function getAgentBankAccount(): ?AgentBankAccount
     {
-        return $this->bankAddress;
+        return $this->agentBankAccount;
     }
 
-    /**
-     * @Groups({"agency:participation:write"})
-     */
-    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
+    public function setAgentBankAccount(?AgentBankAccount $agentBankAccount): Participation
     {
-        $this->bankAddress = $bankAddress;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:participation:read"})
-     */
-    public function getBic(): ?string
-    {
-        return $this->bic;
-    }
-
-    /**
-     * @Groups({"agency:participation:write"})
-     */
-    public function setBic(?string $bic): AbstractProjectPartaker
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:participation:read"})
-     */
-    public function getIban(): ?string
-    {
-        return $this->iban;
-    }
-
-    /**
-     * @Groups({"agency:participation:write"})
-     */
-    public function setIban(?string $iban): AbstractProjectPartaker
-    {
-        $this->iban = $iban;
+        if ($agentBankAccount) {
+            $this->agentBankAccount = $agentBankAccount;
+            $this->agentBankAccount->addParticipation($this);
+        } else {
+            $this->agentBankAccount->removeParticipation($this);
+            $this->agentBankAccount = null;
+        }
 
         return $this;
     }
@@ -625,12 +609,7 @@ class Participation extends AbstractProjectPartaker implements DriveCarrierInter
 
     public function addAllocation(ParticipationTrancheAllocation $participationTrancheAllocation): Participation
     {
-        if (
-            false === $this->allocations->exists(
-                fn ($key, ParticipationTrancheAllocation $item) => $item->getTranche()
-                    === $participationTrancheAllocation->getTranche()
-            )
-        ) {
+        if (false === $this->allocations->exists($participationTrancheAllocation->getEquivalenceChecker())) {
             $this->allocations->add($participationTrancheAllocation);
             $participationTrancheAllocation->getTranche()->addAllocation($participationTrancheAllocation);
         }

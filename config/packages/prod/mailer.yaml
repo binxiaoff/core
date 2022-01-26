@@ -1,0 +1,4 @@
+framework:
+    mailer:
+        envelope:
+            recipients: [] # reset it to the default value, so we can send mail to the real user

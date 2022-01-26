@@ -17,14 +17,11 @@ trait QueryHandlerTrait
         ?int $offset = null,
         ?int $limit = null
     ): QueryBuilder {
-        if (
-            empty($query->getSelects())
-            && empty($query->getJoins())
-            && empty($query->getClauses())
-            && empty($query->getOrders())
-        ) {
-            // return invalid clause or nothing ?
+        if ($query->isEmpty()) {
             $queryBuilder->andWhere('1 = 0');
+
+            // we still handle pagination to be able to return paginator in controller
+            $this->handlePagination($queryBuilder, $limit, $offset);
 
             return $queryBuilder;
         }

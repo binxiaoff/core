@@ -35,4 +35,4 @@ __________
 
 `API Resource <technical/api-resource.rst>`_
 
-`MySQL users <technical/mysql-users.rst>`_
+`MySQL users <technical/mysql-users.md>`_

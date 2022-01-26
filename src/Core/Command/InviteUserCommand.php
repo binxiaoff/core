@@ -15,12 +15,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InviteUserCommand extends Command
 {
-    protected static $defaultName = 'kls:user:invite';
+    protected static $defaultName = 'kls:core:user:invite';
 
-    /** @var UserRepository */
-    private $userRepository;
-    /** @var StaffNotifier */
-    private $staffNotifier;
+    private UserRepository $userRepository;
+    private StaffNotifier $staffNotifier;
 
     public function __construct(UserRepository $userRepository, StaffNotifier $staffNotifier)
     {
@@ -32,14 +30,20 @@ class InviteUserCommand extends Command
 
     protected function configure(): void
     {
-        $this->setDescription('This command notify a list of users to initialise their accounts.');
-        $this->addArgument('users', InputArgument::IS_ARRAY, 'Which users do you want to sign (separate multiple id with a space)?');
+        $this
+            ->setDescription('This command notify a list of users to initialise their accounts.')
+            ->addArgument(
+                'users',
+                InputArgument::IS_ARRAY,
+                'Which users do you want to sign (separate multiple id with a space)?'
+            )
+        ;
     }
 
     /**
      * @throws Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $userIds = $input->getArgument('users');
 
@@ -55,6 +59,6 @@ class InviteUserCommand extends Command
             }
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

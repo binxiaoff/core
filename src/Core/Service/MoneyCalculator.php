@@ -102,7 +102,14 @@ class MoneyCalculator
     {
         $comparison = self::compare($a, $b);
 
-        return (-1 === $comparison) ? $b : $a;
+        return (1 === $comparison) ? $a : $b;
+    }
+
+    public static function min(MoneyInterface $a, MoneyInterface $b): MoneyInterface
+    {
+        $comparison = self::compare($a, $b);
+
+        return (-1 === $comparison) ? $a : $b;
     }
 
     public static function isDifferentCurrency(MoneyInterface $leftOperand, MoneyInterface $rightOperand): bool
@@ -120,7 +127,11 @@ class MoneyCalculator
     {
         $accumulator = new NullableMoney();
 
-        return \array_reduce($addedums, static fn (MoneyInterface $carry, MoneyInterface $item) => static::add($carry, $item), $accumulator);
+        return \array_reduce(
+            $addedums,
+            static fn (MoneyInterface $carry, MoneyInterface $item) => static::add($carry, $item),
+            $accumulator
+        );
     }
 
     private static function round(string $number): string

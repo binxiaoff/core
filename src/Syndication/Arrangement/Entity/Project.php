@@ -208,7 +208,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(ArrayFilter::class, properties={"organizers.roles"})
- * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId"})
+ * @ApiFilter(SearchFilter::class, properties={"submitterCompany.publicId", "organizers.company.publicId"})
  * @ApiFilter(BooleanFilter::class, properties={"agencyImported"})
  *
  * @ORM\Table(name="syndication_project")
@@ -1010,12 +1010,7 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
 
     public function addProjectParticipation(ProjectParticipation $projectParticipation): Project
     {
-        $callback = function (int $key, ProjectParticipation $pp) use ($projectParticipation): bool {
-            return $projectParticipation->getProject()     === $pp->getProject()
-                && $projectParticipation->getParticipant() === $pp->getParticipant();
-        };
-
-        if (false === $this->projectParticipations->exists($callback)) {
+        if (false === $this->projectParticipations->exists($projectParticipation->getEquivalenceChecker())) {
             $this->projectParticipations->add($projectParticipation);
         }
 

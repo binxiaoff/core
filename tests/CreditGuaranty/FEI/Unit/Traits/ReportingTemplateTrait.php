@@ -8,43 +8,31 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Query\Expr\Join;
 use Exception;
-use KLS\Core\Entity\CompanyGroup;
-use KLS\Core\Entity\CompanyGroupTag;
-use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\NafNace;
 use KLS\CreditGuaranty\FEI\Entity\Borrower;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\Constant\ReportingFilter;
 use KLS\CreditGuaranty\FEI\Entity\Field;
-use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\Project;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplateField;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 use KLS\Test\Core\Unit\Traits\PropertyValueTrait;
-use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 use ReflectionException;
 
 trait ReportingTemplateTrait
 {
     use PropertyValueTrait;
-    use UserStaffTrait;
     use FieldTrait;
+    use ProgramTrait;
 
     /**
      * @throws Exception
      */
     protected function createReportingTemplate(string $name): ReportingTemplate
     {
-        $program = new Program(
-            'Program',
-            new CompanyGroupTag(new CompanyGroup('Company Group'), 'code'),
-            new Money('EUR', '42'),
-            $this->createStaff()
-        );
-
-        return new ReportingTemplate($program, $name, $this->createStaff());
+        return new ReportingTemplate($this->createProgram(), $name, $this->createStaff());
     }
 
     /**

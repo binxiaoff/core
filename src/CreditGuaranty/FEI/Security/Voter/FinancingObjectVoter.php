@@ -9,6 +9,8 @@ use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 
 class FinancingObjectVoter extends AbstractEntityVoter
 {
+    public const ATTRIBUTE_CHECK_ELIGIBILITY = 'check_eligibility';
+
     protected function canCreate(FinancingObject $financingObject): bool
     {
         $reservation = $financingObject->getReservation();
@@ -30,6 +32,13 @@ class FinancingObjectVoter extends AbstractEntityVoter
         return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_EDIT, $reservation)
             && ($reservation->isInDraft() || $reservation->isFormalized())
         ;
+    }
+
+    protected function canCheckEligibility(FinancingObject $financingObject): bool
+    {
+        $reservation = $financingObject->getReservation();
+
+        return $this->authorizationChecker->isGranted(ReservationVoter::ATTRIBUTE_CHECK_ELIGIBILITY, $reservation);
     }
 
     protected function canDelete(FinancingObject $financingObject): bool

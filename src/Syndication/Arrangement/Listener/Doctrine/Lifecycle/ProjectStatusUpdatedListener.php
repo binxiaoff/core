@@ -91,7 +91,10 @@ class ProjectStatusUpdatedListener
         $projectParticipations               = $project->getProjectParticipations();
 
         foreach ($projectParticipations as $projectParticipation) {
-            if (ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED === $projectParticipation->getCurrentStatus()->getStatus()) {
+            $currentStatus = $projectParticipation->getCurrentStatus();
+            $status        = $currentStatus ? $currentStatus->getStatus() : null;
+
+            if (ProjectParticipationStatus::STATUS_COMMITTEE_ACCEPTED === $status) {
                 foreach ($projectParticipation->getProjectParticipationTranches() as $projectParticipationTranche) {
                     $invitationReply = $projectParticipationTranche->getInvitationReply();
                     $allocationOffer = $projectParticipationTranche->getAllocation();
@@ -112,29 +115,36 @@ class ProjectStatusUpdatedListener
     private function createMissingArrangerParticipationTranche(Project $project, EntityManager $em): void
     {
         /** @var User $user */
-        $user = $this->security->getUser();
-
-        $staff = $user->getCurrentStaff();
-
-        $tranches = $project->getTranches();
-
+        $user                  = $this->security->getUser();
+        $staff                 = $user->getCurrentStaff();
+        $tranches              = $project->getTranches();
         $arrangerParticipation = $project->getArrangerProjectParticipation();
-        $uow                   = $em->getUnitOfWork();
 
+        $uow                                      = $em->getUnitOfWork();
         $projectParticipationTrancheClassMetadata = $em->getClassMetadata(ProjectParticipationTranche::class);
 
         foreach ($tranches as $tranche) {
-            if (false === $tranche->isSyndicated() && Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER === $tranche->getUnsyndicatedFunderType()) {
+            if (
+                false === $tranche->isSyndicated()
+                && Tranche::UNSYNDICATED_FUNDER_TYPE_ARRANGER === $tranche->getUnsyndicatedFunderType()
+            ) {
                 $projectParticipationTranches = $tranche->getProjectParticipationTranches();
 
                 $exist = $projectParticipationTranches->exists(
-                    static function (int $index, ProjectParticipationTranche $projectParticipationTranche) use ($arrangerParticipation) {
+                    static function (
+                        int $index,
+                        ProjectParticipationTranche $projectParticipationTranche
+                    ) use ($arrangerParticipation) {
                         return $arrangerParticipation === $projectParticipationTranche->getProjectParticipation();
                     }
                 );
 
                 if (false === $exist) {
-                    $projectParticipationTranche = new ProjectParticipationTranche($arrangerParticipation, $tranche, $staff);
+                    $projectParticipationTranche = new ProjectParticipationTranche(
+                        $arrangerParticipation,
+                        $tranche,
+                        $staff
+                    );
                     $em->persist($projectParticipationTranche);
                     $uow->computeChangeSet($projectParticipationTrancheClassMetadata, $projectParticipationTranche);
                 }
@@ -168,15 +178,28 @@ class ProjectStatusUpdatedListener
             $currentStatus = $participation->getCurrentStatus();
 
             if (null === $currentStatus) {
-                throw new RuntimeException(\sprintf('The participation with the publicId %s should have a current status', $participation->getPublicId()));
+                throw new RuntimeException(
+                    \sprintf(
+                        'The participation with the publicId %s should have a current status',
+                        $participation->getPublicId()
+                    )
+                );
             }
 
             $status = $currentStatus->getStatus();
 
-            if (ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $status || ProjectParticipationStatus::STATUS_CREATED === $status) {
-                $archivedStatus = new ProjectParticipationStatus($participation, ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER, $staff);
+            if (
+                ProjectParticipationStatus::STATUS_COMMITTEE_PENDED === $status
+                || ProjectParticipationStatus::STATUS_CREATED === $status
+            ) {
+                $archivedStatus = new ProjectParticipationStatus(
+                    $participation,
+                    ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER,
+                    $staff
+                );
                 $participation->setCurrentStatus($archivedStatus);
                 $em->persist($archivedStatus);
+
                 $uow->computeChangeSet($projectParticipationStatusClassMetadata, $archivedStatus);
                 $uow->recomputeSingleEntityChangeSet($projectParticipationClassMetadata, $participation);
             }

@@ -75,6 +75,7 @@ class ReservationStatus implements StatusInterface
     public const ALLOWED_STATUS = [
         self::STATUS_DRAFT => [self::STATUS_SENT],
         self::STATUS_SENT  => [
+            self::STATUS_DRAFT,
             self::STATUS_WAITING_FOR_FEI,
             self::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
             self::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
@@ -82,12 +83,14 @@ class ReservationStatus implements StatusInterface
             self::STATUS_REFUSED_BY_MANAGING_COMPANY,
         ],
         self::STATUS_WAITING_FOR_FEI => [
+            self::STATUS_DRAFT,
             self::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION,
             self::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
             self::STATUS_ARCHIVED,
             self::STATUS_REFUSED_BY_MANAGING_COMPANY,
         ],
         self::STATUS_REQUEST_FOR_ADDITIONAL_INFORMATION => [
+            self::STATUS_DRAFT,
             self::STATUS_WAITING_FOR_FEI,
             self::STATUS_ACCEPTED_BY_MANAGING_COMPANY,
             self::STATUS_ARCHIVED,
@@ -189,19 +192,31 @@ class ReservationStatus implements StatusInterface
         $project = $this->getReservation()->getProject();
 
         if (false === $project->checkBalance()) {
-            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.balanceExceeded')->atPath('project.fundingMoney')->addViolation();
+            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.balanceExceeded')
+                ->atPath('project.fundingMoney')
+                ->addViolation()
+            ;
         }
 
         if (false === $project->checkQuota()) {
-            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.quotaExceeded')->atPath('project.fundingMoney')->addViolation();
+            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.quotaExceeded')
+                ->atPath('project.fundingMoney')
+                ->addViolation()
+            ;
         }
 
         if (false === $project->checkGradeAllocation()) {
-            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.gradeAllocationExceeded')->atPath('project.fundingMoney')->addViolation();
+            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.gradeAllocationExceeded')
+                ->atPath('project.fundingMoney')
+                ->addViolation()
+            ;
         }
 
         if (false === $project->checkBorrowerTypeAllocation()) {
-            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.borrowerTypeAllocationExceeded')->atPath('project.fundingMoney')->addViolation();
+            $context->buildViolation('CreditGuaranty.Reservation.project.fundingMoney.borrowerTypeAllocationExceeded')
+                ->atPath('project.fundingMoney')
+                ->addViolation()
+            ;
         }
     }
 }

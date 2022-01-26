@@ -6,20 +6,17 @@ namespace KLS\CreditGuaranty\FEI\Validator\Constraints;
 
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
-use KLS\CreditGuaranty\FEI\Repository\ProgramEligibilityRepository;
-use KLS\CreditGuaranty\FEI\Service\EligibilityChecker;
+use KLS\CreditGuaranty\FEI\Service\Eligibility\EligibilityChecker;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 
 class ReservationSentValidator extends ConstraintValidator
 {
-    private ProgramEligibilityRepository $programEligibilityRepository;
     private EligibilityChecker $eligibilityChecker;
 
-    public function __construct(ProgramEligibilityRepository $programEligibilityRepository, EligibilityChecker $eligibilityChecker)
+    public function __construct(EligibilityChecker $eligibilityChecker)
     {
-        $this->programEligibilityRepository = $programEligibilityRepository;
-        $this->eligibilityChecker           = $eligibilityChecker;
+        $this->eligibilityChecker = $eligibilityChecker;
     }
 
     /**
@@ -47,7 +44,8 @@ class ReservationSentValidator extends ConstraintValidator
         if (true === $program->isEsbCalculationActivated()) {
             foreach ($reservation->getFinancingObjects() as $financingObject) {
                 if (null === $financingObject->getLoanDuration()) {
-                    $this->context->buildViolation('CreditGuaranty.Reservation.financingObject.loanDuration.requiredForEsb')
+                    $this->context
+                        ->buildViolation('CreditGuaranty.Reservation.financingObject.loanDuration.requiredForEsb')
                         ->atPath('reservation.financingObjects')
                         ->addViolation()
                     ;
@@ -85,18 +83,14 @@ class ReservationSentValidator extends ConstraintValidator
             }
         }
 
-        foreach ($this->programEligibilityRepository->findFieldCategoriesByProgram($program) as $fieldCategory) {
-            $ineligibles = $this->eligibilityChecker->check($reservation, true, $fieldCategory);
+        $ineligibles = $this->eligibilityChecker->check($reservation);
 
-            if (false === empty($ineligibles)) {
-                foreach ($ineligibles as $category => $fieldAliases) {
-                    $this->context->buildViolation('CreditGuaranty.Reservation.category.ineligibles')
-                        ->setParameter('{{ fieldAliases }}', \implode(', ', $fieldAliases))
-                        ->setParameter('{{ category }}', $category)
-                        ->atPath('reservation')
-                        ->addViolation()
-                    ;
-                }
+        if (false === empty($ineligibles)) {
+            foreach (\array_keys($ineligibles) as $category) {
+                $this->context->buildViolation('CreditGuaranty.Reservation.ineligible.' . $category)
+                    ->atPath('reservation')
+                    ->addViolation()
+                ;
             }
         }
     }

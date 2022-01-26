@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SignCompanyCommand extends Command
 {
     /** @var string */
-    protected static $defaultName = 'kls:company:sign';
+    protected static $defaultName = 'kls:core:company:sign';
 
     private CompanyRepository $companyRepository;
     private StaffNotifier $staffNotifier;
@@ -38,21 +38,28 @@ class SignCompanyCommand extends Command
 
     protected function configure(): void
     {
-        $this->setDescription('This command change the status to "contract signed" for the given companies, then, notify their staff to initialise their accounts.');
-        $this->addArgument('companies', InputArgument::IS_ARRAY, 'Which companies do you want to sign ?');
+        $this
+            ->setDescription(
+                'This command changes the status to "contract signed" for the given companies,' .
+                ' then notify their staff to initialise their accounts.'
+            )
+            ->addArgument('companies', InputArgument::IS_ARRAY, 'Which companies do you want to sign ?')
+        ;
     }
 
     /**
      * @throws Exception
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $inputCompanies = $input->getArgument('companies');
+
         foreach ($inputCompanies as $companyId) {
             $company = $this->companyRepository->find($companyId);
             if (null === $company) {
                 continue;
             }
+
             $company->setCurrentStatus(new CompanyStatus($company, CompanyStatus::STATUS_SIGNED));
             $this->companyRepository->save($company);
 
@@ -69,6 +76,6 @@ class SignCompanyCommand extends Command
             }
         }
 
-        return 0;
+        return Command::SUCCESS;
     }
 }

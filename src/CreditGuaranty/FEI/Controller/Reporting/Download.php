@@ -10,7 +10,7 @@ use Box\Spout\Writer\Common\Creator\Style\StyleBuilder;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 use Box\Spout\Writer\Common\Creator\WriterFactory;
 use KLS\Core\Service\File\FileDownloadManager;
-use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
+use KLS\CreditGuaranty\FEI\Service\FinancingObjectUpdater;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Download
@@ -32,7 +32,7 @@ class Download
         $style = (new StyleBuilder())->build();
 
         $writer = WriterFactory::createFromType(Type::XLSX);
-        $row    = WriterEntityFactory::createRowFromArray(ReportingTemplate::IMPORT_FILE_COLUMNS, $style);
+        $row    = WriterEntityFactory::createRowFromArray(FinancingObjectUpdater::IMPORT_FILE_COLUMNS, $style);
 
         return $this->fileDownloadManager->downloadNewXlsxFile($writer, [$row], self::FILE_NAME);
     }

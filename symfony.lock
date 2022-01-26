@@ -555,6 +555,9 @@
     "ramsey/uuid": {
         "version": "3.8.0"
     },
+    "rector/rector": {
+        "version": "0.12.10"
+    },
     "robrichards/xmlseclibs": {
         "version": "3.0.4"
     },
@@ -653,9 +656,6 @@
         "files": [
             "config/packages/stof_doctrine_extensions.yaml"
         ]
-    },
-    "swiftmailer/swiftmailer": {
-        "version": "v6.2.1"
     },
     "symfony/amazon-sqs-messenger": {
         "version": "v5.3.4"
@@ -783,6 +783,27 @@
     },
     "symfony/lock": {
         "version": "v4.3.0"
+    },
+    "symfony/mailer": {
+        "version": "4.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "4.3",
+            "ref": "bbfc7e27257d3a3f12a6fb0a42540a42d9623a37"
+        },
+        "files": [
+            "config/packages/mailer.yaml"
+        ]
+    },
+    "symfony/mailjet-mailer": {
+        "version": "5.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "5.2",
+            "ref": "037c3256baa3334fd4cc3092a63209ae523696ff"
+        }
     },
     "symfony/messenger": {
         "version": "4.3",
@@ -914,20 +935,6 @@
     },
     "symfony/string": {
         "version": "v5.1.2"
-    },
-    "symfony/swiftmailer-bundle": {
-        "version": "2.5",
-        "recipe": {
-            "repo": "github.com/symfony/recipes",
-            "branch": "master",
-            "version": "2.5",
-            "ref": "ae4d22af30bbd484506bc1817c5a3ef72c855b93"
-        },
-        "files": [
-            "config/packages/dev/swiftmailer.yaml",
-            "config/packages/swiftmailer.yaml",
-            "config/packages/test/swiftmailer.yaml"
-        ]
     },
     "symfony/templating": {
         "version": "v4.3.0"

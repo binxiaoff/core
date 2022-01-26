@@ -23,9 +23,9 @@ abstract class AbstractApiTest extends ApiTestCase
     private function getStaffToken(Staff $staff): string
     {
         /** @var JWTTokenManagerInterface $jwtManager */
-        $jwtManager = static::$container->get(JWTTokenManagerInterface::class);
+        $jwtManager = static::getContainer()->get(JWTTokenManagerInterface::class);
         /** @var IriConverterInterface $iriConverter */
-        $iriConverter = static::$container->get(IriConverterInterface::class);
+        $iriConverter = static::getContainer()->get(IriConverterInterface::class);
 
         $payload['@scope'] = StaffPayloadManager::getScope();
         $payload['staff']  = $iriConverter->getIriFromItem($staff);

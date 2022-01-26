@@ -208,6 +208,7 @@ CreditGuaranty:
         programEligibilities:
             empty: Vous devez configurer au moins un champ d'éligibilité pour pouvoir publier le programme.
             missingEligibilityForCategory: Une catégorie (Bénéficiaire/Projet/Objet de financement) ne contient aucune information d'éligibilité, vous ne pouvez donc pas publier le programme.
+            missingEligibilityForEsb: Vous avez activé le calcul d'ESB mais tous les champs nécessaires à ce calcul ne sont pas configurés dans le programme.
             missingOptionForListTypeField: Un champ de type liste a été configuré sans aucune option, vous devez configurer au moins une option pour pouvoir publier votre programme.
         reportingTemplate:
             name:
@@ -267,8 +268,10 @@ CreditGuaranty:
         grade:
             invalid: Le grade choisi n'est pas valable.
     Reservation:
-        category:
-            ineligibles: Les champs {{ fieldAliases }} de la catégorie {{ category }} de la réservation sont inéligibles.
+        ineligible:
+            profile: Certaines informations du bénéficiaire sont inéligibles, veuillez vérifier le résultat de l'éligibilité de la réservation.
+            project: Certaines informations du projet sont inéligibles, veuillez vérifier le résultat de l'éligibilité de la réservation.
+            loan: Certaines informations du prêt sont inéligibles, veuillez vérifier le résultat de l'éligibilité de la réservation.
         esb:
             ineligible: La réservation ne peut être envoyée, le montant de l'équivalent subvention brut doit être inférieur ou égal au montant maximum du prêt FEI.
         borrower:
@@ -286,9 +289,17 @@ CreditGuaranty:
             totalFeiCredit:
                 requiredForEsb: Le montant total du crédit FEI du projet doit être renseigné pour calculer l'équivalent subvention brute.
         financingObject:
+            import:
+                green: Il y a une erreur sur le numero green sur la ligne {{line}}
+                headerEntries: Une ou plusieurs colonnes sont manquantes {{missingColumn}}
+                operation: Il y a une erreur sur le numero d'opération sur la ligne {{line}}
+                crd: Il y a une erreur sur le numero CRD sur la ligne {{line}}
+                maturity: Il y a une erreur sur le numero de maturité sur la ligne {{line}}
             required: La réservation ne peut être envoyée, au moins un objet de financement doit être défini.
             loanDuration:
                 requiredForEsb: La durée du prêt de l'objet de financement doit être renseignée pour calculer l'équivalent subvention brute.
+            loanMoneyAfterContractualisation: Le montant du prêt contractualisé ne peut pas être supérieur au montant renseigné lors de la réservation.
+            mainLoan: Un seul objet de financement peut être considéré comme le principal.
         financingObjectRelease:
             invoiceMoney:
                 requiredForLoanReleasedOnInvoice: Le montant des factures du déblocage de l'objet de financement doit être renseigné car les prêts sont débloqués sur facture dans ce programme.

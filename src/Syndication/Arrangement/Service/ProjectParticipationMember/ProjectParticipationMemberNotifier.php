@@ -4,39 +4,44 @@ declare(strict_types=1);
 
 namespace KLS\Syndication\Arrangement\Service\ProjectParticipationMember;
 
-use Exception;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\TemporaryToken;
+use KLS\Core\Mailer\MailjetMessage;
 use KLS\Core\Service\TemporaryTokenGenerator;
-use KLS\Core\SwiftMailer\MailjetMessage;
 use KLS\Syndication\Arrangement\Entity\Project;
 use KLS\Syndication\Arrangement\Entity\ProjectParticipationMember;
 use KLS\Syndication\Arrangement\Entity\ProjectStatus;
-use Swift_Mailer;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 class ProjectParticipationMemberNotifier
 {
-    private RouterInterface $router;
-    private Swift_Mailer $mailer;
+    private RouterInterface         $router;
+    private MailerInterface         $mailer;
     private TemporaryTokenGenerator $temporaryTokenGenerator;
+    private LoggerInterface         $logger;
 
-    public function __construct(RouterInterface $router, Swift_Mailer $mailer, TemporaryTokenGenerator $temporaryTokenGenerator)
-    {
+    public function __construct(
+        RouterInterface $router,
+        MailerInterface $mailer,
+        TemporaryTokenGenerator $temporaryTokenGenerator,
+        LoggerInterface $logger
+    ) {
         $this->router                  = $router;
         $this->mailer                  = $mailer;
         $this->temporaryTokenGenerator = $temporaryTokenGenerator;
+        $this->logger                  = $logger;
     }
 
-    /**
-     * @throws Exception
-     */
     public function notifyMemberAdded(ProjectParticipationMember $projectParticipationMember): void
     {
         $projectParticipation = $projectParticipationMember->getProjectParticipation();
 
         // We notify only other users than the current user.
-        // For the arranger, we should not notify anyone in his entity. But it is not yet the case. We will review this part in V2.
+        // For the arranger, we should not notify anyone in his entity.
+        // But it is not yet the case. We will review this part in V2.
         if ($projectParticipationMember->getAddedBy() === $projectParticipationMember->getStaff()) {
             return;
         }
@@ -58,44 +63,60 @@ class ProjectParticipationMemberNotifier
             return;
         }
 
-        $temporaryToken = null;
-        if ($user->isInitializationNeeded()) {
-            $temporaryToken = $this->temporaryTokenGenerator->generateUltraLongToken($user);
+        try {
+            $temporaryToken = null;
+            if ($user->isInitializationNeeded()) {
+                $temporaryToken = $this->temporaryTokenGenerator->generateUltraLongToken($user);
+            }
+
+            $vars = [
+                'temporaryToken_token' => ($temporaryToken instanceof TemporaryToken)
+                    ? $temporaryToken->getToken()
+                    : false,
+                'front_viewParticipation_URL' => $this->router->generate(
+                    'front_viewParticipation',
+                    [
+                        'projectParticipationPublicId' => $projectParticipation->getPublicId(),
+                    ],
+                    UrlGeneratorInterface::ABSOLUTE_URL
+                ),
+                'front_initialAccount_URL' => ($temporaryToken instanceof TemporaryToken) ? $this->router->generate(
+                    'front_initialAccount',
+                    [
+                        'temporaryTokenPublicId' => $temporaryToken->getToken(),
+                        'userPublicId'           => $user->getPublicId(),
+                    ],
+                    UrlGeneratorInterface::ABSOLUTE_URL
+                ) : false,
+                'front_home'                                   => $this->router->generate('front_home'),
+                'front_home_URL'                               => $this->router->generate('front_home'),
+                'project_riskGroupName'                        => $project->getRiskGroupName(),
+                'project_title'                                => $project->getTitle(),
+                'projectParticipation_participant_displayName' => $projectParticipation
+                    ->getParticipant()
+                    ->getDisplayName(),
+                'arranger_displayName' => $project->getSubmitterCompany()->getDisplayName(),
+                'client_firstName'     => $user->getFirstName() ?? '',
+            ];
+
+            $message = (new MailjetMessage())
+                ->to($user->getEmail())
+                ->setTemplateId($templateId)
+                ->setVars($vars)
+            ;
+
+            $this->mailer->send($message);
+        } catch (\Throwable $throwable) {
+            $this->logger->error(
+                \sprintf(
+                    'Email sending failed for %s with template id %d. Error: %s',
+                    $user->getEmail(),
+                    $templateId,
+                    $throwable->getMessage()
+                ),
+                ['throwable' => $throwable]
+            );
         }
-
-        $vars = [
-            'temporaryToken_token'        => ($temporaryToken instanceof TemporaryToken) ? $temporaryToken->getToken() : false,
-            'front_viewParticipation_URL' => $this->router->generate(
-                'front_viewParticipation',
-                [
-                    'projectParticipationPublicId' => $projectParticipation->getPublicId(),
-                ],
-                RouterInterface::ABSOLUTE_URL
-            ),
-            'front_initialAccount_URL' => ($temporaryToken instanceof TemporaryToken) ? $this->router->generate(
-                'front_initialAccount',
-                [
-                    'temporaryTokenPublicId' => $temporaryToken->getToken(),
-                    'userPublicId'           => $user->getPublicId(),
-                ],
-                RouterInterface::ABSOLUTE_URL
-            ) : false,
-            'front_home'                                   => $this->router->generate('front_home'),
-            'front_home_URL'                               => $this->router->generate('front_home'),
-            'project_riskGroupName'                        => $project->getRiskGroupName(),
-            'project_title'                                => $project->getTitle(),
-            'projectParticipation_participant_displayName' => $projectParticipation->getParticipant()->getDisplayName(),
-            'arranger_displayName'                         => $project->getSubmitterCompany()->getDisplayName(),
-            'client_firstName'                             => $user->getFirstName() ?? '',
-        ];
-
-        $message = (new MailjetMessage())
-            ->setTo($user->getEmail())
-            ->setTemplateId($templateId)
-            ->setVars($vars)
-        ;
-
-        $this->mailer->send($message);
     }
 
     /**
@@ -116,7 +137,9 @@ class ProjectParticipationMemberNotifier
                 }
 
                 if ($participant->hasSigned()) {
-                    $templateId = $user->isInitializationNeeded() ? MailjetMessage::TEMPLATE_PUBLICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_PUBLICATION;
+                    $templateId = $user->isInitializationNeeded()
+                        ? MailjetMessage::TEMPLATE_PUBLICATION_UNINITIALIZED_USER
+                        : MailjetMessage::TEMPLATE_PUBLICATION;
                 }
             }
         }
@@ -129,7 +152,9 @@ class ProjectParticipationMemberNotifier
                 }
 
                 if ($participant->hasSigned()) {
-                    $templateId = $user->isInitializationNeeded() ? MailjetMessage::TEMPLATE_SYNDICATION_UNINITIALIZED_USER : MailjetMessage::TEMPLATE_SYNDICATION;
+                    $templateId = $user->isInitializationNeeded()
+                        ? MailjetMessage::TEMPLATE_SYNDICATION_UNINITIALIZED_USER
+                        : MailjetMessage::TEMPLATE_SYNDICATION;
                 }
             }
         }

@@ -9,6 +9,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\NumericFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -25,7 +26,8 @@ use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 use KLS\Core\Service\MoneyCalculator;
-use KLS\CreditGuaranty\FEI\Controller\EligibilityChecking;
+use KLS\CreditGuaranty\FEI\Controller\ProgramEligibilityConditions;
+use KLS\CreditGuaranty\FEI\Controller\Reservation\Ineligibilities;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -119,27 +121,39 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "get_ineligibilities": {
  *             "method": "GET",
  *             "path": "credit_guaranty/reservations/{publicId}/ineligibilities",
- *             "controller": EligibilityChecking::class,
+ *             "controller": Ineligibilities::class,
  *             "security": "is_granted('check_eligibility', object)",
+ *         },
+ *         "get_program_eligibility_conditions": {
+ *             "method": "GET",
+ *             "path": "credit_guaranty/reservations/{publicId}/program_eligibility_conditions",
+ *             "controller": ProgramEligibilityConditions::class,
+ *             "security": "is_granted('check_eligibility', object)",
+ *             "normalization_context": {
+ *                 "groups": {
+ *                     "creditGuaranty:programEligibilityCondition:read",
+ *                     "creditGuaranty:programEligibilityCondition:field",
+ *                     "timestampable:read",
+ *                 },
+ *                 "openapi_definition_name": "item-get_program_eligibility_conditions-read",
+ *             },
  *             "openapi_context": {
  *                 "parameters": {
  *                     {
  *                         "in": "query",
- *                         "name": "category",
- *                         "schema": {
- *                             "type": "string",
- *                         },
- *                         "required": false,
- *                         "description": "Name of the category"
- *                     },
- *                     {
- *                         "in": "query",
- *                         "name": "withConditions",
+ *                         "name": "eligible",
  *                         "schema": {
  *                             "type": "boolean",
- *                             "enum": {0, 1, false, true}
+ *                             "enum": {0, 1, false, true},
  *                         },
- *                         "required": true
+ *                         "required": false,
+ *                     },
+ *                 },
+ *                 "responses": {
+ *                     "200": {
+ *                         "content": {
+ *                             "application/json+ld": {},
+ *                         },
  *                     },
  *                 },
  *             },
@@ -156,13 +170,10 @@ use Symfony\Component\Validator\Constraints as Assert;
  *             },
  *         },
  *         "get",
- *         "api_credit_guaranty_programs_reservations_get_subresource": {
- *             "method": "GET",
- *             "pagination_client_items_per_page": true,
- *         },
  *     },
  * )
  *
+ * @ApiFilter(SearchFilter::class, properties={"name": "partial"})
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(OrderFilter::class, properties={"added"})
  * @ApiFilter("KLS\CreditGuaranty\FEI\Filter\ReservationSentDateOrderFilter")
@@ -473,7 +484,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     {
         $financingObjects = $this->getFinancingObjects();
 
-        if ($financingObjects->count() < 1) {
+        if (0 === $financingObjects->count()) {
             return false;
         }
 
@@ -482,8 +493,8 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
 
         $comparison = MoneyCalculator::compare($esbTotal, $maxFeiCredit);
 
-        // $esbTotal should be superior or equal to $maxFeiCredit
-        return 0 >= $comparison;
+        // $esbTotal should be inferior or equal to $maxFeiCredit
+        return $comparison <= 0;
     }
 
     /**

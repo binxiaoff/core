@@ -8,10 +8,12 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ArrayIterator;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Mapping\Annotation as Gedmo;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\Traits\ArchivableTrait;
@@ -56,16 +58,16 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                 "parameters": {
  *                     {
  *                         "in": "query",
- *                         "name": "itemsPerPage",
+ *                         "name": "page",
  *                         "type": "integer",
- *                         "description": "The items number per page (100 by default)",
+ *                         "description": "The collection page number (Default value : 1)",
  *                         "required": false,
  *                     },
  *                     {
  *                         "in": "query",
- *                         "name": "page",
+ *                         "name": "itemsPerPage",
  *                         "type": "integer",
- *                         "description": "The page number (1 by default)",
+ *                         "description": "The number of items per page (Default value : 60)",
  *                         "required": false,
  *                     },
  *                     {
@@ -99,12 +101,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiFilter(OrderFilter::class, properties={"name"})
  *
  * @ORM\Entity
- * @ORM\Table(
- *     name="credit_guaranty_reporting_template",
- *     uniqueConstraints={
- *         @ORM\UniqueConstraint(name="uniq_program_reportingTemplate_name", columns={"id_program", "name"})
- *     }
- * )
+ * @ORM\Table(name="credit_guaranty_reporting_template")
  *
  * @UniqueEntity(fields={"name", "program"}, message="CreditGuaranty.Program.reportingTemplate.name.unique")
  *
@@ -116,17 +113,6 @@ class ReportingTemplate
     use TimestampableTrait;
     use BlamableAddedTrait;
     use ArchivableTrait;
-
-    public const IMPORT_FILE_COLUMNS = [
-        self::GREEN_COLUMN,
-        self::OPERATION_COLUMN,
-        self::CRD_COLUMN,
-        self::MATURITE_COLUMN,
-    ];
-    public const GREEN_COLUMN     = 'n° GREEN';
-    public const OPERATION_COLUMN = 'n° d\'opération';
-    public const CRD_COLUMN       = 'CRD';
-    public const MATURITE_COLUMN  = 'Maturité';
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\CreditGuaranty\FEI\Entity\Program", inversedBy="reportingTemplates")
@@ -189,5 +175,36 @@ class ReportingTemplate
     public function getReportingTemplateFields(): Collection
     {
         return $this->reportingTemplateFields;
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @return array|Field[]
+     */
+    public function getOrderedFields(bool $fieldAlias = false): array
+    {
+        if ($this->getReportingTemplateFields()->isEmpty()) {
+            return [];
+        }
+
+        // sort reportingTemplateFields by position
+        /** @var ArrayIterator $iterator */
+        $iterator = $this->getReportingTemplateFields()->getIterator();
+        $iterator->uasort(fn ($a, $b) => $a->getPosition() > $b->getPosition() ? 1 : -1);
+
+        $fields = $iterator->getArrayCopy();
+
+        // Retrieve only field alias
+        if ($fieldAlias) {
+            \array_walk_recursive($fields, fn (&$item) => $item = $item->getField()->getFieldAlias());
+
+            return $fields;
+        }
+
+        // retrieve only field
+        \array_walk_recursive($fields, fn (&$item) => $item = $item->getField());
+
+        return $fields;
     }
 }

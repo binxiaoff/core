@@ -8,7 +8,6 @@ use KLS\Syndication\Agency\Entity\Project;
 use KLS\Syndication\Agency\Entity\Term;
 use KLS\Syndication\Agency\Repository\TermRepository;
 use KLS\Syndication\Agency\Security\Voter\ProjectRoleVoter;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class GetTerms
@@ -25,11 +24,14 @@ class GetTerms
     /**
      * @return iterable|Term[]
      */
-    public function __invoke(Project $data, Request $request)
+    public function __invoke(Project $data): iterable
     {
         $isBorrower = $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_BORROWER, $data);
         $isAgent    = $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $data);
 
-        return ($isAgent || $isBorrower) ? $this->termRepository->findByProject($data) : $this->termRepository->findSharedByProject($data);
+        return ($isAgent || $isBorrower)
+            ? $this->termRepository->findByProject($data)
+            : $this->termRepository->findSharedByProject($data)
+        ;
     }
 }

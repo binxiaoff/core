@@ -433,6 +433,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ->setProductCategoryCode(
                 $this->findProgramChoiceOption($program, FieldAlias::PRODUCT_CATEGORY_CODE)
             )
+            ->setLoanNumber('1')
+            ->setOperationNumber('2')
         ;
     }
 

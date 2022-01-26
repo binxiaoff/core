@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Syndication\Agency\Entity\Embeddable\BankAccount;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -20,6 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *         "groups": {
  *             "agency:borrower:read",
  *             "nullableMoney:read",
+ *             "agency:bankAccount:read",
  *         },
  *         "openapi_definition_name": "read",
  *     },
@@ -36,6 +38,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "agency:borrowerMember:write",
  *                     "user:create",
  *                     "user:write",
+ *                     "agency:bankAccount:write",
  *                 },
  *                 "openapi_definition_name": "collection-post-write",
  *             },
@@ -60,6 +63,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                     "money:write",
  *                     "user:create",
  *                     "user:write",
+ *                     "agency:bankAccount:write",
  *                 },
  *                 "openapi_definition_name": "item-patch-write",
  *             },
@@ -120,6 +124,27 @@ class Borrower extends AbstractProjectPartaker
      */
     private Collection $trancheShares;
 
+    /**
+     * BankAccount of the borrower.
+     *
+     * @ORM\Embedded(class=BankAccount::class)
+     *
+     * @Assert\Valid
+     *
+     * @Groups({"agency:borrower:read", "agency:borrower:write"})
+     */
+    private BankAccount $bankAccount;
+
+    /**
+     * BankAccount given by the agent for the financial transactions.
+     *
+     * @ORM\ManyToOne(targetEntity=AgentBankAccount::class, inversedBy="borrowers")
+     * @ORM\JoinColumn(nullable=true, onDelete="SET NULL", name="id_agent_bank_account")
+     *
+     * @Groups({"agency:borrower:read"})
+     */
+    private ?AgentBankAccount $agentBankAccount;
+
     public function __construct(
         Project $project,
         string $corporateName,
@@ -128,11 +153,13 @@ class Borrower extends AbstractProjectPartaker
         string $matriculationNumber
     ) {
         parent::__construct($matriculationNumber);
-        $this->project       = $project;
-        $this->corporateName = $corporateName;
-        $this->legalForm     = $legalForm;
-        $this->headOffice    = $headOffice;
-        $this->members       = new ArrayCollection();
+        $this->project          = $project;
+        $this->corporateName    = $corporateName;
+        $this->legalForm        = $legalForm;
+        $this->headOffice       = $headOffice;
+        $this->members          = new ArrayCollection();
+        $this->bankAccount      = new BankAccount();
+        $this->agentBankAccount = null;
     }
 
     public function getProject(): Project
@@ -163,78 +190,6 @@ class Borrower extends AbstractProjectPartaker
     /**
      * @Groups({"agency:borrower:read"})
      */
-    public function getBankInstitution(): ?string
-    {
-        return $this->bankInstitution;
-    }
-
-    /**
-     * @Groups({"agency:borrower:write"})
-     */
-    public function setBankInstitution(?string $bankInstitution): AbstractProjectPartaker
-    {
-        $this->bankInstitution = $bankInstitution;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:borrower:read"})
-     */
-    public function getBankAddress(): ?string
-    {
-        return $this->bankAddress;
-    }
-
-    /**
-     * @Groups({"agency:borrower:write"})
-     */
-    public function setBankAddress(?string $bankAddress): AbstractProjectPartaker
-    {
-        $this->bankAddress = $bankAddress;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:borrower:read"})
-     */
-    public function getBic(): ?string
-    {
-        return $this->bic;
-    }
-
-    /**
-     * @Groups({"agency:borrower:write"})
-     */
-    public function setBic(?string $bic): AbstractProjectPartaker
-    {
-        $this->bic = $bic;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:borrower:read"})
-     */
-    public function getIban(): ?string
-    {
-        return $this->iban;
-    }
-
-    /**
-     * @Groups({"agency:borrower:write"})
-     */
-    public function setIban(?string $iban): AbstractProjectPartaker
-    {
-        $this->iban = $iban;
-
-        return $this;
-    }
-
-    /**
-     * @Groups({"agency:borrower:read"})
-     */
     public function getMatriculationNumber(): string
     {
         return $this->matriculationNumber;
@@ -246,6 +201,18 @@ class Borrower extends AbstractProjectPartaker
     public function setMatriculationNumber(string $matriculationNumber): AbstractProjectPartaker
     {
         $this->matriculationNumber = $matriculationNumber;
+
+        return $this;
+    }
+
+    public function getBankAccount(): BankAccount
+    {
+        return $this->bankAccount;
+    }
+
+    public function setBankAccount(BankAccount $bankAccount): Borrower
+    {
+        $this->bankAccount = $bankAccount;
 
         return $this;
     }
@@ -322,6 +289,24 @@ class Borrower extends AbstractProjectPartaker
         return $this;
     }
 
+    public function getAgentBankAccount(): ?AgentBankAccount
+    {
+        return $this->agentBankAccount;
+    }
+
+    public function setAgentBankAccount(?AgentBankAccount $agentBankAccount): Borrower
+    {
+        if ($agentBankAccount) {
+            $this->agentBankAccount = $agentBankAccount;
+            $this->agentBankAccount->addBorrower($this);
+        } else {
+            $this->agentBankAccount->removeBorrower($this);
+            $this->agentBankAccount = null;
+        }
+
+        return $this;
+    }
+
     /**
      * @Groups({"agency:borrower:read"})
      */
@@ -345,7 +330,7 @@ class Borrower extends AbstractProjectPartaker
      */
     public function isCompleted()
     {
-        return $this->getBankInstitution() && $this->getBankAddress() && $this->getIban() && $this->getBic();
+        return $this->getBankAccount()->isValid();
     }
 
     /**

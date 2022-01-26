@@ -6,34 +6,23 @@ namespace KLS\Test\CreditGuaranty\FEI\Unit\Traits;
 
 use DateTimeImmutable;
 use Exception;
-use KLS\Core\Entity\CompanyGroup;
-use KLS\Core\Entity\CompanyGroupTag;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Embeddable\NullableMoney;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
-use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\Reservation;
-use KLS\Test\Core\Unit\Traits\UserStaffTrait;
 
 trait ReservationSetTrait
 {
-    use UserStaffTrait;
     use FieldTrait;
+    use ProgramTrait;
 
     /**
      * @throws Exception
      */
     protected function createReservation(): Reservation
     {
-        $program = new Program(
-            'Program',
-            new CompanyGroupTag(new CompanyGroup('Company Group'), 'code'),
-            new Money('EUR', '42'),
-            $this->createStaff()
-        );
-
-        return new Reservation($program, $this->createStaff());
+        return new Reservation($this->createProgram(), $this->createStaff());
     }
 
     protected function withBorrower(Reservation $reservation): void

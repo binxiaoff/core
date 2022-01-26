@@ -6,9 +6,11 @@ namespace KLS\Syndication\Agency\Entity;
 
 use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Closure;
 use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Embeddable\Money;
 use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
+use KLS\CreditGuaranty\FEI\Entity\Interfaces\EquivalenceCheckerInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -49,7 +51,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @Assert\Expression(expression="this.getParticipation().getProject() === this.getTranche().getProject()", message="Agency.ParticipantTrancheAllocation.project")
  */
-class ParticipationTrancheAllocation
+class ParticipationTrancheAllocation implements EquivalenceCheckerInterface
 {
     use PublicizeIdentityTrait;
 
@@ -117,5 +119,15 @@ class ParticipationTrancheAllocation
         $this->allocation = $allocation;
 
         return $this;
+    }
+
+    public function getEquivalenceChecker(): Closure
+    {
+        $self = $this;
+
+        return static function (int $key, ParticipationTrancheAllocation $pta) use ($self): bool {
+            return $pta->getParticipation() === $self->getParticipation()
+                && $pta->getTranche()       === $self->getTranche();
+        };
     }
 }

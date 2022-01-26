@@ -9,19 +9,22 @@ use KLS\Core\Entity\CompanyModule;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @internal
+ * @coversDefaultClass \KLS\Core\Entity\Company
  *
- * @coversNothing
+ * @internal
  */
 class CompanyTest extends TestCase
 {
     /**
      * Tests that modules are indexed by module name.
+     *
+     * @covers ::getModules
      */
-    public function testModules()
+    public function testModules(): void
     {
         $codes   = CompanyModule::getAvailableModuleCodes();
         $company = new Company('Fake', '850890666');
+
         static::assertCount(\count($codes), $company->getModules());
         // We expect the array of module to be indexed by module name
         static::assertArrayHasKey(CompanyModule::MODULE_PARTICIPATION, $company->getModules()->toArray());

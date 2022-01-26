@@ -20,7 +20,7 @@ class ArchiveReservationCommand extends Command
 {
     private const BATCH_SIZE = 10;
 
-    protected static $defaultName = 'kls:reservation:exceeding-duration:archive';
+    protected static $defaultName = 'kls:fei:reservation:exceeding-duration:archive';
 
     private StaffRepository $staffRepository;
     private ReservationRepository $reservationRepository;
@@ -46,15 +46,15 @@ class ArchiveReservationCommand extends Command
     {
         /** @var Staff $adminStaff */
         $adminStaff = $this->staffRepository->find(Staff::ID_ADMIN);
+        $status     = ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY;
 
         $i = 1;
 
-        foreach ($this->reservationRepository->findByCurrentStatus(ReservationStatus::STATUS_ACCEPTED_BY_MANAGING_COMPANY) as $reservation) {
+        foreach ($this->reservationRepository->findByCurrentStatus($status) as $reservation) {
             /** @var Reservation $reservation */
             $reservationDuration = $reservation->getProgram()->getReservationDuration();
 
             if (null === $reservationDuration) {
-                // besoin de warning ici ?
                 continue;
             }
 

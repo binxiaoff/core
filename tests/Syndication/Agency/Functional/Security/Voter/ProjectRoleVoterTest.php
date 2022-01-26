@@ -31,9 +31,9 @@ class ProjectRoleVoterTest extends AbstractProjectVoterTest
     {
         static::bootKernel();
 
-        static::$container->get('security.token_storage')->setToken($token);
+        static::getContainer()->get('security.token_storage')->setToken($token);
 
-        $voter = static::$container->get(ProjectRoleVoter::class);
+        $voter = static::getContainer()->get(ProjectRoleVoter::class);
 
         static::assertSame($expected, $voter->vote($token, $subject, (array) $attribute));
     }

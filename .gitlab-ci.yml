@@ -47,8 +47,9 @@ cache:
     - git clone -b "${ANSIBLE_BRANCH:-master}" --single-branch https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/ca-lending-services/infra.git
     - cd infra/provisioning || exit 1
     - export DEPLOY_USER="${GITLAB_USER_NAME}"
+    - export ANSIBLE_REMOTE_USER="gitlab-ci"
   script:
-    - ansible-playbook -i "inventory/private/${CI_ENVIRONMENT_NAME}.yml" deploy-api.yml --extra-vars="gitBranch=${CI_COMMIT_REF_NAME}"
+    - ansible-playbook -i "inventory/${CI_ENVIRONMENT_NAME}.yml" deploy-api.yml --extra-vars="gitBranch=${CI_COMMIT_REF_NAME}" --extra-vars="ansible_ssh_common_args=''"
   tags:
     # this can be overriden, if you specify tags it is replaced, not appended
     - staging-deployment
@@ -61,6 +62,7 @@ stages:
   - 🔎 validation
   - 🧪 test
   - 🚀 deploy
+  - 💻 e2e
 
 # Validation
 
@@ -98,7 +100,11 @@ stages:
     - php bin/console doctrine:database:create --env=test --connection=migration
     - php bin/console doctrine:migration:migrate -n --env=test
     - php bin/console doctrine:fixtures:load --env=test -n --group=test
-    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='functional'
+    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='functional' --log-junit report-functional.xml
+    - sed -i "s_${CI_PROJECT_DIR}__g" report-functional.xml   # use relative path instead of absolute path in test report
+  artifacts:
+    reports:
+      junit: report-functional.xml
 
 🧪 unit:
   ### Uncomment the following if using a database
@@ -110,7 +116,16 @@ stages:
     - composer config -g cache-dir "$(pwd)/.composer-cache"
     - composer install
   script:
-    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='unit'
+    - php -dpcov.enabled=1 bin/phpunit --coverage-text --colors=never --testsuite='unit' --coverage-cobertura coverage.xml --log-junit report-unit.xml
+    # pcov.enabled is necessary for coverage calculation to be possible
+    # --coverage-text is used to have a detailed view in the job's log
+    # --coverage-cobertura generates the coverage report to be displayed in the MR
+    # --log-junit generates the test report for display in the pipeline
+    - sed -i "s_${CI_PROJECT_DIR}__g" report-unit.xml   # use relative path instead of absolute path in test report
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+      junit: report-unit.xml
 
 # Deployment
 
@@ -132,6 +147,22 @@ stages:
   environment:
     name: preprod
     url: https://api.preprod.kls-platform.com
+  only:
+    refs:
+      - /^release/.*/
+      - /^hotfix/.*/
+      - /^[1-9][0-9]*\.[0-9]+\.[0-9]+$/
+
+e2e:preprod:
+  stage: 💻 e2e
+  trigger:
+    # relative path and variables don't work here
+    project: ca-lending-services/e2e
+    strategy: depend
+  variables:
+    CYPRESS_environment: preprod
+  needs:
+    - 🚀 preprod
   only:
     refs:
       - /^release/.*/
