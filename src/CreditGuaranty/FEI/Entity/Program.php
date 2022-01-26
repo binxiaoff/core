@@ -1072,8 +1072,8 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
                     );
                 }
 
-                $fundingMoney      = $reservation->getProject()->getFundingMoney();
-                $totalProjectFunds = MoneyCalculator::add($fundingMoney, $totalProjectFunds);
+                $loanMoney         = $reservation->getTotalLoanMoney();
+                $totalProjectFunds = MoneyCalculator::add($loanMoney, $totalProjectFunds);
             }
         }
 

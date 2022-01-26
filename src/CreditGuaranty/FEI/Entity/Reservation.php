@@ -20,6 +20,7 @@ use KLS\Core\Controller\Dataroom\Post;
 use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Drive;
 use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Entity\Interfaces\StatusInterface;
 use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use KLS\Core\Entity\Staff;
@@ -516,5 +517,13 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;
+    }
+
+    public function getTotalLoanMoney(): MoneyInterface
+    {
+        return MoneyCalculator::sum($this->getFinancingObjects()->map(
+            static fn (FinancingObject $financingObject) => $financingObject->getReservation()->isFormalized() ?
+                $financingObject->getLoanMoneyAfterContractualisation() : $financingObject->getLoanMoney()
+        )->toArray());
     }
 }

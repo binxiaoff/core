@@ -11,6 +11,7 @@ use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 use KLS\Core\Entity\Embeddable\NullableMoney;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\CreditGuaranty\FEI\Entity\Program;
 
 /**
@@ -79,22 +80,34 @@ class ProgramRepository extends ServiceEntityRepository
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
-    public function sumProjectsAmounts(Program $program, array $reservationStatus): NullableMoney
+    public function sumProjectsAmounts(Program $program, array $reservationStatus): MoneyInterface
     {
         $queryBuilder = $this->createQueryBuilder('program')
-            ->select('SUM(project.totalFeiCredit.amount) AS amount, project.totalFeiCredit.currency AS currency')
+            ->select('
+                SUM(
+                    CASE
+                       WHEN fo.loanMoneyAfterContractualisation.amount IS NOT NULL
+                           THEN fo.loanMoneyAfterContractualisation.amount
+                       ELSE fo.loanMoney.amount END
+                ) as amount,
+               CASE
+                   WHEN fo.loanMoneyAfterContractualisation.currency IS NOT NULL
+                       THEN fo.loanMoneyAfterContractualisation.currency
+                   ELSE fo.loanMoney.currency END as currency
+            ')
             ->innerJoin('program.reservations', 'r')
-            ->innerJoin('r.project', 'project')
+            ->innerJoin('r.financingObjects', 'fo')
             ->innerJoin('r.currentStatus', 'cs')
             ->where('program = :program')
             ->andWhere('cs.status in (:status)')
-            ->groupBy('project.totalFeiCredit.currency')
+            ->groupBy('currency')
             ->setParameter('program', $program)
             ->setParameter('status', $reservationStatus)
         ;
 
         $sum = $queryBuilder->getQuery()->getScalarResult();
 
+        //As we handle only one currency, we can return the first result from the data we got
         return isset($sum[0]['amount'], $sum[0]['currency'])
             ? new NullableMoney($sum[0]['currency'], $sum[0]['amount'])
             : new NullableMoney(null, null);
