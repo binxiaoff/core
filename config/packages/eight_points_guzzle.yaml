@@ -1,9 +1,0 @@
-eight_points_guzzle:
-    clients:
-        insee:
-            base_url: "https://api.insee.fr/entreprises/sirene/V3/siren/"
-            options:
-                headers:
-                    Accept: "application/json"
-                    Authorization: "Bearer 50afb10f-39b3-3f75-8660-764884f834bb"
-                http_errors: false

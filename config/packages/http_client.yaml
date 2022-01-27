@@ -12,3 +12,8 @@ framework:
                 base_uri: '%hubspot.base_integration_uri%'
                 query:
                     hapikey: '%hubspot.api.key%'
+            insee.client:
+                base_uri: '%insee.base_uri%'
+                auth_bearer: '50afb10f-39b3-3f75-8660-764884f834bb' #This token does not work anymore
+                headers:
+                    Accept: 'application/json'

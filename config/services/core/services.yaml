@@ -23,6 +23,7 @@ parameters:
   security.recipients: ['tech@kls-platform.com']
   slack.webhook.support: '%env(SLACK_WEBHOOK_URL)%'
   slack.webhook.security: '%env(SLACK_WEBHOOK_URL_SECURITY)%'
+  insee.base_uri: 'https://api.insee.fr/entreprises/sirene/V3/siren/'
 
 services:
   _defaults:
@@ -143,9 +144,6 @@ services:
   KLS\Core\Service\Staff\StaffLoginChecker:
     arguments:
       $checkers: !tagged kls.staff.login.checker
-
-  KLS\Core\Service\WebServiceClient\InseeManager:
-    $client: '@eight_points_guzzle.client.insee'
 
   # Swagger
 
