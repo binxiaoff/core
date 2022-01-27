@@ -68,7 +68,7 @@ class SwaggerDecorator implements NormalizerInterface
                 'summary'     => 'Retrieve authentication tokens',
                 'requestBody' => [
                     'content' => [
-                        'application/x-www-form-urlencoded' => [
+                        'application/json' => [
                             'schema' => [
                                 'type'       => 'object',
                                 'properties' => [
@@ -90,7 +90,7 @@ class SwaggerDecorator implements NormalizerInterface
                     '200' => [
                         'description' => 'Retrieving succeeded',
                         'content'     => [
-                            'application/x-form-' => [
+                            'application/json' => [
                                 'schema' => [
                                     'type'       => 'object',
                                     'properties' => [
@@ -127,7 +127,7 @@ class SwaggerDecorator implements NormalizerInterface
                 'summary'     => 'Refresh valid token',
                 'requestBody' => [
                     'content' => [
-                        'application/x-www-form-urlencoded' => [
+                        'application/json' => [
                             'schema' => [
                                 'type'       => 'object',
                                 'properties' => [
@@ -145,7 +145,7 @@ class SwaggerDecorator implements NormalizerInterface
                     '200' => [
                         'description' => 'Refresh succeeded',
                         'content'     => [
-                            'application/x-form-' => [
+                            'application/json' => [
                                 'schema' => [
                                     'type'       => 'object',
                                     'properties' => [
