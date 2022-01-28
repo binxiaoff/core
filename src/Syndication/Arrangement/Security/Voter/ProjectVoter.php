@@ -87,8 +87,10 @@ class ProjectVoter extends AbstractEntityVoter
         $arrangerCompany      = $project->getArranger();
         $arrangerCompanyGroup = $arrangerCompany->getCompanyGroup();
 
-        return $arrangerCompanyGroup ? $arrangerCompanyGroup === $staff->getCompany()->getCompanyGroup() :
-            $staff->getCompany()                             === $arrangerCompany;
+        return $arrangerCompanyGroup
+            ? $arrangerCompanyGroup === $staff->getCompany()->getCompanyGroup()
+            : $staff->getCompany()  === $arrangerCompany
+        ;
     }
 
     /**
