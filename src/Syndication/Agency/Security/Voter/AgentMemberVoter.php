@@ -35,7 +35,7 @@ class AgentMemberVoter extends AbstractEntityVoter
         $project = $agentMember->getProject();
 
         return $this->authorizationChecker->isGranted(ProjectRoleVoter::ROLE_AGENT, $project)
-            && $project->isDraft()
+            && ($project->isDraft() || $project->isPublished())
             && $project->getAgent()->getMembers()->count() > 1
             && false === $agentMember->getUser()->isEqualTo($user);
     }
