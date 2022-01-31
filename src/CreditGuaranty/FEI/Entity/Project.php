@@ -607,13 +607,14 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     {
         $program          = $this->getProgram();
         $guarantyDuration = $this->getGuarantyDuration();
+        $grant            = $this->getGrantForMaxFeiCredit();
 
         if (
             null === $program->getGuarantyCoverage()
             || null === $guarantyDuration
             || $program->getMaxFeiCredit()->isNull()
             || $this->getEligibleFeiCredit()->isNull()
-            || $this->getGrant()->isNull()
+            || $grant->isNull()
             || false === ($this->getAidIntensity() instanceof ProgramChoiceOption)
         ) {
             return new NullableMoney();
@@ -623,7 +624,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
             $this->getEligibleFeiCredit(),
             (float) $this->getAidIntensity()->getDescription()
         );
-        $remainingGrantLimit = MoneyCalculator::subtract($publicAidLimit, $this->getGrant());
+        $remainingGrantLimit = MoneyCalculator::subtract($publicAidLimit, $grant);
 
         $maxFeiCredit = MoneyCalculator::divide($remainingGrantLimit, (float) $program->getGuarantyCoverage());
         $maxFeiCredit = MoneyCalculator::divide($maxFeiCredit, (float) $guarantyDuration);
@@ -761,5 +762,25 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         }
 
         return \min(\max($loanDurations), $guarantyDuration);
+    }
+
+    private function getGrantForMaxFeiCredit(): NullableMoney
+    {
+        if ($this->getGrant()->isValid()) {
+            return $this->getGrant();
+        }
+
+        $programEligibility = $this->getProgram()->getProgramEligibilities()
+            ->filter(
+                static fn (ProgramEligibility $pe) => FieldAlias::RECEIVING_GRANT === $pe->getField()->getFieldAlias()
+            )
+            ->first()
+        ;
+
+        if (false === ($programEligibility instanceof ProgramEligibility)) {
+            return new NullableMoney();
+        }
+
+        return new NullableMoney('EUR', '0');
     }
 }
