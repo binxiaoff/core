@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS\Syndication\Arrangement\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
@@ -364,13 +365,15 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     private ?DateTimeImmutable $contractualizationDeadline;
 
     /**
+     * @ApiProperty(security="is_granted('view_group_internal', object)")
+     *
      * @ORM\Column(length=8, nullable=true)
      *
      * @Assert\Choice(callback={CAInternalRating::class, "getConstList"})
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", Project::SERIALIZER_GROUP_GCA_READ})
+     * @Groups({"project:write", "project:read"})
      */
     private ?string $internalRatingScore;
 

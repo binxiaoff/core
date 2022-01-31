@@ -50,11 +50,18 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
 
         $isCAGMember = $currentCompany instanceof Company ? $currentCompany->isCAGMember() : false;
 
-        $context[AbstractNormalizer::GROUPS] = \array_merge($context[AbstractNormalizer::GROUPS] ?? [], $this->getAdditionalNormalizerGroups($object, $currentCompany));
+        $context[AbstractNormalizer::GROUPS] = \array_merge(
+            $context[AbstractNormalizer::GROUPS] ?? [],
+            $this->getAdditionalNormalizerGroups($object, $currentCompany)
+        );
 
         $normalized = $this->normalizer->normalize($object, $format, $context);
 
-        if (\is_array($normalized) && false === $isCAGMember && ParticipationType::SUB_PARTICIPATION === $normalized['participationType']) {
+        if (
+            \is_array($normalized)
+            && false === $isCAGMember
+            && ParticipationType::SUB_PARTICIPATION === $normalized['participationType']
+        ) {
             unset($normalized['participationType']);
         }
 
@@ -67,10 +74,6 @@ class ProjectNormalizer implements ContextAwareNormalizerInterface, NormalizerAw
 
         if ($this->security->isGranted(ProjectVoter::ATTRIBUTE_ADMIN_VIEW, $project)) {
             $additionalGroups[] = Project::SERIALIZER_GROUP_ADMIN_READ;
-        }
-
-        if ($connectedCompany && $connectedCompany->isCAGMember()) {
-            $additionalGroups[] = Project::SERIALIZER_GROUP_GCA_READ;
         }
 
         return $additionalGroups;
