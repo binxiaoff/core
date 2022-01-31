@@ -18,13 +18,13 @@ use KLS\Core\Repository\FileRepository;
 use KLS\Core\Service\File\FileUploadManager;
 use KLS\Core\Service\FileSystem\FileSystemHelper;
 use KLS\Test\Core\Unit\Traits\CompanyTrait;
+use KLS\Test\Core\Unit\Traits\PropertyValueTrait;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
-use ReflectionProperty;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -37,6 +37,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 class FileUploadManagerTest extends TestCase
 {
     use ProphecyTrait;
+    use PropertyValueTrait;
     use CompanyTrait;
 
     /** @var FilesystemOperator|ObjectProphecy */
@@ -73,11 +74,9 @@ class FileUploadManagerTest extends TestCase
      */
     public function testUpload(?File $file, array $context): void
     {
-        $idUsersReflectionProperty = new ReflectionProperty(User::class, 'id');
-        $idUsersReflectionProperty->setAccessible(true);
-        $uploader   = new User('test@' . Internet::safeEmailDomain());
         $uploaderId = Base::randomDigitNotNull() + 1;
-        $idUsersReflectionProperty->setValue($uploader, $uploaderId);
+        $uploader   = new User('test@' . Internet::safeEmailDomain());
+        $this->forcePropertyValue($uploader, 'id', $uploaderId);
         $company = $this->createCompany();
 
         $filePath         = \sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'uploadTestFile';
@@ -85,7 +84,7 @@ class FileUploadManagerTest extends TestCase
         \fopen($filePath, 'wb+');
         $uploadedFile = new UploadedFile($filePath, $originalFileName, null, null, true);
 
-        $uploadDirectory = $this->fileSystemHelper->normalizeDirectory(DIRECTORY_SEPARATOR, $uploaderId)
+        $uploadDirectory = $this->fileSystemHelper->normalizeDirectory(DIRECTORY_SEPARATOR, (string) $uploaderId)
             ->shouldBeCalledOnce()->willReturn($uploaderId)
         ;
 
@@ -128,11 +127,12 @@ class FileUploadManagerTest extends TestCase
         $uploadedFilePathDirectories = \explode(DIRECTORY_SEPARATOR, \trim($uploadedDirname, '/'));
 
         static::assertNotSame($originalFilename, $uploadedFilename);
-
         static::assertGreaterThanOrEqual(3, $uploadedFilePathDirectories, 'minimum number of directories');
-
-        static::assertSame(1, \mb_strlen(\array_shift($uploadedFilePathDirectories)), 'first mandatory subdirectory');
-
+        static::assertSame(
+            \mb_strlen((string) $uploaderId),
+            \mb_strlen(\array_shift($uploadedFilePathDirectories)),
+            'first mandatory subdirectory'
+        );
         static::assertSame($uploader, $file->getCurrentFileVersion()->getAddedBy());
         static::assertStringContainsString((string) $uploader->getId(), $file->getCurrentFileVersion()->getPath());
         static::assertSame('application/x-empty', $file->getCurrentFileVersion()->getMimeType());
@@ -145,11 +145,7 @@ class FileUploadManagerTest extends TestCase
     public function uploadDataProvider(): array
     {
         $file = new File();
-
-        $fileIdReflectionProperty = new ReflectionProperty(File::class, 'id');
-        $fileIdReflectionProperty->setAccessible(true);
-        $fileId = Base::randomDigitNotNull() + 1;
-        $fileIdReflectionProperty->setValue($file, $fileId);
+        $this->forcePropertyValue($file, 'id', Base::randomDigitNotNull() + 1);
 
         $context = ['projectId' => Base::randomDigitNotNull() + 1];
 
