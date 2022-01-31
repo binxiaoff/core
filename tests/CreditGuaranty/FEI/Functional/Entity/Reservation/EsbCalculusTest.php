@@ -60,13 +60,16 @@ class EsbCalculusTest extends AbstractApiTest
         $grossSubsidyEquivalent2     = $financingObject2->getGrossSubsidyEquivalent();
         $totalGrossSubsidyEquivalent = $reservation->getProject()->getTotalGrossSubsidyEquivalent();
 
-        static::assertSame((float) $maxFeiCredit->getAmount(), 69140.62);
-        static::assertSame((float) $grossSubsidyEquivalent1->getAmount(), 2688.0);
-        static::assertSame((float) $grossSubsidyEquivalent2->getAmount(), 3583.44);
-        static::assertSame((float) $totalGrossSubsidyEquivalent->getAmount(), 2688 + 3583.44);
+        static::assertSame((float) $maxFeiCredit->getAmount(), 100000.0);
+        static::assertSame((float) $grossSubsidyEquivalent1->getAmount(), 224.0);
+        static::assertSame((float) $grossSubsidyEquivalent2->getAmount(), 298.67);
+        static::assertSame((float) $totalGrossSubsidyEquivalent->getAmount(), 224.0 + 298.67);
         static::assertTrue($reservation->isGrossSubsidyEquivalentEligible());
     }
 
+    /**
+     * cf CALS-5658.
+     */
     public function testEsbCalculationsAndEligibilityWithProgramEligibilityAndGrantNull(): void
     {
         $reservation = $this->createReservation();
@@ -77,39 +80,32 @@ class EsbCalculusTest extends AbstractApiTest
             ->add(new ProgramEligibility($program, $this->createReceivingGrantField()))
         ;
         $program
-            ->setMaxFeiCredit(new NullableMoney('EUR', '100000'))
-            ->setGuarantyDuration(12)
+            ->setMaxFeiCredit(new NullableMoney('EUR', '1050000'))
+            ->setGuarantyDuration(120)
             ->setGuarantyCoverage('0.8')
         ;
         $reservation->getProject()
-            ->setEligibleFeiCredit(new NullableMoney('EUR', '42000'))
+            ->setEligibleFeiCredit(new NullableMoney('EUR', '314500'))
             ->setGrant(new NullableMoney())
             ->setAidIntensity(
                 new ProgramChoiceOption($program, '0.4', $this->createAidIntensityField())
             )
         ;
         $financingObject1 = ($this->createFinancingObject($reservation, false))
-            ->setLoanDuration(6)
-            ->setLoanMoney(new Money('EUR', '21000'))
-        ;
-        $financingObject2 = ($this->createFinancingObject($reservation, false))
-            ->setLoanDuration(8)
-            ->setLoanMoney(new Money('EUR', '21000'))
+            ->setLoanDuration(84)
+            ->setLoanMoney(new Money('EUR', '314500'))
         ;
         $reservation
             ->addFinancingObject($financingObject1)
-            ->addFinancingObject($financingObject2)
         ;
 
         $maxFeiCredit                = $reservation->getProject()->getMaxFeiCredit();
         $grossSubsidyEquivalent1     = $financingObject1->getGrossSubsidyEquivalent();
-        $grossSubsidyEquivalent2     = $financingObject2->getGrossSubsidyEquivalent();
         $totalGrossSubsidyEquivalent = $reservation->getProject()->getTotalGrossSubsidyEquivalent();
 
-        static::assertSame((float) $maxFeiCredit->getAmount(), 98437.5);
-        static::assertSame((float) $grossSubsidyEquivalent1->getAmount(), 2688.0);
-        static::assertSame((float) $grossSubsidyEquivalent2->getAmount(), 3583.44);
-        static::assertSame((float) $totalGrossSubsidyEquivalent->getAmount(), 2688 + 3583.44);
+        static::assertSame((float) $maxFeiCredit->getAmount(), 842410.87);
+        static::assertSame((float) $grossSubsidyEquivalent1->getAmount(), 46965.33);
+        static::assertSame((float) $totalGrossSubsidyEquivalent->getAmount(), 46965.33);
         static::assertTrue($reservation->isGrossSubsidyEquivalentEligible());
     }
 

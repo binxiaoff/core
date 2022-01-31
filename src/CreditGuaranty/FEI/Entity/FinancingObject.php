@@ -783,10 +783,10 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
             return new NullableMoney();
         }
 
-        return MoneyCalculator::multiply(
-            MoneyCalculator::multiply($this->getLoanMoney(), (float) $this->getProgram()->getGuarantyCoverage()),
-            (float) \bcmul((string) $guarantyDuration, (string) GrossSubsidyEquivalent::FACTOR, 4)
-        );
+        $esb = MoneyCalculator::multiply($this->getLoanMoney(), (float) $this->getProgram()->getGuarantyCoverage());
+        $esb = MoneyCalculator::multiply($esb, $guarantyDuration);
+
+        return MoneyCalculator::multiply($esb, GrossSubsidyEquivalent::FACTOR);
     }
 
     /**
@@ -828,7 +828,7 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
         }
     }
 
-    private function getGuarantyDuration(): ?int
+    private function getGuarantyDuration(): ?float
     {
         $guarantyDuration = $this->getProgram()->getGuarantyDuration();
         $loanDuration     = $this->getLoanDuration();
@@ -837,6 +837,6 @@ class FinancingObject implements ProgramAwareInterface, ProgramChoiceOptionCarri
             return null;
         }
 
-        return \min($loanDuration, $guarantyDuration);
+        return (float) \min($loanDuration, $guarantyDuration) / 12;
     }
 }

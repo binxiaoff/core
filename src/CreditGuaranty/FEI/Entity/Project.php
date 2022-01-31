@@ -627,7 +627,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         $remainingGrantLimit = MoneyCalculator::subtract($publicAidLimit, $grant);
 
         $maxFeiCredit = MoneyCalculator::divide($remainingGrantLimit, (float) $program->getGuarantyCoverage());
-        $maxFeiCredit = MoneyCalculator::divide($maxFeiCredit, (float) $guarantyDuration);
+        $maxFeiCredit = MoneyCalculator::divide($maxFeiCredit, $guarantyDuration);
         $maxFeiCredit = MoneyCalculator::divide($maxFeiCredit, (float) GrossSubsidyEquivalent::FACTOR);
 
         return MoneyCalculator::min($program->getMaxFeiCredit(), $maxFeiCredit);
@@ -744,7 +744,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         );
     }
 
-    private function getGuarantyDuration(): ?int
+    private function getGuarantyDuration(): ?float
     {
         $financingObjects = $this->getReservation()->getFinancingObjects();
         $guarantyDuration = $this->getProgram()->getGuarantyDuration();
@@ -761,7 +761,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
             return null;
         }
 
-        return \min(\max($loanDurations), $guarantyDuration);
+        return (float) \min(\max($loanDurations), $guarantyDuration) / 12;
     }
 
     private function getGrantForMaxFeiCredit(): NullableMoney
