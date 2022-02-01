@@ -184,18 +184,6 @@
     "egulias/email-validator": {
         "version": "2.1.8"
     },
-    "eightpoints/guzzle-bundle": {
-        "version": "7.0",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "7.0",
-            "ref": "7babb21a3928e44e485391907e3abc346804e0d2"
-        },
-        "files": [
-            "config/packages/eight_points_guzzle.yaml"
-        ]
-    },
     "enlightn/security-checker": {
         "version": "v1.4"
     },
@@ -279,9 +267,6 @@
     },
     "guzzlehttp/psr7": {
         "version": "1.5.2"
-    },
-    "http-interop/http-factory-guzzle": {
-        "version": "1.0.0"
     },
     "jbroadway/urlify": {
         "version": "1.1.2-stable"
@@ -423,9 +408,6 @@
     },
     "php-http/discovery": {
         "version": "1.6.1"
-    },
-    "php-http/guzzle6-adapter": {
-        "version": "v2.0.1"
     },
     "php-http/httplug": {
         "version": "v2.0.0"

@@ -4,35 +4,43 @@ declare(strict_types=1);
 
 namespace KLS\Core\Service\WebServiceClient;
 
-use GuzzleHttp\Client;
+use JsonException;
 use KLS\Core\Entity\Company;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class InseeManager
 {
-    private const ENDPOINT_URL = 'https://api.insee.fr/entreprises/sirene/V3/siren';
+    private HttpClientInterface $inseeClient;
 
-    /** @var Client */
-    private $client;
-
-    public function __construct(Client $client)
+    public function __construct(HttpClientInterface $inseeClient)
     {
-        $this->client = $client;
+        $this->inseeClient = $inseeClient;
     }
 
     /**
+     * @throws JsonException
+     * @throws ClientExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
      * @return array|Company[]
      */
     public function searchByName(string $name, int $limit = 5): array
     {
         $name     = \str_replace(' ', '-', \trim($name));
-        $response = $this->client->get(self::ENDPOINT_URL . "?nombre={$limit}&q=periode(denominationUniteLegale:'{$name}')");
+        $response = $this->inseeClient->request('GET', "?nombre={$limit}&q=periode(denominationUniteLegale:'{$name}')");
 
         if (Response::HTTP_OK !== $response->getStatusCode()) {
             return [];
         }
 
-        $content = \json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        $content = \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         if (null === $content || empty($content['unitesLegales'])) {
             return [];
@@ -49,15 +57,22 @@ class InseeManager
         return $companies;
     }
 
+    /**
+     * @throws ClientExceptionInterface
+     * @throws JsonException
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     */
     public function searchBySirenNumber(string $siren): ?array
     {
-        $response = $this->client->get(self::ENDPOINT_URL . '/' . $siren);
+        $response = $this->inseeClient->request('GET', $siren);
 
         if (Response::HTTP_OK !== $response->getStatusCode()) {
             return null;
         }
 
-        $content = \json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
+        $content = \json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         if (null === $content || empty($content['uniteLegale'])) {
             return null;
@@ -83,7 +98,10 @@ class InseeManager
             false === empty($legalEntity['prenom1UniteLegale'])
             && false === empty($legalEntity['periodesUniteLegale'][0]['nomUniteLegale'])
         ) {
-            $name = \trim($legalEntity['prenom1UniteLegale'] . ' ' . $legalEntity['periodesUniteLegale'][0]['nomUniteLegale']);
+            $name = \trim(
+                $legalEntity['prenom1UniteLegale'] . ' ' .
+                $legalEntity['periodesUniteLegale'][0]['nomUniteLegale']
+            );
 
             return ['name' => $name, 'siren' => $siren];
         }
