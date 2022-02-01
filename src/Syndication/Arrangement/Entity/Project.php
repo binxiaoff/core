@@ -814,6 +814,23 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
         return $this->projectParticipations;
     }
 
+    public function getNotifiableParticipations(): Collection
+    {
+        return $this->projectParticipations->filter(
+            fn (ProjectParticipation $participation) => false === \in_array(
+                $participation->getCurrentStatus()->getStatus(),
+                // This might be superfloux with Participation::isArchived but this is in bugfix.
+                    // I did not want to make to many change yet.
+                    [
+                        ProjectParticipationStatus::STATUS_COMMITTEE_REJECTED,
+                        ProjectParticipationStatus::STATUS_ARCHIVED_BY_PARTICIPANT,
+                        ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER,
+                    ],
+                true
+            )
+        );
+    }
+
     public function getProjectParticipationByCompany(Company $company): ?ProjectParticipation
     {
         $criteria = new Criteria();
