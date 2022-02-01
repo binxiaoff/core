@@ -34,3 +34,9 @@ The privileges for the readonly account are the following:
 ```sql
 GRANT SELECT, EXECUTE, SHOW VIEW ON `unilend`.* TO `jsmith`@`%`
 ```
+
+For the read/write account, the `process` privilege has been added:
+
+```sql
+GRANT PROCESS ON *.* TO `jsmith-rw`@`%`
+```
