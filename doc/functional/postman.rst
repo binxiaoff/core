@@ -4,27 +4,48 @@ Postman
 
 `Postman <https://www.getpostman.com/>`_ is a useful REST client. It useful for testing the API without a frontend.
 
-Add the KLS request collection
-==============================
-Postman can read the `OpenApi <https://www.openapis.org/>`_ specification. It defines a standard, language-agnostic interface to RESTful APIs which allows both humans and computers to discover and understand the capabilities of the service without access to source code, documentation, or through network traffic inspection.
 
-The current API documentation for our project is available at https://api.local.kls-platform.com/ .
-To import it in Postman as a request collection we need it in json format. It is available at
-https://api.local.kls-platform.com/docs.json .
+Import KLS collection
+=====================
+Postman can read the `OpenApi <https://www.openapis.org/>`_ specifications.
+It defines a standard, language-agnostic interface to RESTful APIs which allows both humans and computers to discover and understand the capabilities of the service without access to source code, documentation, or through network traffic inspection.
 
-You can import it in Postman by clicking the import button. You can either download the file or paste the raw data from the previous link.
-Unfortunately, we can't import it using "Import from Link".
+The current API documentation for our project is available at https://api.local.kls-platform.com/docs.
 
-If you already have a collection named "KLS", a prompt will propose you to either replace (meaning you will lose the previous collection) or
-import it as a copy (keeping the conflicting collection).
+To import it in Postman as a request collection, we need it in json format.
+Note that it is better to not import by this https://api.local.kls-platform.com/docs.json documentation link provided by API Platform because it does not take our decorators or contexts into account.
 
-Unfortunately, it is impossible to simply update a collection. Should the collection change, you will need to fully import it again.
+Steps
+ - Go to your docker project
+ - Run this command :
+    - ``docker-compose exec php bin/console api:openapi:export`` (it will print the content in console)
+    - or ``docker-compose exec php bin/console api:openapi:export --output=openapi_docs.json`` (it will save the content in output file) (recommended)
+ - Copy its content
+ - Go to Postman
+ - Click the import button next to your workspace
+ - Paste the content in 'Raw text' tab (the import by file upload does not work)
+ - Confirm validation steps
+
+If you already have a collection named "KLS", Postman will still import it with the same name and will be under the previous one.
+
+Authorization
+--------------
+Once the KLS collection is imported, we must specify authorization details for all requests :
+ - Click the ``KLS`` collection in the collections list
+ - In Authorization tab
+    - change type with ``Bearer Token``
+    - change token with ``{{token}}`` (this variable can be edited with whatever variable you wish to connect as)
+ - Click ``Save``
+
 
 Create an environment
 =====================
-
 Creating an environment is highly encouraged to store common data such as the base url and the various token you used in the application.
 For example, with an environment you can automatically populate the authentication token in a variable then use it in following API calls.
+
+
+Token
+=====
 
 Authentication
 --------------
@@ -76,16 +97,12 @@ In the authentication call, "Test" section, paste the following snippet:
         });
     }
 
-    pm.environment.set("refreshToken", json.refresh_token);
 
+When you execute this request, Postman will record variables related to authentication.
+These variables are based on the available staff you have with the credentials you have given. Besides the variables containing the response (in the jwt variable),
+the tokens array and the refresh token, you will have a variable for each en entity named after its short code contained in the payloads present in the tokens array.
 
-Now when you execute this request, Postman will record variables related to authentication.
-These variables are based on the available staff you have with the credentials you have given. Besides the variables containing the response (in the jwt variable);
-the tokens array and the refresh token, you will have a variable for each en entity named after its short code containted in the payloads present in the tokens array.
-
-You can now edit the collection (right click the collection name and select "Edit") to add a default authorization.
-Select the "Authorization" tab, then "Bearer Token" in the type select input and finally enter the short of your default entity between "{{" and "}}" in the "Token"
-field.
+You can now edit the authorization token of the collection to have a default authorization.
 
 From this moment, when your request need authorization, you can simply select "Inherit from parent".
 
@@ -143,8 +160,6 @@ Like in the authentication call, add this code block in the "Test" section of th
 
     pm.environment.set("refreshToken", json.refresh_token);
 
-Now, when you refresh the token, the variables will be updated with the result of the call enabling you to repeat them without manually entering the tokens.
-These variables are based on the available staff you have with the credentials you have given. Besides the variables containing the response (in the jwt variable);
-the tokens array and the refresh token, you will have a variable for each en entity named after its short code containted in the payloads present in the tokens array.
-
-
+When you refresh the token, the variables will be updated with the result of the call enabling you to repeat them without manually entering the tokens.
+These variables are based on the available staff you have with the credentials you have given. Besides the variables containing the response (in the jwt variable),
+the tokens array and the refresh token, you will have a variable for each en entity named after its short code contained in the payloads present in the tokens array.
