@@ -101,10 +101,11 @@ class ReportingFileBuilder
         $writer->addRow($headerRow);
 
         $rowStyle = (new StyleBuilder())->build();
-        $offset   = 0;
-        $limit    = 1000;
 
-        $query = $this->reportingQueryGenerator->generate($filters, $reportingTemplate);
+        $query  = $this->reportingQueryGenerator->generate($filters, $reportingTemplate);
+        $offset = 0;
+        $limit  = 1000;
+
         while (
             $reportingData = $this->financingObjectRepository->findByReportingFilters(
                 $reportingTemplate->getProgram(),
@@ -119,27 +120,20 @@ class ReportingFileBuilder
                 if (false === ($financingObject instanceof FinancingObject)) {
                     throw new LogicException(
                         \sprintf(
-                            'Unable to generate the report xlsx for the reporting, FinancingObject id %s is not found',
+                            'Impossible to generate reporting, FinancingObject id %s is not found',
                             $item['id_financing_object']
                         )
                     );
                 }
-                // set virtual fields value
-                foreach (FieldAlias::VIRTUAL_FIELDS as $fieldAlias) {
-                    if (\array_key_exists($fieldAlias, $item)) {
-                        $item[$fieldAlias] = $this->reportingTransformer->transformVirtualFieldValue(
-                            $financingObject->getReservation(),
-                            $fieldAlias
-                        );
-                    }
-                }
+
+                $item = $this->reportingTransformer->transform($item, $financingObject);
 
                 //We don't need this id for the export
                 unset($item['id_financing_object']);
-                $item = $this->reportingTransformer->transform($item);
 
                 $writer->addRow(WriterEntityFactory::createRowFromArray(\array_values($item), $rowStyle));
             }
+
             unset($reportingData);
             $offset += $limit;
         }

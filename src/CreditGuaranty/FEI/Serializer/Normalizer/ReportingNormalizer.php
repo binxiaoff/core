@@ -6,14 +6,10 @@ namespace KLS\CreditGuaranty\FEI\Serializer\Normalizer;
 
 use ApiPlatform\Core\Api\IriConverterInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
-use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
-use KLS\CreditGuaranty\FEI\Entity\ProgramChoiceOption;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
-use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
 use KLS\CreditGuaranty\FEI\Repository\FinancingObjectRepository;
 use KLS\CreditGuaranty\FEI\Service\Reporting\ReportingTransformer;
-use KLS\CreditGuaranty\FEI\Service\ReservationAccessor;
 use LogicException;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
@@ -31,22 +27,16 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
     private const ALREADY_CALLED = __CLASS__ . '_ALREADY_CALLED';
 
     private IriConverterInterface $iriConverter;
-    private FieldRepository $fieldRepository;
     private FinancingObjectRepository $financingObjectRepository;
-    private ReservationAccessor $reservationAccessor;
     private ReportingTransformer $reportingTransformer;
 
     public function __construct(
         IriConverterInterface $iriConverter,
-        FieldRepository $fieldRepository,
         FinancingObjectRepository $financingObjectRepository,
-        ReservationAccessor $reservationAccessor,
         ReportingTransformer $reportingTransformer
     ) {
         $this->iriConverter              = $iriConverter;
         $this->financingObjectRepository = $financingObjectRepository;
-        $this->fieldRepository           = $fieldRepository;
-        $this->reservationAccessor       = $reservationAccessor;
         $this->reportingTransformer      = $reportingTransformer;
     }
 
@@ -69,46 +59,19 @@ class ReportingNormalizer implements ContextAwareNormalizerInterface, Normalizer
         $data = $object->getQuery()->getResult();
 
         foreach ($data as &$row) {
-            $financingObject = null;
+            $financingObject = $this->financingObjectRepository->find($row['id_financing_object']);
 
-            // transform id into iri
-            if (false === empty($row['id_financing_object'])) {
-                $financingObject = $this->financingObjectRepository->find($row['id_financing_object']);
-
-                if (false === ($financingObject instanceof FinancingObject)) {
-                    throw new LogicException(
-                        \sprintf(
-                            'Impossible to generate reporting, FinancingObject id %s is not found',
-                            $row['id_financing_object']
-                        )
-                    );
-                }
-
-                $row['id_financing_object'] = $this->iriConverter->getIriFromItem($financingObject);
-            }
-            foreach (FieldAlias::VIRTUAL_FIELDS as $fieldAlias) {
-                if (\array_key_exists($fieldAlias, $row)) {
-                    $row[$fieldAlias] = $this->reportingTransformer->transformVirtualFieldValue(
-                        $financingObject->getReservation(),
-                        $fieldAlias
-                    );
-                }
+            if (false === ($financingObject instanceof FinancingObject)) {
+                throw new LogicException(
+                    \sprintf(
+                        'Impossible to generate reporting, FinancingObject id %s is not found',
+                        $row['id_financing_object']
+                    )
+                );
             }
 
-            // concatenate all investment thematics of project here because it was hard to do in sql all at once
-            if (\array_key_exists(FieldAlias::INVESTMENT_THEMATIC, $row)) {
-                $investmentThematics = $financingObject
-                    ->getReservation()
-                    ->getProject()
-                    ->getInvestmentThematics()
-                    ->map(fn (ProgramChoiceOption $pco) => $pco->getDescription())
-                    ->toArray()
-                ;
-
-                $row[FieldAlias::INVESTMENT_THEMATIC] = \implode(' ; ', $investmentThematics);
-            }
-
-            $row = $this->reportingTransformer->transform($row, $financingObject);
+            $row                        = $this->reportingTransformer->transform($row, $financingObject);
+            $row['id_financing_object'] = $this->iriConverter->getIriFromItem($financingObject);
         }
 
         return $data;
