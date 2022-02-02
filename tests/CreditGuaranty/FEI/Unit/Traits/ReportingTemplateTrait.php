@@ -82,11 +82,19 @@ trait ReportingTemplateTrait
                 'joins'                    => [Borrower::class => ['r.borrower', 'borrower']],
             ],
             FieldAlias::BORROWER_TYPE => [
-                'mappingOperators'         => [],
-                'propertyPathFormatted'    => \sprintf('pco_%s.description', FieldAlias::BORROWER_TYPE),
-                'propertyPathNotFormatted' => \sprintf('pco_%s.description', FieldAlias::BORROWER_TYPE),
-                'searchable'               => true,
-                'joins'                    => [
+                'mappingOperators'      => [],
+                'propertyPathFormatted' => \sprintf(
+                    'COALESCE(pco_%s.transcode, pco_%s.description)',
+                    FieldAlias::BORROWER_TYPE,
+                    FieldAlias::BORROWER_TYPE,
+                ),
+                'propertyPathNotFormatted' => \sprintf(
+                    'COALESCE(pco_%s.transcode, pco_%s.description)',
+                    FieldAlias::BORROWER_TYPE,
+                    FieldAlias::BORROWER_TYPE
+                ),
+                'searchable' => true,
+                'joins'      => [
                     Borrower::class => [
                         'r.borrower',
                         'borrower',

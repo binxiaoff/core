@@ -26,10 +26,12 @@ use KLS\Core\Entity\FileVersion;
 use KLS\Core\Entity\User;
 use KLS\Core\Service\FileSystem\FileSystemHelper;
 use KLS\CreditGuaranty\FEI\Entity\Constant\FieldAlias;
+use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
 use KLS\CreditGuaranty\FEI\Entity\ReportingTemplate;
 use KLS\CreditGuaranty\FEI\Repository\FinancingObjectRepository;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
+use LogicException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Mime\MimeTypes;
 
@@ -44,6 +46,7 @@ class ReportingFileBuilder
     private Filesystem $fileSystem;
     private FilesystemOperator $generatedDocumentFilesystem;
     private FileSystemHelper $fileSystemHelper;
+    private ReportingTransformer $reportingTransformer;
 
     public function __construct(
         FinancingObjectRepository $financingObjectRepository,
@@ -51,7 +54,8 @@ class ReportingFileBuilder
         Filesystem $filesystem,
         string $temporaryDirectory,
         FilesystemOperator $generatedDocumentFilesystem,
-        FileSystemHelper $fileSystemHelper
+        FileSystemHelper $fileSystemHelper,
+        ReportingTransformer $reportingTransformer
     ) {
         $this->financingObjectRepository   = $financingObjectRepository;
         $this->reportingQueryGenerator     = $reportingQueryGenerator;
@@ -59,6 +63,7 @@ class ReportingFileBuilder
         $this->fileSystem                  = $filesystem;
         $this->generatedDocumentFilesystem = $generatedDocumentFilesystem;
         $this->fileSystemHelper            = $fileSystemHelper;
+        $this->reportingTransformer        = $reportingTransformer;
     }
 
     /**
@@ -96,10 +101,11 @@ class ReportingFileBuilder
         $writer->addRow($headerRow);
 
         $rowStyle = (new StyleBuilder())->build();
-        $offset   = 0;
-        $limit    = 1000;
 
-        $query = $this->reportingQueryGenerator->generate($filters, $reportingTemplate);
+        $query  = $this->reportingQueryGenerator->generate($filters, $reportingTemplate);
+        $offset = 0;
+        $limit  = 1000;
+
         while (
             $reportingData = $this->financingObjectRepository->findByReportingFilters(
                 $reportingTemplate->getProgram(),
@@ -109,9 +115,25 @@ class ReportingFileBuilder
             )
         ) {
             foreach ($reportingData as $item) {
+                $financingObject = $this->financingObjectRepository->find($item['id_financing_object']);
+
+                if (false === ($financingObject instanceof FinancingObject)) {
+                    throw new LogicException(
+                        \sprintf(
+                            'Impossible to generate reporting, FinancingObject id %s is not found',
+                            $item['id_financing_object']
+                        )
+                    );
+                }
+
+                $item = $this->reportingTransformer->transform($item, $financingObject);
+
+                //We don't need this id for the export
                 unset($item['id_financing_object']);
+
                 $writer->addRow(WriterEntityFactory::createRowFromArray(\array_values($item), $rowStyle));
             }
+
             unset($reportingData);
             $offset += $limit;
         }
@@ -183,7 +205,9 @@ class ReportingFileBuilder
             $reportingTemplateFields
         );
 
-        return WriterEntityFactory::createRowFromArray($orderedFields, $this->headerStyle());
+        $translatedFields = $this->reportingTransformer->translateField($orderedFields);
+
+        return WriterEntityFactory::createRowFromArray($translatedFields, $this->headerStyle());
     }
 
     private function headerStyle(): Style
