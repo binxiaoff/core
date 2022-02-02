@@ -8,10 +8,9 @@ use ApiPlatform\Core\Bridge\Symfony\Validator\Exception\ValidationException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use KLS\Core\Entity\Embeddable\NullableMoney;
-use KLS\Core\Entity\Staff;
 use KLS\CreditGuaranty\FEI\Entity\FinancingObject;
-use KLS\CreditGuaranty\FEI\Entity\Program;
 use KLS\CreditGuaranty\FEI\Repository\FinancingObjectRepository;
+use KLS\CreditGuaranty\FEI\Security\Voter\ProgramVoter;
 use KLS\CreditGuaranty\FEI\Validator\Constraints\FinancingObjectImportData;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -103,7 +102,7 @@ class FinancingObjectUpdater
                 continue;
             }
 
-            if (false === $this->isStaffCompanySameAsProgram($financingObject->getProgram())) {
+            if (false === $this->security->isGranted(ProgramVoter::ATTRIBUTE_IMPORT, $financingObject->getProgram())) {
                 // +2 because array starts with key 0 and we need to skip the header line
                 $accessDeniedFinancingObject[] = 'Ligne ' . $lineNumber;
 
@@ -127,14 +126,5 @@ class FinancingObjectUpdater
             'itemUpdated'                 => $itemUpdated,
             'itemTotal'                   => \count($data),
         ];
-    }
-
-    private function isStaffCompanySameAsProgram(Program $program): bool
-    {
-        $token = $this->security->getToken();
-        /** @var Staff|null $staff */
-        $staff = ($token && $token->hasAttribute('staff')) ? $token->getAttribute('staff') : null;
-
-        return $staff->getCompany() === $program->getManagingCompany();
     }
 }
