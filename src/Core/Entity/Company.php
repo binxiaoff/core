@@ -22,6 +22,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * Represent a bank that might be one of our client.
+ * In syndication, they are the lenders.
+ * A company only knows its root team.
+ *
  * @ApiResource(
  *     attributes={
  *         "pagination_enabled": false

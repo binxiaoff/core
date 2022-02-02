@@ -28,6 +28,9 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * Represent a user, a physical person behind the computer. Each user may be uniquely identified by an email.
+ * All data related to a sole user should be in this entity.
+ *
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {

@@ -12,6 +12,9 @@ use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * Represent a successful attempt by a person to connect to the API.
+ * This table is likely to be populated by @see LoginLogSubscriber.
+ *
  * @ORM\Table(name="core_user_successful_login", indexes={
  *     @ORM\Index(name="idx_user_successful_login_ip", columns={"ip"}),
  *     @ORM\Index(name="idx_user_successful_login_added", columns={"added"})
@@ -86,7 +89,7 @@ class UserSuccessfulLogin
         return $this;
     }
 
-    public function getAction(): int
+    public function getAction(): string
     {
         return $this->action;
     }

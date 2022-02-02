@@ -15,6 +15,40 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * Represents an unit consisting of multiple employee [@see Staff] in the company organization.
+ * They are linked (as vertices) via edges [@see TeamEdge] kinda like an arboresence
+ * [@see https://en.wikipedia.org/wiki/Arborescence_(graph_theory)].
+ * It uses the @see https://coderwall.com/p/lixing/closure-tables-for-browsing-trees-in-sql.
+ *
+ * @see Team::incomingEdges is a collection of the edges where current team is the tail of said arc.
+ * @see Team::outgoingEdges is a collection of the edges where current team is the head of said arc.
+ *
+ * In the example below, the teams are the nodes and the TeamEdges are the edges
+ *
+ *       +-------------+
+ *       | Team        |-------------+
+ *       +------+------+             |
+ *             |                     |
+ *             |                     |
+ *             |                     |
+ *             |                     |
+ *             |                     |
+ *             |                     |
+ *             |                     |
+ *       +-----v---------+           |
+ *       |  Team         |           |
+ *       +------+--------+           |
+ *              |                    |
+ *              |                    |
+ *              |                    |
+ *              |                    |
+ *              |                    |
+ *              |                    |
+ *              |                    |
+ *      +-------v----------+         |
+ *      | Team             |<-------+
+ *      +-----------------+
+ *
  * @ApiResource(
  *     normalizationContext={
  *         "groups": {"
@@ -87,6 +121,8 @@ class Team
     private iterable $staff;
 
     /**
+     * Collection of edges where current team ($this) is the head.
+     *
      * @var TeamEdge[]|Collection
      *
      * @ORM\OneToMany(targetEntity="KLS\Core\Entity\TeamEdge", mappedBy="ancestor")
@@ -94,6 +130,8 @@ class Team
     private Collection $outgoingEdges;
 
     /**
+     * Collection of edges where current team ($this) is the tail.
+     *
      * @var TeamEdge[]|Collection
      *
      * @ORM\OneToMany(
