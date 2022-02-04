@@ -55,10 +55,21 @@ class ListExtension implements QueryCollectionExtensionInterface
         $rootAlias = $queryBuilder->getRootAliases()[0];
 
         $queryBuilder
-            ->innerJoin(ProjectParticipation::class, 'pp', Join::WITH, $rootAlias . '.projectParticipation = pp.id')
-            ->leftJoin(ProjectParticipationMember::class, 'ppm', Join::WITH, 'ppm.projectParticipation = pp.id')
+            ->innerJoin($rootAlias . '.projectParticipation', 'mpp') // The participation of the thread
+            ->innerJoin(
+                ProjectParticipation::class,
+                'pp',
+                Join::WITH,
+                'mpp.project = pp.project AND pp.participant = :company'
+            ) // Via the previous participation, we can find the participation of the current staff
+            ->leftJoin(
+                ProjectParticipationMember::class,
+                'ppm',
+                Join::WITH,
+                'ppm.projectParticipation = pp.id AND ppm.archived IS NULL'
+            )
             ->innerJoin(Project::class, 'p', Join::WITH, 'p.id = pp.project')
-            ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'pst.project = p.id')
+            ->innerJoin(ProjectStatus::class, 'pst', Join::WITH, 'pst.id = p.currentStatus')
             ->andWhere($queryBuilder->expr()->orX(
                 // you are the project owner
                 'p.submitterUser = :user',
@@ -66,7 +77,7 @@ class ListExtension implements QueryCollectionExtensionInterface
                 $queryBuilder->expr()->andX(
                     // 1. you are a non archived member of participation OR you managed a member of a participation
                     $queryBuilder->expr()->orX(
-                        $queryBuilder->expr()->andX('ppm.staff = :staff', 'ppm.archived IS NULL'),
+                        'ppm.staff = :staff',
                         'ppm IN (:managedStaffMember)',
                     ),
                     // 2. you are in arranger company OR your participant and the project is in displayable status
