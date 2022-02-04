@@ -15,6 +15,7 @@ class ProgramVoter extends AbstractEntityVoter
 {
     public const ATTRIBUTE_DATAROOM  = 'dataroom';
     public const ATTRIBUTE_REPORTING = 'reporting';
+    public const ATTRIBUTE_IMPORT    = 'import';
 
     private StaffPermissionManager $staffPermissionManager;
 
@@ -80,8 +81,18 @@ class ProgramVoter extends AbstractEntityVoter
     {
         $staff = $user->getCurrentStaff();
 
-        return $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
+        return $staff
+            && $this->authorizationChecker->isGranted(ProgramRoleVoter::ROLE_MANAGER, $program)
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_READ_PROGRAM)
             && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_REPORTING);
+    }
+
+    protected function canImport(Program $program, User $user): bool
+    {
+        $staff = $user->getCurrentStaff();
+
+        return $staff
+            && $this->staffPermissionManager->hasPermissions($staff, StaffPermission::PERMISSION_REPORTING)
+            && $staff->getCompany() === $program->getManagingCompany();
     }
 }

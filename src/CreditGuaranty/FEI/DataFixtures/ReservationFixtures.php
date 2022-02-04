@@ -30,6 +30,7 @@ use KLS\CreditGuaranty\FEI\Entity\Reservation;
 use KLS\CreditGuaranty\FEI\Entity\ReservationStatus;
 use KLS\CreditGuaranty\FEI\Repository\FieldRepository;
 use KLS\CreditGuaranty\FEI\Repository\ProgramChoiceOptionRepository;
+use ReflectionException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class ReservationFixtures extends AbstractFixtures implements DependentFixtureInterface
@@ -102,6 +103,24 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ]),
         ]);
 
+        $currentProgramId          = null;
+        $saOption                  = null;
+        $sarlOption                = null;
+        $sasOption                 = null;
+        $selasOption               = null;
+        $investmentThematicOption1 = null;
+        $investmentThematicOption2 = null;
+        $investmentThematicOption3 = null;
+        $investmentThematicOption4 = null;
+        $investmentThematicOption5 = null;
+        $aidIntensity20Option      = null;
+        $aidIntensity40Option      = null;
+        $aidIntensity80Option      = null;
+        $revolvingCreditOption     = null;
+        $shortTermOption           = null;
+        $signatureCommitmentOption = null;
+        $termLoanOption            = null;
+
         /** @var Participation $participation */
         foreach ($participations as $participation) {
             $program          = $participation->getProgram();
@@ -109,154 +128,158 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             $staff            = $participant->getStaff()->current();
             $companyShortCode = $participant->getShortCode();
 
-            // legal form
-            $saOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LEGAL_FORM,
-                LegalForm::SA
-            );
-            $saOption = $this->hasReference($saOptionReference)
-                ? $this->getReference($saOptionReference)
-                : null;
-            $sarlOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LEGAL_FORM,
-                LegalForm::SARL
-            );
-            $sarlOption = $this->hasReference($sarlOptionReference)
-                ? $this->getReference($sarlOptionReference)
-                : null;
-            $sasOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LEGAL_FORM,
-                LegalForm::SAS
-            );
-            $sasOption = $this->hasReference($sasOptionReference)
-                ? $this->getReference($sasOptionReference)
-                : null;
-            $selasOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LEGAL_FORM,
-                LegalForm::SELAS
-            );
-            $selasOption = $this->hasReference($selasOptionReference)
-                ? $this->getReference($selasOptionReference)
-                : null;
-            // investment thematic
-            $investmentThematicOption1Reference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::INVESTMENT_THEMATIC,
-                'Renouvellement'
-            );
-            $investmentThematicOption1 = $this->hasReference($investmentThematicOption1Reference)
-                ? $this->getReference($investmentThematicOption1Reference)
-                : null;
-            $investmentThematicOption2Reference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::INVESTMENT_THEMATIC,
-                'Mieux répondre aux attentes'
-            );
-            $investmentThematicOption2 = $this->hasReference($investmentThematicOption2Reference)
-                ? $this->getReference($investmentThematicOption2Reference)
-                : null;
-            $investmentThematicOption3Reference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::INVESTMENT_THEMATIC,
-                'Transformation'
-            );
-            $investmentThematicOption3 = $this->hasReference($investmentThematicOption3Reference)
-                ? $this->getReference($investmentThematicOption3Reference)
-                : null;
-            $investmentThematicOption4Reference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::INVESTMENT_THEMATIC,
-                'Accompagner'
-            );
-            $investmentThematicOption4 = $this->hasReference($investmentThematicOption4Reference)
-                ? $this->getReference($investmentThematicOption4Reference)
-                : null;
-            $investmentThematicOption5Reference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::INVESTMENT_THEMATIC,
-                'Mettre à niveau'
-            );
-            $investmentThematicOption5 = $this->hasReference($investmentThematicOption5Reference)
-                ? $this->getReference($investmentThematicOption5Reference)
-                : null;
-            // aid intensity
-            $aidIntensity20OptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::AID_INTENSITY,
-                '0.20'
-            );
-            $aidIntensity20Option = $this->hasReference($aidIntensity20OptionReference)
-                ? $this->getReference($aidIntensity20OptionReference)
-                : null;
-            $aidIntensity40OptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::AID_INTENSITY,
-                '0.40'
-            );
-            $aidIntensity40Option = $this->hasReference($aidIntensity40OptionReference)
-                ? $this->getReference($aidIntensity40OptionReference)
-                : null;
-            $aidIntensity80OptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::AID_INTENSITY,
-                '0.80'
-            );
-            $aidIntensity80Option = $this->hasReference($aidIntensity80OptionReference)
-                ? $this->getReference($aidIntensity80OptionReference)
-                : null;
-            // loan type
-            $revolvingCreditOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LOAN_TYPE,
-                LoanType::REVOLVING_CREDIT
-            );
-            $revolvingCreditOption = $this->hasReference($revolvingCreditOptionReference)
-                ? $this->getReference($revolvingCreditOptionReference)
-                : null;
-            $shortTermOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LOAN_TYPE,
-                LoanType::SHORT_TERM
-            );
-            $shortTermOption = $this->hasReference($shortTermOptionReference)
-                ? $this->getReference($shortTermOptionReference)
-                : null;
-            $signatureCommitmentOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LOAN_TYPE,
-                LoanType::SIGNATURE_COMMITMENT
-            );
-            $signatureCommitmentOption = $this->hasReference($signatureCommitmentOptionReference)
-                ? $this->getReference($signatureCommitmentOptionReference)
-                : null;
-            $termLoanOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LOAN_TYPE,
-                LoanType::TERM_LOAN
-            );
-            $termLoanOption = $this->hasReference($termLoanOptionReference)
-                ? $this->getReference($termLoanOptionReference)
-                : null;
+            if ($program->getId() !== $currentProgramId) {
+                $currentProgramId = $program->getId();
+
+                // legal form
+                $saOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LEGAL_FORM,
+                    LegalForm::SA
+                );
+                $saOption = $this->hasReference($saOptionReference)
+                    ? $this->getReference($saOptionReference)
+                    : null;
+                $sarlOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LEGAL_FORM,
+                    LegalForm::SARL
+                );
+                $sarlOption = $this->hasReference($sarlOptionReference)
+                    ? $this->getReference($sarlOptionReference)
+                    : null;
+                $sasOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LEGAL_FORM,
+                    LegalForm::SAS
+                );
+                $sasOption = $this->hasReference($sasOptionReference)
+                    ? $this->getReference($sasOptionReference)
+                    : null;
+                $selasOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LEGAL_FORM,
+                    LegalForm::SELAS
+                );
+                $selasOption = $this->hasReference($selasOptionReference)
+                    ? $this->getReference($selasOptionReference)
+                    : null;
+                // investment thematic
+                $investmentThematicOption1Reference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::INVESTMENT_THEMATIC,
+                    'Renouvellement'
+                );
+                $investmentThematicOption1 = $this->hasReference($investmentThematicOption1Reference)
+                    ? $this->getReference($investmentThematicOption1Reference)
+                    : null;
+                $investmentThematicOption2Reference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::INVESTMENT_THEMATIC,
+                    'Mieux répondre aux attentes'
+                );
+                $investmentThematicOption2 = $this->hasReference($investmentThematicOption2Reference)
+                    ? $this->getReference($investmentThematicOption2Reference)
+                    : null;
+                $investmentThematicOption3Reference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::INVESTMENT_THEMATIC,
+                    'Transformation'
+                );
+                $investmentThematicOption3 = $this->hasReference($investmentThematicOption3Reference)
+                    ? $this->getReference($investmentThematicOption3Reference)
+                    : null;
+                $investmentThematicOption4Reference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::INVESTMENT_THEMATIC,
+                    'Accompagner'
+                );
+                $investmentThematicOption4 = $this->hasReference($investmentThematicOption4Reference)
+                    ? $this->getReference($investmentThematicOption4Reference)
+                    : null;
+                $investmentThematicOption5Reference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::INVESTMENT_THEMATIC,
+                    'Mettre à niveau'
+                );
+                $investmentThematicOption5 = $this->hasReference($investmentThematicOption5Reference)
+                    ? $this->getReference($investmentThematicOption5Reference)
+                    : null;
+                // aid intensity
+                $aidIntensity20OptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::AID_INTENSITY,
+                    '0.20'
+                );
+                $aidIntensity20Option = $this->hasReference($aidIntensity20OptionReference)
+                    ? $this->getReference($aidIntensity20OptionReference)
+                    : null;
+                $aidIntensity40OptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::AID_INTENSITY,
+                    '0.40'
+                );
+                $aidIntensity40Option = $this->hasReference($aidIntensity40OptionReference)
+                    ? $this->getReference($aidIntensity40OptionReference)
+                    : null;
+                $aidIntensity80OptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::AID_INTENSITY,
+                    '0.80'
+                );
+                $aidIntensity80Option = $this->hasReference($aidIntensity80OptionReference)
+                    ? $this->getReference($aidIntensity80OptionReference)
+                    : null;
+                // loan type
+                $revolvingCreditOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LOAN_TYPE,
+                    LoanType::REVOLVING_CREDIT
+                );
+                $revolvingCreditOption = $this->hasReference($revolvingCreditOptionReference)
+                    ? $this->getReference($revolvingCreditOptionReference)
+                    : null;
+                $shortTermOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LOAN_TYPE,
+                    LoanType::SHORT_TERM
+                );
+                $shortTermOption = $this->hasReference($shortTermOptionReference)
+                    ? $this->getReference($shortTermOptionReference)
+                    : null;
+                $signatureCommitmentOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LOAN_TYPE,
+                    LoanType::SIGNATURE_COMMITMENT
+                );
+                $signatureCommitmentOption = $this->hasReference($signatureCommitmentOptionReference)
+                    ? $this->getReference($signatureCommitmentOptionReference)
+                    : null;
+                $termLoanOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LOAN_TYPE,
+                    LoanType::TERM_LOAN
+                );
+                $termLoanOption = $this->hasReference($termLoanOptionReference)
+                    ? $this->getReference($termLoanOptionReference)
+                    : null;
+            }
 
             for ($i = 1; $i <= 5; ++$i) {
                 yield [
@@ -592,12 +615,16 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 50,
+                            FieldAlias::LOAN_NUMBER                    => $this->faker->unique()->randomNumber(6, true),
+                            FieldAlias::LOAN_OPERATION_NUMBER          => $this->faker->unique()->randomNumber(9, true),
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => $shortTermOption,
                             FieldAlias::LOAN_DURATION                  => 30,
+                            FieldAlias::LOAN_NUMBER                    => $this->faker->unique()->randomNumber(6, true),
+                            FieldAlias::LOAN_OPERATION_NUMBER          => $this->faker->unique()->randomNumber(9, true),
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
@@ -638,97 +665,112 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             ]),
         ]);
 
+        $currentProgramId          = null;
+        $saOption                  = null;
+        $investmentThematicOption2 = null;
+        $investmentThematicOption3 = null;
+        $investmentThematicOption4 = null;
+        $aidIntensity80Option      = null;
+        $revolvingCreditOption     = null;
+        $shortTermOption           = null;
+        $signatureCommitmentOption = null;
+        $termLoanOption            = null;
+
         /** @var Participation $participation */
         foreach ($participations as $participation) {
             $program     = $participation->getProgram();
             $participant = $participation->getParticipant();
             $staff       = $participant->getStaff()->current();
 
-            // legal form
-            $saOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LEGAL_FORM,
-                LegalForm::SA
-            );
-            $saOption = $this->hasReference($saOptionReference)
-                ? $this->getReference($saOptionReference)
-                : null;
-            // investment thematic
-            $investmentThematicOption2Reference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::INVESTMENT_THEMATIC,
-                'Mieux répondre aux attentes'
-            );
-            $investmentThematicOption2 = $this->hasReference($investmentThematicOption2Reference)
-                ? $this->getReference($investmentThematicOption2Reference)
-                : null;
-            $investmentThematicOption3Reference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::INVESTMENT_THEMATIC,
-                'Transformation'
-            );
-            $investmentThematicOption3 = $this->hasReference($investmentThematicOption3Reference)
-                ? $this->getReference($investmentThematicOption3Reference)
-                : null;
-            $investmentThematicOption4Reference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::INVESTMENT_THEMATIC,
-                'Accompagner'
-            );
-            $investmentThematicOption4 = $this->hasReference($investmentThematicOption4Reference)
-                ? $this->getReference($investmentThematicOption4Reference)
-                : null;
-            // aid intensity
-            $aidIntensity80OptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::AID_INTENSITY,
-                '0.80'
-            );
-            $aidIntensity80Option = $this->hasReference($aidIntensity80OptionReference)
-                ? $this->getReference($aidIntensity80OptionReference)
-                : null;
-            // loan type
-            $revolvingCreditOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LOAN_TYPE,
-                LoanType::REVOLVING_CREDIT
-            );
-            $revolvingCreditOption = $this->hasReference($revolvingCreditOptionReference)
-                ? $this->getReference($revolvingCreditOptionReference)
-                : null;
-            $shortTermOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LOAN_TYPE,
-                LoanType::SHORT_TERM
-            );
-            $shortTermOption = $this->hasReference($shortTermOptionReference)
-                ? $this->getReference($shortTermOptionReference)
-                : null;
-            $signatureCommitmentOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LOAN_TYPE,
-                LoanType::SIGNATURE_COMMITMENT
-            );
-            $signatureCommitmentOption = $this->hasReference($signatureCommitmentOptionReference)
-                ? $this->getReference($signatureCommitmentOptionReference)
-                : null;
-            $termLoanOptionReference = \sprintf(
-                ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
-                $program->getId(),
-                FieldAlias::LOAN_TYPE,
-                LoanType::TERM_LOAN
-            );
-            $termLoanOption = $this->hasReference($termLoanOptionReference)
-                ? $this->getReference($termLoanOptionReference)
-                : null;
+            if ($program->getId() !== $currentProgramId) {
+                $currentProgramId = $program->getId();
+
+                // legal form
+                $saOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LEGAL_FORM,
+                    LegalForm::SA
+                );
+                $saOption = $this->hasReference($saOptionReference)
+                    ? $this->getReference($saOptionReference)
+                    : null;
+                // investment thematic
+                $investmentThematicOption2Reference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::INVESTMENT_THEMATIC,
+                    'Mieux répondre aux attentes'
+                );
+                $investmentThematicOption2 = $this->hasReference($investmentThematicOption2Reference)
+                    ? $this->getReference($investmentThematicOption2Reference)
+                    : null;
+                $investmentThematicOption3Reference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::INVESTMENT_THEMATIC,
+                    'Transformation'
+                );
+                $investmentThematicOption3 = $this->hasReference($investmentThematicOption3Reference)
+                    ? $this->getReference($investmentThematicOption3Reference)
+                    : null;
+                $investmentThematicOption4Reference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::INVESTMENT_THEMATIC,
+                    'Accompagner'
+                );
+                $investmentThematicOption4 = $this->hasReference($investmentThematicOption4Reference)
+                    ? $this->getReference($investmentThematicOption4Reference)
+                    : null;
+                // aid intensity
+                $aidIntensity80OptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::AID_INTENSITY,
+                    '0.80'
+                );
+                $aidIntensity80Option = $this->hasReference($aidIntensity80OptionReference)
+                    ? $this->getReference($aidIntensity80OptionReference)
+                    : null;
+                // loan type
+                $revolvingCreditOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LOAN_TYPE,
+                    LoanType::REVOLVING_CREDIT
+                );
+                $revolvingCreditOption = $this->hasReference($revolvingCreditOptionReference)
+                    ? $this->getReference($revolvingCreditOptionReference)
+                    : null;
+                $shortTermOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LOAN_TYPE,
+                    LoanType::SHORT_TERM
+                );
+                $shortTermOption = $this->hasReference($shortTermOptionReference)
+                    ? $this->getReference($shortTermOptionReference)
+                    : null;
+                $signatureCommitmentOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LOAN_TYPE,
+                    LoanType::SIGNATURE_COMMITMENT
+                );
+                $signatureCommitmentOption = $this->hasReference($signatureCommitmentOptionReference)
+                    ? $this->getReference($signatureCommitmentOptionReference)
+                    : null;
+                $termLoanOptionReference = \sprintf(
+                    ProgramChoiceOptionFixtures::REFERENCE_FORMAT,
+                    $program->getId(),
+                    FieldAlias::LOAN_TYPE,
+                    LoanType::TERM_LOAN
+                );
+                $termLoanOption = $this->hasReference($termLoanOptionReference)
+                    ? $this->getReference($termLoanOptionReference)
+                    : null;
+            }
 
             foreach (\range(1, 10) as $index) {
                 yield [
@@ -764,18 +806,24 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => $termLoanOption,
                             FieldAlias::LOAN_DURATION                  => 50,
+                            FieldAlias::LOAN_NUMBER                    => $this->faker->unique()->randomNumber(6, true),
+                            FieldAlias::LOAN_OPERATION_NUMBER          => $this->faker->unique()->randomNumber(9, true),
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => $shortTermOption,
                             FieldAlias::LOAN_DURATION                  => 30,
+                            FieldAlias::LOAN_NUMBER                    => $this->faker->unique()->randomNumber(6, true),
+                            FieldAlias::LOAN_OPERATION_NUMBER          => $this->faker->unique()->randomNumber(9, true),
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
                             FieldAlias::SUPPORTING_GENERATIONS_RENEWAL => true,
                             FieldAlias::LOAN_TYPE                      => $revolvingCreditOption,
                             FieldAlias::LOAN_DURATION                  => 12,
+                            FieldAlias::LOAN_NUMBER                    => $this->faker->unique()->randomNumber(6, true),
+                            FieldAlias::LOAN_OPERATION_NUMBER          => $this->faker->unique()->randomNumber(9, true),
                         ],
                         [
                             self::FORCE_DEFAULT_VALUES                 => true,
@@ -819,9 +867,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $totalAmount = 0;
 
         if (false === empty($reservationData['financingObjects'])) {
-            for ($i = 0, $iMax = \count($reservationData['financingObjects']); $i < $iMax; ++$i) {
-                $financingObject = $this->createFinancingObject($reservation, $reservationData['financingObjects'][$i]);
-                $financingObject->setMainLoan(0 === $i);
+            foreach ($reservationData['financingObjects'] as $key => $dataItem) {
+                $financingObject = $this->createFinancingObject($reservation, $dataItem);
+                $financingObject->setMainLoan(0 === $key);
                 $this->entityManager->persist($financingObject);
                 $totalAmount += (float) $financingObject->getLoanMoney()->getAmount();
             }
@@ -836,6 +884,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         return $reservation;
     }
 
+    /**
+     * @throws ReflectionException
+     */
     private function withBorrower(Reservation $reservation, array $data): void
     {
         $program              = $reservation->getProgram();
@@ -872,6 +923,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
     }
 
+    /**
+     * @throws ReflectionException
+     */
     private function withProject(Reservation $reservation, array $data): void
     {
         $program              = $reservation->getProgram();
@@ -902,6 +956,9 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         }
     }
 
+    /**
+     * @throws ReflectionException
+     */
     private function createFinancingObject(Reservation $reservation, array $data): FinancingObject
     {
         $program              = $reservation->getProgram();
@@ -916,13 +973,26 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
             $this->faker->sentence(3, true)
         );
 
+        $financingObject
+            ->setLoanNumber(
+                isset($data[FieldAlias::LOAN_NUMBER])
+                    ? (string) $data[FieldAlias::LOAN_NUMBER]
+                    : null
+            )
+            ->setOperationNumber(
+                isset($data[FieldAlias::LOAN_OPERATION_NUMBER])
+                    ? (string) $data[FieldAlias::LOAN_OPERATION_NUMBER]
+                    : null
+            )
+        ;
+
         /** @var ProgramEligibility $programEligibility */
         foreach ($programEligibilities as $programEligibility) {
             $field      = $programEligibility->getField();
             $fieldAlias = $field->getFieldAlias();
 
             // no need to set these properties because they are set just before this loop by default
-            if (\in_array($fieldAlias, [FieldAlias::FINANCING_OBJECT_NAME, FieldAlias::LOAN_MONEY])) {
+            if (\in_array($fieldAlias, [FieldAlias::FINANCING_OBJECT_NAME, FieldAlias::LOAN_MONEY], true)) {
                 continue;
             }
 
@@ -970,6 +1040,11 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $this->entityManager->persist($currentReservationStatus);
     }
 
+    /**
+     * @param mixed $value
+     *
+     * @throws ReflectionException
+     */
     private function setValue(ProgramAwareInterface $entity, Field $field, $value, bool $forceDefaultValues): void
     {
         $program     = $entity->getProgram();
