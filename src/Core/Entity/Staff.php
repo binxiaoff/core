@@ -25,8 +25,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
- * Represent an employee relationship between a person [@see User]
- * and a bank [@see Company].
+ * Represents the membership of a person [@see User] in a team [@see Team] and, indirectly, to a company [@see Company].
  * For the company end of the relation, this link is made via the @see Staff::team [@see Team].
  *
  * @ApiResource(
@@ -125,7 +124,6 @@ class Staff implements TraceableStatusAwareInterface, EquivalenceCheckerInterfac
     private Team $team;
 
     /**
-     * true if you are manager of the team you are on, false otherwise.
      *
      * @ORM\Column(type="boolean")
      *

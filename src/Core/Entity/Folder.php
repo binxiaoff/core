@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Represent a directory in a drive [@see Drive].
+ * Represents a directory in a drive [@see Drive].
  *
  * @ORM\Entity
  * @ORM\Table(name="core_folder", uniqueConstraints={
@@ -230,8 +230,9 @@ class Folder extends AbstractFolder
             $path = $path->getPath();
         }
 
-        $relativePath = 0 === \mb_strpos($path, DIRECTORY_SEPARATOR) ?
-            \mb_substr($path, \mb_strlen($this->path) + 1) : $path;
+        $relativePath = 0 === \mb_strpos($path, DIRECTORY_SEPARATOR)
+            ? \mb_substr($path, \mb_strlen($this->path) + 1)
+            : $path;
 
         return $this->path . DIRECTORY_SEPARATOR . $relativePath;
     }

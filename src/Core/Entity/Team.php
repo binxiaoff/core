@@ -15,15 +15,15 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Represents an unit consisting of multiple employee [@see Staff] in the company organization.
- * They are linked (as vertices) via edges [@see TeamEdge] kinda like an arboresence
+ * Represents a unit consisting of multiple employees [@see Staff] in the company organization.
+ * They are linked (as vertices) via edges [@see TeamEdge] like an arboresence
  * [@see https://en.wikipedia.org/wiki/Arborescence_(graph_theory)].
  * It uses the @see https://coderwall.com/p/lixing/closure-tables-for-browsing-trees-in-sql.
  *
- * @see Team::incomingEdges is a collection of the edges where current team is the tail of said arc.
- * @see Team::outgoingEdges is a collection of the edges where current team is the head of said arc.
- *
- * In the example below, the teams are the nodes and the TeamEdges are the edges
+ * @see Team::incomingEdges is a collection of the direct (parent) and indirect (ancestor) edges where current team is the tail of said arc.
+ * @see Team::outgoingEdges is a collection of the direct (children) and indirect (descendent) edges where current team is the head of said arc.
+
+Below a schema to show this: 
  *
  *       +-------------+
  *       | Team        |-------------+

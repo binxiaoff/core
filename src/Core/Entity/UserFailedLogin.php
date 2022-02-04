@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\IdentityTrait;
 
 /**
- * Represent an failed attempt by a person to connect to the API.
+ * Represents an failed attempt by a person to connect to the API.
  * The reason for failure is recorded in the error field.
  * This table is likely to be populated by @see LoginLogSubscriber.
  *

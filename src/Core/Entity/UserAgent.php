@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
- * Represents an user agent.
+ * Represents an user agent. [@link https://fr.wikipedia.org/wiki/User_agent]
  * Created to reduce duplication in the @see UserFailedLogin
  *  and @see UserSuccessfulLogin.
  *

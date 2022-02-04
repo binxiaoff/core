@@ -12,7 +12,7 @@ use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Represent a successful attempt by a person to connect to the API.
+ * Represents a successful attempt by a person to connect to the API.
  * This table is likely to be populated by @see LoginLogSubscriber.
  *
  * @ORM\Table(name="core_user_successful_login", indexes={

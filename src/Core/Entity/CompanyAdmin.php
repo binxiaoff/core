@@ -9,7 +9,7 @@ use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 
 /**
  * Represents an admin in a company.
- * An user who is given admin privilege (by having a line in this table with a company)
+ * A user who is given admin privilege (by having a line in this table with a company)
  * has access to module manipulation of a given company.
  *
  * @ORM\Entity
