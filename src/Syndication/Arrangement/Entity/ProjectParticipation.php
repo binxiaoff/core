@@ -200,19 +200,15 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *
  * @UniqueEntity({"participant", "project"})
  */
-class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAwareInterface, EquivalenceCheckerInterface
+class ProjectParticipation implements
+    TraceableStatusAwareInterface,
+    FileTypesAwareInterface,
+    EquivalenceCheckerInterface
 {
     use TimestampableTrait;
     use BlamableAddedTrait;
     use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
-
-    // Additional normalizer group that is available for those who have the admin right
-    // on the participation (participation owner or arranger)
-    public const SERIALIZER_GROUP_ADMIN_READ = 'projectParticipation:admin:read';
-    // Additional normalizer group that is available for public visibility project.
-    // It's also available for the participation owner and arranger
-    public const SERIALIZER_GROUP_SENSITIVE_READ = 'projectParticipation:sensitive:read';
 
     public const PROJECT_PARTICIPATION_FILE_TYPE_NDA = 'project_participation_nda';
 
@@ -249,7 +245,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      * @Assert\Valid
      *
      * @Groups({
-     *     ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
+     *     "projectParticipation:read",
      *     "projectParticipation:owner:interestExpression:write",
      *     "projectParticipation:owner:participantReply:write",
      *     "projectParticipation:arranger:interestExpression:write",
@@ -267,7 +263,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      * @Gedmo\Versioned
      *
      * @Groups({
-     *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+     *     "projectParticipation:read",
      *     "projectParticipation:owner:participantReply:write",
      *     "projectParticipation:arrangerOwner:allocation:write"
      * })
@@ -280,7 +276,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      * @Gedmo\Versioned
      *
      * @Groups({
-     *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+     *     "projectParticipation:read",
      *     "projectParticipation:owner:participantReply:write",
      *     "projectParticipation:arrangerOwner:allocation:write"
      * })
@@ -297,7 +293,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      * @Gedmo\Versioned
      *
      * @Groups({
-     *     ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
+     *     "projectParticipation:read",
      *     "projectParticipation:arranger:interestExpression:write",
      *     "projectParticipation:create"
      * })
@@ -313,7 +309,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      *
      * @Gedmo\Versioned
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, "projectParticipation:owner:interestExpression:write"})
+     * @Groups({"projectParticipation:read", "projectParticipation:owner:interestExpression:write"})
      */
     private Offer $interestReply;
 
@@ -326,7 +322,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      *     orphanRemoval=true
      * )
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
+     * @Groups({"projectParticipation:read"})
      */
     private Collection $interestReplyVersions;
 
@@ -340,7 +336,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      * @Gedmo\Versioned
      *
      * @Groups({
-     *     ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
+     *     "projectParticipation:read",
      *     "projectParticipation:arranger:participantReply:write",
      *     "projectParticipation:create"
      * })
@@ -354,7 +350,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      *
      * @Gedmo\Versioned
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, "projectParticipation:owner:participantReply:write"})
+     * @Groups({"projectParticipation:read", "projectParticipation:owner:participantReply:write"})
      */
     private ?string $invitationReplyMode = null;
 
@@ -366,14 +362,14 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      *
      * @Gedmo\Versioned
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ, "projectParticipation:arranger:participantReply:write"})
+     * @Groups({"projectParticipation:read", "projectParticipation:arranger:participantReply:write"})
      */
     private ?string $allocationFeeRate = null;
 
     /**
      * @ORM\Column(type="datetime_immutable", nullable=true)
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
+     * @Groups({"projectParticipation:read"})
      */
     private ?DateTimeImmutable $participantLastConsulted = null;
 
@@ -389,7 +385,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      *
      * @Assert\Valid
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
+     * @Groups({"projectParticipation:read"})
      */
     private Collection $projectParticipationMembers;
 
@@ -400,7 +396,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      *
      * @Assert\Valid
      *
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
+     * @Groups({"projectParticipation:read"})
      */
     private Collection $projectParticipationTranches;
 
@@ -423,7 +419,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
      * @ORM\JoinColumn(name="id_nda")
      *
      * @Groups({
-     *     ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
+     *     "projectParticipation:read",
      *     "projectParticipation:arranger:interestExpression:write",
      *     "projectParticipation:arranger:participantReply:write",
      *     "projectParticipation:arranger:draft:write"
@@ -496,7 +492,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     }
 
     /**
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ})
+     * @Groups({"projectParticipation:read"})
      */
     public function getParticipantLastConsulted(): ?DateTimeImmutable
     {
@@ -650,7 +646,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     }
 
     /**
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
+     * @Groups({"projectParticipation:read"})
      */
     public function getTotalInvitationReply(): MoneyInterface
     {
@@ -666,7 +662,7 @@ class ProjectParticipation implements TraceableStatusAwareInterface, FileTypesAw
     }
 
     /**
-     * @Groups({ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ})
+     * @Groups({"projectParticipation:read"})
      */
     public function getTotalAllocation(): MoneyInterface
     {

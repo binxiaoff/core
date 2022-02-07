@@ -378,6 +378,8 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     private ?string $internalRatingScore;
 
     /**
+     * Used before to determine who could see offers. Not used right now. Kept for historical reasons.
+     *
      * @ORM\Column(type="string", nullable=false, length=25)
      *
      * @Gedmo\Versioned

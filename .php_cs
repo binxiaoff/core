@@ -14,6 +14,7 @@ return PhpCsFixer\Config::create()
         'ordered_imports'                        => ['imports_order' => ['class', 'function', 'const'], 'sort_algorithm' => 'alpha'],
         'binary_operator_spaces'                 => ['default' => 'align_single_space_minimal'],
         'concat_space'                           => ['spacing' => 'one'],
+        'class_definition'                       => ['single_line' => false], // Default value overriding @PhpCsFixer ruleset, otherwise impossible to commit with class definition over 120 char
         'combine_nested_dirname'                 => true, //risky
         'dir_constant'                           => true, //risky
         'fopen_flag_order'                       => true, //risky
