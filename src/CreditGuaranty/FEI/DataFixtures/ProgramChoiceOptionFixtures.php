@@ -129,11 +129,11 @@ class ProgramChoiceOptionFixtures extends AbstractFixtures implements DependentF
             '0142Z' => '0142Z',
         ],
         FieldAlias::LOAN_TYPE => [
-            LoanType::TERM_LOAN            => LoanType::TERM_LOAN,
-            LoanType::SHORT_TERM           => LoanType::SHORT_TERM,
-            LoanType::REVOLVING_CREDIT     => LoanType::REVOLVING_CREDIT,
-            LoanType::STAND_BY             => LoanType::STAND_BY,
-            LoanType::SIGNATURE_COMMITMENT => LoanType::SIGNATURE_COMMITMENT,
+            LoanType::TERM_LOAN            => 'Term Loan',
+            LoanType::SHORT_TERM           => 'Court Terme',
+            LoanType::REVOLVING_CREDIT     => 'RCF',
+            LoanType::STAND_BY             => 'Stand by',
+            LoanType::SIGNATURE_COMMITMENT => 'Enregistrement par signature',
         ],
         FieldAlias::PRODUCT_CATEGORY_CODE => [
             '1'       => '1 - ANIMAUX VIVANTS',
