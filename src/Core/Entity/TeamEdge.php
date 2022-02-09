@@ -9,6 +9,11 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
+ * Represents an edge in the company arborescence.
+ * Its usage is purely internal. It is not meant to be manipulated via an http request.
+ * Prefer to create and use method on @see Team class.
+ * Should a path exists between two @see Team, there should be a TeamEdge for the pair.
+ *
  * @ORM\Entity
  * @ORM\Table(
  *     name="core_team_edge",
@@ -37,6 +42,8 @@ class TeamEdge
     private int $id;
 
     /**
+     * Head of the edge.
+     *
      * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Team", inversedBy="outgoingEdges", fetch="EAGER")
      * @ORM\JoinColumn(name="id_ancestor")
      *
@@ -45,6 +52,8 @@ class TeamEdge
     private Team $ancestor;
 
     /**
+     * Tail of the edge.
+     *
      * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Team", inversedBy="incomingEdges")
      * @ORM\JoinColumn(name="id_descendent")
      *
@@ -54,6 +63,8 @@ class TeamEdge
     private Team $descendent;
 
     /**
+     * Number of nodes between the head and the tail in the arborecense.
+     *
      * @ORM\Column(type="integer", nullable=false)
      *
      * @Assert\NotBlank

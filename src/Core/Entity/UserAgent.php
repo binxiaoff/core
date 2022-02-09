@@ -9,6 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 
 /**
+ * Represents an user agent. [@link https://fr.wikipedia.org/wiki/User_agent]
+ * Created to reduce duplication in the @see UserFailedLogin
+ *  and @see UserSuccessfulLogin.
+ *
  * @ORM\Table(
  *     indexes={
  *         @ORM\Index(columns={"id_user", "browser_name", "device_model", "device_brand", "device_type"})

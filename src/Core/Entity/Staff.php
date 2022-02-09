@@ -25,6 +25,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
+ * Represents the membership of a person [@see User] in a team [@see Team] and, indirectly, to a company [@see Company].
+ * For the company end of the relation, this link is made via the @see Staff::team [@see Team].
+ *
  * @ApiResource(
  *     attributes={
  *         "pagination_client_enabled": true,
@@ -121,6 +124,7 @@ class Staff implements TraceableStatusAwareInterface, EquivalenceCheckerInterfac
     private Team $team;
 
     /**
+     *
      * @ORM\Column(type="boolean")
      *
      * @Groups({"staff:read", "staff:create", "staff:update"})
@@ -153,6 +157,8 @@ class Staff implements TraceableStatusAwareInterface, EquivalenceCheckerInterfac
     private Collection $statuses;
 
     /**
+     * TODO Move in syndication.
+     *
      * @ORM\Column(type="boolean")
      *
      * @Groups({"staff:read", "staff:create", "staff:update"})
@@ -160,6 +166,8 @@ class Staff implements TraceableStatusAwareInterface, EquivalenceCheckerInterfac
     private bool $arrangementProjectCreationPermission;
 
     /**
+     * TODO Move in syndication.
+     *
      * @ORM\Column(type="boolean")
      *
      * @Groups({"staff:read", "staff:create", "staff:update"})

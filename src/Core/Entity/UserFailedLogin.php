@@ -9,6 +9,10 @@ use Doctrine\ORM\Mapping as ORM;
 use KLS\Core\Entity\Traits\IdentityTrait;
 
 /**
+ * Represents an failed attempt by a person to connect to the API.
+ * The reason for failure is recorded in the error field.
+ * This table is likely to be populated by @see LoginLogSubscriber.
+ *
  * @ORM\Table(
  *     name="core_user_failed_login",
  *     indexes={
