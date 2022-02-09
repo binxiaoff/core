@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Represents an edge in the company arborescence.
  * Its usage is purely internal. It is not meant to be manipulated via an http request.
  * Prefer to create and use method on @see Team class.
- * Should a two @see Team be accessible, there should be a TeamEdge for them.
+ * Should a path exists between two @see Team, there should be a TeamEdge for the pair.
  *
  * @ORM\Entity
  * @ORM\Table(
