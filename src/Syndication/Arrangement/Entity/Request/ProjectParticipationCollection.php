@@ -19,8 +19,6 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *         "groups": {
  *             "projectParticipationCollection:read",
  *             "projectParticipation:read",
- *             ProjectParticipation::SERIALIZER_GROUP_ADMIN_READ,
- *             ProjectParticipation::SERIALIZER_GROUP_SENSITIVE_READ,
  *             "projectParticipationMember:read",
  *             "projectParticipationTranche:read",
  *             "projectParticipationStatus:read",
