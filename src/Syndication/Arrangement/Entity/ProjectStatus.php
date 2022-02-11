@@ -13,6 +13,7 @@ use KLS\Core\Entity\Interfaces\StatusInterface;
 use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\Traits\BlamableAddedTrait;
+use KLS\Core\Entity\Traits\PublicizeIdentityTrait;
 use KLS\Core\Entity\Traits\TimestampableAddedOnlyTrait;
 use KLS\Core\Traits\ConstantsAwareTrait;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -70,6 +71,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  */
 class ProjectStatus implements StatusInterface
 {
+    use PublicizeIdentityTrait;
     use ConstantsAwareTrait;
     use BlamableAddedTrait;
     use TimestampableAddedOnlyTrait;
@@ -109,13 +111,6 @@ class ProjectStatus implements StatusInterface
      * @Groups({"projectStatus:read", "projectStatus:create"})
      */
     private int $status;
-
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     * @ORM\Column(type="integer")
-     */
-    private ?int $id = null;
 
     /**
      * @throws Exception
