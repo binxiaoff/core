@@ -54,6 +54,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *     normalizationContext={
  *         "groups": {
  *             "project:read",
+ *             "projectStatus:read",
  *             "company:read",
  *             "projectParticipation:read",
  *             "projectParticipationTranche:read",
@@ -81,6 +82,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "normalization_context": {
  *                 "groups": {
  *                     "project:read",
+ *                     "projectStatus:read",
  *                     "company:read",
  *                     "offer:read",
  *                     "projectParticipation:read",
@@ -116,6 +118,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "normalization_context": {
  *                 "groups": {
  *                     "project:read",
+ *                     "projectStatus:read",
  *                     "company:read",
  *                     "projectParticipation:read",
  *                     "projectParticipationTranche:read",
@@ -170,6 +173,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "normalization_context": {
  *                 "groups": {
  *                     "project:read",
+ *                     "projectStatus:read",
  *                     "company:read",
  *                     "projectParticipation:read",
  *                     "projectParticipationTranche:read",
