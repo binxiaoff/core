@@ -186,8 +186,8 @@ class ReportingQueryGenerator
                     // if field_alias does not belong to reportingTemplateFields aliases and to reporting dates aliases
                     // or if value is invalid
                     if (
-                        false === \in_array($filterFieldAlias, $fieldAliases)
-                        && false === \in_array($filterFieldAlias, \array_keys(FieldAlias::MAPPING_REPORTING_DATES))
+                        false === \array_key_exists($filterFieldAlias, FieldAlias::MAPPING_REPORTING_DATES)
+                        && false === \in_array($filterFieldAlias, $fieldAliases, true)
                     ) {
                         unset($filters[$filterKey][$filterFieldAlias]);
                     }

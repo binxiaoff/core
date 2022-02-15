@@ -12,6 +12,8 @@ use Exception;
 use KLS\Core\Entity\Traits\TimestampableTrait;
 
 /**
+ * Represents a token used for one time login (for initializing a @see User or resetting the password).
+ *
  * @ORM\Table(name="core_temporary_token", indexes={@ORM\Index(name="fk_temporary_token_id_user", columns={"id_user"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks

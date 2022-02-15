@@ -16,9 +16,6 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class ProjectParticipationVoter extends AbstractEntityVoter
 {
-    public const ATTRIBUTE_SENSITIVE_VIEW = 'sensitive_view';
-    public const ATTRIBUTE_ADMIN_VIEW     = 'admin_view';
-
     private ProjectParticipationMemberRepository $projectParticipationMemberRepository;
 
     public function __construct(
@@ -77,43 +74,6 @@ class ProjectParticipationVoter extends AbstractEntityVoter
                 $staff,
                 ProjectParticipationMember::PERMISSION_READ
             );
-
-        /*
-         *
-         * Visibility is not used for now
-        switch ($subject->getProject()->getOfferVisibility()) {
-            case Project::OFFER_VISIBILITY_PRIVATE:
-                return $this->projectParticipationManager->hasPermissionEffective($subject, $staff);
-            case Project::OFFER_VISIBILITY_PARTICIPANT:
-            case Project::OFFER_VISIBILITY_PUBLIC:
-                return $this->projectManager->isActiveParticipationMember($subject->getProject(), $staff);
-        }
-
-        throw new LogicException('This code should not be reached');
-         */
-    }
-
-    protected function canAdminView(ProjectParticipation $projectParticipation, User $user): bool
-    {
-        $staff = $user->getCurrentStaff();
-
-        if (false === $staff instanceof Staff) {
-            return false;
-        }
-
-        return $this->hasPermissionEffective($projectParticipation, $staff, ProjectParticipationMember::PERMISSION_READ)
-            || $this->hasPermissionEffective(
-                $projectParticipation->getProject()->getArrangerProjectParticipation(),
-                $staff,
-                ProjectParticipationMember::PERMISSION_READ
-            );
-    }
-
-    protected function canSensitiveView(ProjectParticipation $projectParticipation, User $user): bool
-    {
-        return $this->canAdminView($projectParticipation, $user);
-        // Visibility is not used for now
-        // || Project::OFFER_VISIBILITY_PUBLIC === $projectParticipation->getProject()->getOfferVisibility();
     }
 
     protected function canEdit(ProjectParticipation $projectParticipation, User $user): bool

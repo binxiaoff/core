@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS\Syndication\Arrangement\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
@@ -53,6 +54,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *     normalizationContext={
  *         "groups": {
  *             "project:read",
+ *             "projectStatus:read",
  *             "company:read",
  *             "projectParticipation:read",
  *             "projectParticipationTranche:read",
@@ -80,6 +82,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "normalization_context": {
  *                 "groups": {
  *                     "project:read",
+ *                     "projectStatus:read",
  *                     "company:read",
  *                     "offer:read",
  *                     "projectParticipation:read",
@@ -115,6 +118,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "normalization_context": {
  *                 "groups": {
  *                     "project:read",
+ *                     "projectStatus:read",
  *                     "company:read",
  *                     "projectParticipation:read",
  *                     "projectParticipationTranche:read",
@@ -169,6 +173,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
  *             "normalization_context": {
  *                 "groups": {
  *                     "project:read",
+ *                     "projectStatus:read",
  *                     "company:read",
  *                     "projectParticipation:read",
  *                     "projectParticipationTranche:read",
@@ -364,17 +369,21 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     private ?DateTimeImmutable $contractualizationDeadline;
 
     /**
+     * @ApiProperty(security="is_granted('view_group_internal', object)")
+     *
      * @ORM\Column(length=8, nullable=true)
      *
      * @Assert\Choice(callback={CAInternalRating::class, "getConstList"})
      *
      * @Gedmo\Versioned
      *
-     * @Groups({"project:write", Project::SERIALIZER_GROUP_GCA_READ})
+     * @Groups({"project:write", "project:read"})
      */
     private ?string $internalRatingScore;
 
     /**
+     * Used before to determine who could see offers. Not used right now. Kept for historical reasons.
+     *
      * @ORM\Column(type="string", nullable=false, length=25)
      *
      * @Gedmo\Versioned
@@ -809,6 +818,23 @@ class Project implements TraceableStatusAwareInterface, FileTypesAwareInterface
     public function getProjectParticipations(): Collection
     {
         return $this->projectParticipations;
+    }
+
+    public function getNotifiableParticipations(): Collection
+    {
+        return $this->projectParticipations->filter(
+            fn (ProjectParticipation $participation) => false === \in_array(
+                $participation->getCurrentStatus()->getStatus(),
+                // This might be superfloux with Participation::isArchived but this is in bugfix.
+                    // I did not want to make to many change yet.
+                    [
+                        ProjectParticipationStatus::STATUS_COMMITTEE_REJECTED,
+                        ProjectParticipationStatus::STATUS_ARCHIVED_BY_PARTICIPANT,
+                        ProjectParticipationStatus::STATUS_ARCHIVED_BY_ARRANGER,
+                    ],
+                true
+            )
+        );
     }
 
     public function getProjectParticipationByCompany(Company $company): ?ProjectParticipation

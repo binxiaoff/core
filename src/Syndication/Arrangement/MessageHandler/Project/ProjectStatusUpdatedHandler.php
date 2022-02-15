@@ -49,7 +49,7 @@ class ProjectStatusUpdatedHandler implements MessageHandlerInterface
                 true
             )
         ) {
-            foreach ($project->getProjectParticipations() as $projectParticipation) {
+            foreach ($project->getNotifiableParticipations() as $projectParticipation) {
                 $activeProjectParticipationMembers = $projectParticipation->getActiveProjectParticipationMembers();
                 foreach ($activeProjectParticipationMembers as $activeProjectParticipationMember) {
                     $this->projectParticipationMemberNotifier->notifyMemberAdded($activeProjectParticipationMember);

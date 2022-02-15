@@ -102,7 +102,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
     private ?ProgramChoiceOption $investmentType = null;
 
     /**
-     * @ORM\Column(length=1200, nullable=true)
+     * @ORM\Column(type="text", nullable=true)
      *
      * @Groups({"creditGuaranty:project:read", "creditGuaranty:project:write"})
      */
@@ -605,30 +605,32 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
      */
     public function getMaxFeiCredit(): MoneyInterface
     {
-        if (false === ($this->getAidIntensity() instanceof ProgramChoiceOption)) {
+        $program          = $this->getProgram();
+        $guarantyDuration = $this->getGuarantyDuration();
+        $grant            = $this->getGrantForMaxFeiCredit();
+
+        if (
+            null === $program->getGuarantyCoverage()
+            || null === $guarantyDuration
+            || $program->getMaxFeiCredit()->isNull()
+            || $this->getEligibleFeiCredit()->isNull()
+            || $grant->isNull()
+            || false === ($this->getAidIntensity() instanceof ProgramChoiceOption)
+        ) {
             return new NullableMoney();
         }
 
         $publicAidLimit = MoneyCalculator::multiply(
-            $this->getEligibleFeiCredit()->isNull() ? new NullableMoney('EUR', '0') : $this->getEligibleFeiCredit(),
+            $this->getEligibleFeiCredit(),
             (float) $this->getAidIntensity()->getDescription()
         );
-        $remainingGrantLimit = MoneyCalculator::subtract(
-            $publicAidLimit,
-            $this->getGrant()->isNull() ? new NullableMoney('EUR', '0') : $this->getGrant()
-        );
-        $maxFeiCredit = MoneyCalculator::multiply(
-            $remainingGrantLimit,
-            (float) $this->getProgram()->getGuarantyCoverage()
-        );
-        $duration = \bcmul(
-            (string) $this->getProgram()->getGuarantyDuration(),
-            (string) GrossSubsidyEquivalent::FACTOR,
-            4
-        );
-        $maxFeiCredit = MoneyCalculator::multiply($maxFeiCredit, (float) $duration);
+        $remainingGrantLimit = MoneyCalculator::subtract($publicAidLimit, $grant);
 
-        return MoneyCalculator::min($this->getProgram()->getMaxFeiCredit(), $maxFeiCredit);
+        $maxFeiCredit = MoneyCalculator::divide($remainingGrantLimit, (float) $program->getGuarantyCoverage());
+        $maxFeiCredit = MoneyCalculator::divide($maxFeiCredit, $guarantyDuration);
+        $maxFeiCredit = MoneyCalculator::divide($maxFeiCredit, (float) GrossSubsidyEquivalent::FACTOR);
+
+        return MoneyCalculator::min($program->getMaxFeiCredit(), $maxFeiCredit);
     }
 
     /**
@@ -642,9 +644,15 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
             return new NullableMoney();
         }
 
-        $grossSubsidyEquivalents = $financingObjects->map(
-            static fn (FinancingObject $financingObject) => $financingObject->getGrossSubsidyEquivalent()
-        )->toArray();
+        $grossSubsidyEquivalents = [];
+
+        foreach ($financingObjects as $financingObject) {
+            if (null === $financingObject->getGrossSubsidyEquivalent()->getAmount()) {
+                return new NullableMoney();
+            }
+
+            $grossSubsidyEquivalents[] = $financingObject->getGrossSubsidyEquivalent();
+        }
 
         return MoneyCalculator::sum($grossSubsidyEquivalents);
     }
@@ -670,7 +678,7 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
             ));
         }
 
-        $ratio = MoneyCalculator::ratio($this->getFundingMoney(), $program->getFunds());
+        $ratio = MoneyCalculator::ratio($this->getReservation()->getTotalLoanMoney(), $program->getFunds());
 
         return \bccomp((string) $ratio, $participation->getQuota(), 4) <= 0;
     }
@@ -730,6 +738,49 @@ class Project implements ProgramAwareInterface, ProgramChoiceOptionCarrierInterf
         // so that we get always the same "total" all the time.
         $filters = \array_merge(['exclude' => $this->getId()], $filters);
 
-        return MoneyCalculator::add($program->getTotalProjectFunds($filters), $this->getFundingMoney());
+        return MoneyCalculator::add(
+            $program->getTotalProjectFunds($filters),
+            $this->getReservation()->getTotalLoanMoney()
+        );
+    }
+
+    private function getGuarantyDuration(): ?float
+    {
+        $financingObjects = $this->getReservation()->getFinancingObjects();
+        $guarantyDuration = $this->getProgram()->getGuarantyDuration();
+
+        if (null === $guarantyDuration || 0 === $financingObjects->count()) {
+            return null;
+        }
+
+        $loanDurations = $financingObjects->map(
+            static fn (FinancingObject $financingObject) => $financingObject->getLoanDuration()
+        )->toArray();
+
+        if (\in_array(null, $loanDurations, true)) {
+            return null;
+        }
+
+        return (float) \min(\max($loanDurations), $guarantyDuration) / 12;
+    }
+
+    private function getGrantForMaxFeiCredit(): NullableMoney
+    {
+        if ($this->getGrant()->isValid()) {
+            return $this->getGrant();
+        }
+
+        $programEligibility = $this->getProgram()->getProgramEligibilities()
+            ->filter(
+                static fn (ProgramEligibility $pe) => FieldAlias::RECEIVING_GRANT === $pe->getField()->getFieldAlias()
+            )
+            ->first()
+        ;
+
+        if (false === ($programEligibility instanceof ProgramEligibility)) {
+            return new NullableMoney();
+        }
+
+        return new NullableMoney('EUR', '0');
     }
 }

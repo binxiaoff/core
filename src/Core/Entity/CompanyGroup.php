@@ -8,6 +8,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
+ * Represents a collection of @see Company which are subsidiaries of the same mother bank.
+ *
  * @ORM\Entity
  * @ORM\Table(name="core_company_group")
  */

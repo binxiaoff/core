@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace KLS\Core\Serializer\ContextBuilder\Staff;
 
 use ApiPlatform\Core\Serializer\SerializerContextBuilderInterface;
+use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Staff;
 use KLS\Core\Entity\StaffStatus;
 use KLS\Core\Entity\User;
@@ -22,8 +23,11 @@ class CurrentStaff implements SerializerContextBuilderInterface
     private Security $security;
     private UserRepository $userRepository;
 
-    public function __construct(SerializerContextBuilderInterface $decorated, Security $security, UserRepository $userRepository)
-    {
+    public function __construct(
+        SerializerContextBuilderInterface $decorated,
+        Security $security,
+        UserRepository $userRepository
+    ) {
         $this->decorated      = $decorated;
         $this->security       = $security;
         $this->userRepository = $userRepository;
@@ -46,7 +50,8 @@ class CurrentStaff implements SerializerContextBuilderInterface
         }
 
         if ($user instanceof User) {
-            $staff = $user->getCurrentStaff();
+            $staff   = $user->getCurrentStaff();
+            $company = $staff ? $staff->getCompany() : null;
 
             if ($resourceClass) {
                 $reflection  = new ReflectionClass($resourceClass);
@@ -56,8 +61,26 @@ class CurrentStaff implements SerializerContextBuilderInterface
 
                     foreach ($parameters as $parameter) {
                         $type = $parameter->getType();
-                        if ($type && 'addedBy' === $parameter->getName() && $user->getCurrentStaff() && (Staff::class === $type->getName())) {
-                            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter->getName()] = $staff;
+                        if (!$type) {
+                            continue;
+                        }
+                        if ('addedBy' === $parameter->getName()) {
+                            if ($staff && (Staff::class === $type->getName())) {
+                                $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter
+                                    ->getName()] = $staff;
+                            }
+                            if (User::class === $type->getName()) {
+                                $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter
+                                    ->getName()] = $user;
+                            }
+                        }
+                        if (
+                            $company
+                            && 'addedByCompany' === $parameter->getName()
+                            && (Company::class === $type->getName())
+                        ) {
+                            $context[AbstractNormalizer::DEFAULT_CONSTRUCTOR_ARGUMENTS][$resourceClass][$parameter
+                                ->getName()] = $company;
                         }
                     }
                 }

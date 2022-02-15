@@ -593,9 +593,11 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
         $this->ratingModel                    = self::RATING_MODEL_DEFAULT;
         $this->drive                          = new Drive();
         $this->statuses                       = new ArrayCollection();
+        $this->programContacts                = new ArrayCollection();
         $this->programGradeAllocations        = new ArrayCollection();
         $this->programBorrowerTypeAllocations = new ArrayCollection();
         $this->programChoiceOptions           = new ArrayCollection();
+        $this->programEligibilities           = new ArrayCollection();
         $this->participations                 = new ArrayCollection();
         $this->reservations                   = new ArrayCollection();
         $this->reportingTemplates             = new ArrayCollection();
@@ -1070,8 +1072,8 @@ class Program implements TraceableStatusAwareInterface, DriveCarrierInterface
                     );
                 }
 
-                $fundingMoney      = $reservation->getProject()->getFundingMoney();
-                $totalProjectFunds = MoneyCalculator::add($fundingMoney, $totalProjectFunds);
+                $loanMoney         = $reservation->getTotalLoanMoney();
+                $totalProjectFunds = MoneyCalculator::add($loanMoney, $totalProjectFunds);
             }
         }
 

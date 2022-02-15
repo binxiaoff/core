@@ -117,10 +117,10 @@ class FieldAlias extends AbstractEnum
 
     public const ESB_RELATED_FIELDS = [
         self::AID_INTENSITY,
+        self::ELIGIBLE_FEI_CREDIT,
         self::LOAN_DURATION,
         self::LOAN_MONEY,
         self::PROJECT_GRANT,
-        self::TOTAL_FEI_CREDIT,
     ];
 
     public const RECEIVING_GRANT_RELATED_FIELDS = [

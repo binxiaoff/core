@@ -21,6 +21,8 @@ __________
 
 `Coding Standard <technical/coding-standard.rst>`_
 
+`Documentation <technical/documentation.md>`_
+
 `PhpStorm setting <technical/phpstorm-settings.rst>`_
 
 `Doctrine migration roll up <technical/doctrine-migration-rollup.rst>`_

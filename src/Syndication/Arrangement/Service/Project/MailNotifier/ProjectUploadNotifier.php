@@ -53,7 +53,7 @@ class ProjectUploadNotifier implements FileUploadedNotifierInterface
             return $sent;
         }
         $templateId = MailjetMessage::TEMPLATE_PROJECT_FILE_UPLOADED;
-        foreach ($project->getProjectParticipations() as $participation) {
+        foreach ($project->getNotifiableParticipations() as $participation) {
             if (
                 $participation->getParticipant() !== $project->getSubmitterCompany()
                 && (

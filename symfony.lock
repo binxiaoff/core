@@ -184,18 +184,6 @@
     "egulias/email-validator": {
         "version": "2.1.8"
     },
-    "eightpoints/guzzle-bundle": {
-        "version": "7.0",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "master",
-            "version": "7.0",
-            "ref": "7babb21a3928e44e485391907e3abc346804e0d2"
-        },
-        "files": [
-            "config/packages/eight_points_guzzle.yaml"
-        ]
-    },
     "enlightn/security-checker": {
         "version": "v1.4"
     },
@@ -281,7 +269,7 @@
         "version": "1.5.2"
     },
     "http-interop/http-factory-guzzle": {
-        "version": "1.0.0"
+        "version": "1.2.0"
     },
     "jbroadway/urlify": {
         "version": "1.1.2-stable"
@@ -423,9 +411,6 @@
     },
     "php-http/discovery": {
         "version": "1.6.1"
-    },
-    "php-http/guzzle6-adapter": {
-        "version": "v2.0.1"
     },
     "php-http/httplug": {
         "version": "v2.0.0"
@@ -929,6 +914,15 @@
     },
     "symfony/serializer": {
         "version": "v4.3.0"
+    },
+    "symfony/slack-notifier": {
+        "version": "5.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "5.2",
+            "ref": "192bc241a3095c6861353e5a7a652ad35659ca92"
+        }
     },
     "symfony/stopwatch": {
         "version": "v4.3.0"

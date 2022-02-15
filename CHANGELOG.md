@@ -1,3 +1,6 @@
+## 6.2.0 (15/02/2022)
+[Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10135)
+
 ## 6.1.0 (26/01/2022)
 [Release note](https://lafabriquebyca.atlassian.net/browse/CALS/fixforversion/10128)
 

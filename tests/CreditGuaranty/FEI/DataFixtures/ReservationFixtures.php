@@ -269,7 +269,8 @@ class ReservationFixtures extends AbstractFixtures implements DependentFixtureIn
         $totalAmount = 0;
 
         if (false === empty($reservationData['financingObjects'])) {
-            for ($i = 0; $i < \count($reservationData['financingObjects']); ++$i) {
+            $countFinancingObjects = \count($reservationData['financingObjects']);
+            for ($i = 0; $i < $countFinancingObjects; ++$i) {
                 $financingObject = $this->createFinancingObject($reservation, $reservationData['financingObjects'][$i]);
                 $this->entityManager->persist($financingObject);
                 $totalAmount += (float) $financingObject->getLoanMoney()->getAmount();

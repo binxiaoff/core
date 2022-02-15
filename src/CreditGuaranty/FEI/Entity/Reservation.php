@@ -20,6 +20,7 @@ use KLS\Core\Controller\Dataroom\Post;
 use KLS\Core\Entity\Company;
 use KLS\Core\Entity\Drive;
 use KLS\Core\Entity\Interfaces\DriveCarrierInterface;
+use KLS\Core\Entity\Interfaces\MoneyInterface;
 use KLS\Core\Entity\Interfaces\StatusInterface;
 use KLS\Core\Entity\Interfaces\TraceableStatusAwareInterface;
 use KLS\Core\Entity\Staff;
@@ -173,7 +174,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *     },
  * )
  *
- * @ApiFilter(SearchFilter::class, properties={"name": "partial"})
+ * @ApiFilter(SearchFilter::class, properties={"name": "partial", "program.publicId": "exact"})
  * @ApiFilter(NumericFilter::class, properties={"currentStatus.status"})
  * @ApiFilter(OrderFilter::class, properties={"added"})
  * @ApiFilter("KLS\CreditGuaranty\FEI\Filter\ReservationSentDateOrderFilter")
@@ -204,7 +205,7 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
      *     "creditGuaranty:reservation:update:draft"
      * })
      */
-    private ?string $name;
+    private ?string $name = null;
 
     /**
      * @ORM\ManyToOne(targetEntity="KLS\Core\Entity\Company")
@@ -488,8 +489,13 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
             return false;
         }
 
-        $esbTotal     = $this->project->getTotalGrossSubsidyEquivalent();
-        $maxFeiCredit = $this->project->getMaxFeiCredit();
+        $project      = $this->getProject();
+        $esbTotal     = $project->getTotalGrossSubsidyEquivalent();
+        $maxFeiCredit = $project->getMaxFeiCredit();
+
+        if (null === $esbTotal->getAmount() || null === $maxFeiCredit->getAmount()) {
+            return false;
+        }
 
         $comparison = MoneyCalculator::compare($esbTotal, $maxFeiCredit);
 
@@ -511,5 +517,13 @@ class Reservation implements TraceableStatusAwareInterface, DriveCarrierInterfac
     public function getUpdated(): ?DateTimeImmutable
     {
         return $this->updated;
+    }
+
+    public function getTotalLoanMoney(): MoneyInterface
+    {
+        return MoneyCalculator::sum($this->getFinancingObjects()->map(
+            static fn (FinancingObject $financingObject) => $financingObject->getReservation()->isFormalized() ?
+                $financingObject->getLoanMoneyAfterContractualisation() : $financingObject->getLoanMoney()
+        )->toArray());
     }
 }

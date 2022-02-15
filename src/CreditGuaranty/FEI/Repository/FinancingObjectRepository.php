@@ -34,6 +34,14 @@ class FinancingObjectRepository extends ServiceEntityRepository
 
     /**
      * @throws ORMException
+     */
+    public function persist(FinancingObject $financingObject): void
+    {
+        $this->getEntityManager()->persist($financingObject);
+    }
+
+    /**
+     * @throws ORMException
      * @throws OptimisticLockException
      */
     public function flush(): void
