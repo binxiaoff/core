@@ -25,7 +25,7 @@ __________
 
 `PhpStorm setting <technical/phpstorm-settings.rst>`_
 
-`Doctrine migration roll up <technical/doctrine-migration-rollup.rst>`_
+`Doctrine migrations rollup <technical/doctrine-migrations-rollup.md>`_
 
 `Initialize dev environnement <technical/init-dev-env-docker.rst>`_
 
