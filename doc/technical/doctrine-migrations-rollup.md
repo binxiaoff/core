@@ -35,6 +35,11 @@ This process is done on the local environment, except if there is a specific ind
 ```
 
 2. Deploy the code on the production by running the Ansible playbook named `migration-rollup.yml`.
+
+ ```Shell
+ansible-playbook -i inventory/[env].yml -u [user] migration-rollup.yml --extra-vars="gitBranch=hotfix/[version]"
+```
+
 3. Delete the core_migration_versions_backup table if all goes well.
 
 ## Post-deployment
